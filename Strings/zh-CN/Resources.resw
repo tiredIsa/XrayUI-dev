@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1329,5 +1329,11 @@
   </data>
   <data name="HotkeyRecorder_Instruction.Text" xml:space="preserve">
     <value>点击下方区域，然后按下想要绑定的组合键</value>
+  </data>
+  <data name="Subscription_WaitingForNetwork" xml:space="preserve">
+    <value>网络未连接。网络恢复后将继续更新。</value>
+  </data>
+  <data name="Subscription_CheckUrl" xml:space="preserve">
+    <value>请检查订阅链接及服务商账户权限。</value>
   </data>
 </root>

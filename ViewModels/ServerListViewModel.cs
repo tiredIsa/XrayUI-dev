@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using XrayUI.Helpers;
@@ -29,16 +26,6 @@ namespace XrayUI.ViewModels
         private const string AllChipKey            = "__all__";
         private const string UngroupedChipKey      = "__ungrouped__";
         private const string FavoritesChipKey      = "__favorites__";
-        private const string SubscriptionUserAgent = "v2rayN/7.22";
-        // Retry UA for providers that only emit a Clash/mihomo YAML config under a Clash-looking UA.
-        // Mimics Clash Verge Rev (a widely-used mihomo-based client); the "clash" substring is what
-        // most backends key on to serve their config — see the zero-hit retry in FetchSubscriptionNodesAsync.
-        private const string ClashUserAgent        = "clash-verge/v2.5.2";
-        // The traffic/expiry probe is best-effort and runs concurrently with the node fetch. Kept under
-        // the client timeout above so a stalled Clash-UA request can't hold an otherwise-finished
-        // refresh spinning — it is headers-only, so it has less to do anyway. See FetchSubscriptionNodesAsync.
-        private static readonly TimeSpan SubscriptionMetaTimeout = TimeSpan.FromSeconds(8);
-
         // Localized labels — looked up lazily so language changes apply at startup.
         private static string AllChipName     => L.ServerList_AllServers;
         private static string UngroupedName   => L.ServerList_Ungrouped;
@@ -51,52 +38,7 @@ namespace XrayUI.ViewModels
         private static string SubscriptionLabel(SubscriptionEntry sub)
             => string.IsNullOrWhiteSpace(sub.Name) ? UnnamedSubLabel : sub.Name;
 
-        private static readonly HttpClient Http = CreateSubscriptionHttpClient();
-
-        private static HttpClient CreateSubscriptionHttpClient()
-        {
-            // Covers the whole operation (connect + TLS + body read), not just the response headers.
-            // A subscription body is small enough that anything which will succeed lands well inside
-            // this; past it we would only be delaying the same error, and Update all multiplies the
-            // wait by ceil(count / MaxConcurrentRefresh).
-            var client = new HttpClient(new HttpClientHandler
-            {
-                Proxy = new RunningCoreOrSystemProxy(),
-                UseProxy = true,
-            })
-            { Timeout = TimeSpan.FromSeconds(10) };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd(SubscriptionUserAgent);
-            return client;
-        }
-
-        /// <summary>Set by MainViewModel: the local SOCKS port while the core is running, null
-        /// otherwise. Static because the shared <see cref="Http"/> client is; wired once at
-        /// composition time.</summary>
         internal static Func<int?>? GetLocalProxyPort { get; set; }
-
-        /// <summary>
-        /// Routes subscription fetches through the running core's local SOCKS inbound instead of
-        /// trusting the Windows proxy settings. IsProxyRunning only says the core is up: in manual
-        /// mode the system proxy stays untouched, so a default HttpClient would fetch DIRECT, fail
-        /// on proxy-only links, and — because a failed attempt advances the schedule anchor — burn
-        /// the whole interval silently. GetProxy is consulted per request, so start/stop and port
-        /// edits are picked up without rebuilding the client; with the core stopped this falls
-        /// back to the system default, which is what manual refresh always did. The SOCKS inbound
-        /// exists in every mode (TUN only adds its own inbound on top), so the port is always
-        /// live while the core is.
-        /// </summary>
-        private sealed class RunningCoreOrSystemProxy : IWebProxy
-        {
-            public ICredentials? Credentials { get; set; }
-
-            public Uri? GetProxy(Uri destination) =>
-                GetLocalProxyPort?.Invoke() is int port
-                    ? new Uri($"socks5://127.0.0.1:{port}")
-                    : HttpClient.DefaultProxy.GetProxy(destination);
-
-            public bool IsBypassed(Uri host) =>
-                GetLocalProxyPort?.Invoke() is not int && HttpClient.DefaultProxy.IsBypassed(host);
-        }
 
         private readonly IDialogService     _dialogs;
         private readonly SettingsService    _settings;
@@ -925,14 +867,18 @@ namespace XrayUI.ViewModels
         /// The entries are a snapshot so editing or deleting subscriptions while a batch is in
         /// flight cannot invalidate its enumeration.
         /// </summary>
-        private async Task RefreshSubscriptionsAsync(
-            IReadOnlyList<SubscriptionEntry> subscriptions,
-            Action<int, int>? progress = null)
+        private Task RefreshSubscriptionsAsync(IReadOnlyList<SubscriptionEntry> subscriptions,
+            Action<int, int>? progress = null) => RefreshSubscriptionsCoreAsync(subscriptions, progress);
+
+        private async Task RefreshSubscriptionsCoreAsync(IReadOnlyList<SubscriptionEntry> subscriptions,
+            Action<int, int>? progress = null, bool scheduled = false,
+            bool networkRestored = false, bool proxyConnected = false)
         {
             var reserved = new List<SubscriptionEntry>(subscriptions.Count);
             foreach (var sub in subscriptions)
             {
-                if (_refreshingSubscriptionIds.Add(sub.Id))
+                if (!(sub.RetryAfterUtc > DateTimeOffset.UtcNow) &&
+                    _refreshingSubscriptionIds.Add(sub.Id))
                     reserved.Add(sub);
             }
 
@@ -947,10 +893,15 @@ namespace XrayUI.ViewModels
                     string? fetchedUrl = null;
                     try
                     {
+                        if (_disposed || !IsKnownSubscription(sub) ||
+                            (scheduled && !SubscriptionRefreshSchedule.IsDue(sub, DateTimeOffset.UtcNow,
+                                networkRestored, proxyConnected))) return;
                         fetchedUrl = await RefreshSubscriptionAsync(sub);
                     }
                     catch (Exception ex)
                     {
+                        // Network outcomes have already updated their schedule. Persistence and
+                        // handover errors must not reclassify HTTP failures or count a second attempt.
                         sub.LastError = Loc.Format("Subscription_UpdateFailed", ex.Message);
                         Debug.WriteLine($"[Subscriptions] Refresh failed for {sub.Id}: {ex}");
                         if (!IsKnownSubscription(sub)) return;
@@ -1016,72 +967,35 @@ namespace XrayUI.ViewModels
         private bool IsKnownSubscription(SubscriptionEntry sub) =>
             _knownSubscriptions.Any(s => ReferenceEquals(s, sub));
 
-        /// <summary>
-        /// An enabled schedule without an anchor came from an external/hand-edited settings file.
-        /// Anchor it at startup so enabling never causes an unexpected immediate network request.
-        /// </summary>
-        public async Task InitializeSubscriptionRefreshSchedulesAsync(DateTimeOffset now)
-        {
-            // Anchor everything first, then persist: the sweep only ever reads the in-memory
-            // entries, so it must never observe a half-anchored list across the awaits below.
-            var anchored = new List<SubscriptionEntry>();
-            foreach (var sub in _knownSubscriptions)
-            {
-                if (sub.IsAutoRefreshEnabled && !sub.LastRefreshAttempt.HasValue)
-                {
-                    sub.LastRefreshAttempt = now;
-                    anchored.Add(sub);
-                }
-            }
+        private bool _pendingSubscriptionNetworkRestored;
+        private bool _pendingSubscriptionProxyConnected;
 
-            foreach (var sub in anchored)
-            {
-                try
-                {
-                    await UpsertSubscriptionAsync(sub);
-                }
-                catch (Exception ex)
-                {
-                    // Keep the in-memory anchors so this process still waits a full interval.
-                    Debug.WriteLine($"[Subscriptions] Failed to persist schedule anchor for {sub.Id}: {ex}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called from the UI dispatcher timer. Overlapping sweeps are excluded here; overlap
-        /// between a sweep and a manual refresh of the same entry is excluded one level down, by
-        /// the id reservation in <see cref="RefreshSubscriptionsAsync"/>.
-        /// </summary>
-        /// <remarks>
-        /// Sweeps are skipped while the proxy is down. The fetch goes out through the system proxy,
-        /// and subscription URLs are commonly unreachable without it, so an unproxied sweep mostly
-        /// buys a ten-second timeout — and because a failed attempt still moves the anchor, it would
-        /// spend a whole interval's retry budget on a request that was never going to land. Nothing
-        /// is lost by waiting: the timer keeps ticking, so a schedule that comes due while
-        /// disconnected runs within a minute of the proxy coming up. Manual refresh and Update all
-        /// are unaffected — those are the escape hatch for a subscription URL that resolves direct.
-        /// </remarks>
-        public async Task RefreshDueSubscriptionsAsync(DateTimeOffset now)
+        public async Task RefreshDueSubscriptionsAsync(DateTimeOffset now,
+            bool networkRestored = false, bool proxyConnected = false)
         {
-            if (_disposed || _scheduledRefreshRunning || !IsProxyRunning) return;
+            if (_disposed) return;
+            if (_scheduledRefreshRunning)
+            {
+                _pendingSubscriptionNetworkRestored |= networkRestored;
+                _pendingSubscriptionProxyConnected |= proxyConnected;
+                return;
+            }
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) return;
 
             var due = _knownSubscriptions
-                .Where(sub => SubscriptionRefreshSchedule.IsDue(
-                    sub.AutoRefreshIntervalMinutes,
-                    sub.LastRefreshAttempt,
-                    now))
+                .Where(sub => SubscriptionRefreshSchedule.IsDue(sub, now, networkRestored, proxyConnected))
                 .ToList();
             if (due.Count == 0) return;
-
             _scheduledRefreshRunning = true;
-            try
+            try { await RefreshSubscriptionsCoreAsync(due, scheduled: true,
+                networkRestored: networkRestored, proxyConnected: proxyConnected); }
+            finally { _scheduledRefreshRunning = false; }
+            if (_pendingSubscriptionNetworkRestored || _pendingSubscriptionProxyConnected)
             {
-                await RefreshSubscriptionsAsync(due);
-            }
-            finally
-            {
-                _scheduledRefreshRunning = false;
+                var restored = _pendingSubscriptionNetworkRestored;
+                var connected = _pendingSubscriptionProxyConnected;
+                _pendingSubscriptionNetworkRestored = _pendingSubscriptionProxyConnected = false;
+                await RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, restored, connected);
             }
         }
 
@@ -1109,7 +1023,6 @@ namespace XrayUI.ViewModels
             if (sub == null) return;
 
             sub.Id = Guid.NewGuid().ToString("N");
-            sub.LastRefreshAttempt = DateTimeOffset.UtcNow;
 
             var (entries, error) = await FetchSubscriptionNodesAsync(sub);
 
@@ -1119,8 +1032,7 @@ namespace XrayUI.ViewModels
                 {
                     foreach (var e in entries) Servers.Add(e);
                 }, rebuild: false);
-                sub.LastUpdated = DateTimeOffset.Now;
-                sub.LastError   = null;
+                SubscriptionRefreshSchedule.RecordSuccess(sub, DateTimeOffset.UtcNow);
             }
             else
             {
@@ -1145,158 +1057,24 @@ namespace XrayUI.ViewModels
 
         private static async Task<(List<ServerEntry>? entries, string? error)> FetchSubscriptionNodesAsync(SubscriptionEntry sub)
         {
-            // Kick off the traffic/expiry probe concurrently with the node fetch, headers-only so the
-            // clash config body is never downloaded. Deliberately not deferred until the node fetch
-            // shows no header: measured against real providers, ~95% emit `subscription-userinfo` only
-            // to a Clash-looking UA, which the v2rayN fetch below never sends. Probing lazily would
-            // therefore add a serial round trip to almost every refresh (a + b instead of max(a, b))
-            // to save a request on the rare provider that answers any UA.
-            var metaTask = FetchSubscriptionAsync(sub.Url, ClashUserAgent, headersOnly: true, timeout: SubscriptionMetaTimeout);
-
-            var (raw, mainUsage, error) = await FetchSubscriptionAsync(sub.Url, userAgent: null);
-
-            // Best-effort, and applied even if node parsing fails below. The probe wins when it lands;
-            // the node response is the fallback for the minority of providers that do answer a v2rayN
-            // UA, so a probe that timed out no longer leaves stale figures on the card. A miss on both
-            // keeps the previous figures. A response that *did* carry the header mirrors it exactly, so
-            // a dropped quota/expiry clears — leaving a stale date would keep re-saving it forever.
-            var usage = (await metaTask).usage ?? mainUsage;
-            if (usage is { } u)
-                sub.Usage = u;
-
-            if (raw == null)
-                return (null, error);
-
-            var entries = ParseSubscriptionText(raw);
-
-            if (entries.Count == 0)
-            {
-                // Nothing parsed as a v2rayN link list, and the first response wasn't YAML either.
-                // Many providers do UA-based content negotiation and only emit a Clash/mihomo config
-                // when the request *looks* like Clash, so the v2rayN fetch above never saw that YAML.
-                // Re-fetch once with a Clash UA before giving up. Only reached on a zero-hit first
-                // fetch, so normal link-list subscriptions never pay for this extra request. A network
-                // error on the retry is ignored: the first fetch succeeded, its content was just
-                // unparseable, so the NoParsed error below is the accurate outcome.
-                var (clashRaw, clashUsage, _) = await FetchSubscriptionAsync(sub.Url, ClashUserAgent);
-
-                // Same UA as the probe, so this response carries the header whenever the probe would
-                // have. Worth taking when the probe itself came back empty (typically a timeout).
-                if (usage == null && clashUsage is { } cu)
-                    sub.Usage = cu;
-
-                if (clashRaw != null)
-                    entries = ParseSubscriptionText(clashRaw);
-            }
-
-            if (entries.Count == 0)
-                return (null, L.Subscription_NoParsed);
-
-            for (int i = 0; i < entries.Count; i++)
-            {
-                var entry = entries[i];
-                if (string.IsNullOrEmpty(entry.Name))
-                    entry.Name = $"{sub.Name} #{i + 1}";
-                entry.SubscriptionId = sub.Id;
-            }
-
-            return (entries, null);
-        }
-
-        // One subscription request, shared by the node fetch, the Clash-UA retry and the traffic probe.
-        // A null userAgent leaves the request with no UA of its own, so it inherits the shared client's
-        // default v2rayN UA. headersOnly skips the body (raw comes back null) for probes that only want
-        // the `subscription-userinfo` header; timeout overrides the shared client's. Never throws —
-        // failures come back in error, and usage is simply null when the provider didn't send the header.
-        private static async Task<(string? raw, SubscriptionUserInfo? usage, string? error)> FetchSubscriptionAsync(
-            string url, string? userAgent, bool headersOnly = false, TimeSpan? timeout = null)
-        {
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+                return (null, L.Subscription_WaitingForNetwork);
+            if (sub.RetryAfterUtc > DateTimeOffset.UtcNow)
+                return (null, sub.LastError);
+            var url = sub.Url;
+            var port = GetLocalProxyPort?.Invoke();
+            sub.LastRefreshAttempt = DateTimeOffset.UtcNow;
             try
             {
-                using var cts = timeout is { } t ? new CancellationTokenSource(t) : null;
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-                if (userAgent != null)
-                    req.Headers.UserAgent.ParseAdd(userAgent);
-
-                using var resp = await Http.SendAsync(
-                    req,
-                    headersOnly ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead,
-                    cts?.Token ?? CancellationToken.None);
-                resp.EnsureSuccessStatusCode();
-
-                return (headersOnly ? null : await resp.Content.ReadAsStringAsync(), ReadUserInfo(resp), null);
+                using var client = SubscriptionFetcher.CreateClient(port);
+                return await SubscriptionFetcher.FetchNodesAsync(sub, client, direct: !port.HasValue);
             }
             catch (Exception ex)
             {
-                return (null, null, ex.Message);
+                if (sub.Url == url)
+                    SubscriptionRefreshSchedule.RecordFailure(sub, DateTimeOffset.UtcNow, direct: !port.HasValue);
+                return (null, ex.Message);
             }
-        }
-
-        // `subscription-userinfo` lands on the response or the content headers depending on the server.
-        // Null when absent, which the caller reads as "no news" rather than "quota cleared".
-        private static SubscriptionUserInfo? ReadUserInfo(HttpResponseMessage resp) =>
-            resp.Headers.TryGetValues("subscription-userinfo", out var values) ||
-            resp.Content.Headers.TryGetValues("subscription-userinfo", out values)
-                ? ParseSubscriptionUserInfo(values.FirstOrDefault())
-                : null;
-
-        // Decodes a subscription body (base64 or plain) and parses it as a v2rayN link list, falling
-        // back to a Clash/Clash.Meta YAML parse only when no line parsed as a share link — so a normal
-        // link-list subscription never pays for a YAML parse attempt.
-        private static List<ServerEntry> ParseSubscriptionText(string raw)
-        {
-            var trimmed = raw.Trim();
-            var decoded = new byte[trimmed.Length];
-            var text = Convert.TryFromBase64String(trimmed, decoded, out var written)
-                ? Encoding.UTF8.GetString(decoded, 0, written)
-                : raw;
-
-            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var entries = new List<ServerEntry>();
-            foreach (var line in lines)
-            {
-                var entry = NodeLinkParser.Parse(line.Trim());
-                if (entry != null) entries.Add(entry);
-            }
-
-            if (entries.Count == 0)
-            {
-                try
-                {
-                    entries.AddRange(ClashConfigParser.Parse(text).Nodes);
-                }
-                catch
-                {
-                    // Not valid YAML either - caller treats an empty list as "nothing parsed".
-                }
-            }
-
-            return entries;
-        }
-
-        // Parses `upload=..; download=..; total=..; expire=..` (bytes; expire in unix seconds).
-        private static SubscriptionUserInfo ParseSubscriptionUserInfo(string? value)
-        {
-            long? up = null, down = null, total = null;
-            DateTimeOffset? expire = null;
-            if (string.IsNullOrWhiteSpace(value))
-                return default;
-
-            foreach (var part in value.Split(';'))
-            {
-                var kv = part.Split('=', 2);
-                if (kv.Length != 2) continue;
-                var key = kv[0].Trim();
-                var val = kv[1].Trim();
-                switch (key)
-                {
-                    case "upload":   if (long.TryParse(val, out var u)) up = u; break;
-                    case "download": if (long.TryParse(val, out var d)) down = d; break;
-                    case "total":    if (long.TryParse(val, out var t)) total = t; break;
-                    case "expire":   if (long.TryParse(val, out var e) && e > 0) expire = DateTimeOffset.FromUnixTimeSeconds(e); break;
-                }
-            }
-            return new SubscriptionUserInfo(up, down, total, expire);
         }
 
         /// <summary>Returns the URL whose fetch result this refresh recorded, so the caller can
@@ -1305,7 +1083,6 @@ namespace XrayUI.ViewModels
         private async Task<string> RefreshSubscriptionAsync(SubscriptionEntry sub)
         {
             sub.IsBusy = true;
-            sub.LastRefreshAttempt = DateTimeOffset.UtcNow;
             try
             {
                 var urlAtFetch = sub.Url;
@@ -1401,8 +1178,7 @@ namespace XrayUI.ViewModels
                                      ?? Servers.FirstOrDefault();
                 }
 
-                sub.LastUpdated = DateTimeOffset.Now;
-                sub.LastError   = null;
+                SubscriptionRefreshSchedule.RecordSuccess(sub, DateTimeOffset.UtcNow);
 
                 await SaveAsync();
 
@@ -1569,6 +1345,11 @@ namespace XrayUI.ViewModels
             Usage       = sub.Usage,
             AutoRefreshIntervalMinutes = sub.AutoRefreshIntervalMinutes,
             LastRefreshAttempt = sub.LastRefreshAttempt,
+            NextRetryAt = sub.NextRetryAt,
+            RetryAfterUtc = sub.RetryAfterUtc,
+            RefreshFailureCount = sub.RefreshFailureCount,
+            LastFailureWasDirect = sub.LastFailureWasDirect,
+            LastFailurePermanent = sub.LastFailurePermanent,
         };
 
         // ── Add manual ────────────────────────────────────────────────────────

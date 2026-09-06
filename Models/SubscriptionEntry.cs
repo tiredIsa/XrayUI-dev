@@ -29,6 +29,12 @@ namespace XrayUI.Models
         private int _autoRefreshIntervalMinutes;
         private DateTimeOffset? _lastRefreshAttempt;
 
+        public DateTimeOffset? NextRetryAt { get; set; }
+        public DateTimeOffset? RetryAfterUtc { get; set; }
+        public int RefreshFailureCount { get; set; }
+        public bool LastFailureWasDirect { get; set; }
+        public bool LastFailurePermanent { get; set; }
+
         public string Id
         {
             get => _id;
@@ -68,6 +74,7 @@ namespace XrayUI.Models
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasError));
                 OnPropertyChanged(nameof(LastErrorText));
+                OnPropertyChanged(nameof(UpdateStatusText));
             }
         }
 
@@ -112,8 +119,8 @@ namespace XrayUI.Models
         }
 
         /// <summary>
-        /// Most recent manual, bulk or scheduled refresh attempt. Failures count so an unavailable
-        /// provider is not hammered every scheduler tick.
+        /// Most recent manual, bulk or scheduled network attempt. The normal interval uses
+        /// LastUpdated; failures use NextRetryAt instead.
         /// </summary>
         public DateTimeOffset? LastRefreshAttempt
         {
@@ -147,8 +154,8 @@ namespace XrayUI.Models
         /// </summary>
         [JsonIgnore]
         public string UpdateStatusText =>
-            IsAutoRefreshEnabled &&
-            !SubscriptionRefreshSchedule.IsDue(_autoRefreshIntervalMinutes, _lastRefreshAttempt, DateTimeOffset.UtcNow)
+            IsAutoRefreshEnabled && !HasError &&
+            !SubscriptionRefreshSchedule.IsDue(this, DateTimeOffset.UtcNow)
                 ? AutoRefreshSummaryText
                 : LastUpdatedText;
 

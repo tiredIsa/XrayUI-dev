@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1326,5 +1326,11 @@ Path: {0}</value>
   </data>
   <data name="HotkeyRecorder_Instruction.Text" xml:space="preserve">
     <value>Click the box below, then press the combination you want</value>
+  </data>
+  <data name="Subscription_WaitingForNetwork" xml:space="preserve">
+    <value>No network connection. Refresh will resume when the network is available.</value>
+  </data>
+  <data name="Subscription_CheckUrl" xml:space="preserve">
+    <value>Check the subscription link and your access with the provider.</value>
   </data>
 </root>

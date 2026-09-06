@@ -94,12 +94,16 @@ namespace XrayUI.ViewModels
             ? Loc.Format("Subscription_UpdatingAll", RefreshAllDone, Subscriptions.Count)
             : L.Subscription_UpdateAll;
 
+        [ObservableProperty]
+        public partial int NewSubscriptionScheduleIndex { get; set; } = 2;
+
         public SubscriptionEntry? CreateSubscription()
         {
             var url = SubscriptionUrl.Trim();
             if (string.IsNullOrEmpty(url)) return null;
 
-            return new SubscriptionEntry { Url = url, Name = ResolveName(SubscriptionName, url) };
+            return new SubscriptionEntry { Url = url, Name = ResolveName(SubscriptionName, url),
+                AutoRefreshIntervalMinutes = SubscriptionRefreshSchedule.GetIntervalAt(NewSubscriptionScheduleIndex) };
         }
 
         [RelayCommand]
@@ -140,6 +144,12 @@ namespace XrayUI.ViewModels
             var oldUsage                  = sub.Usage;
             var oldAutoRefreshInterval    = sub.AutoRefreshIntervalMinutes;
             var oldLastRefreshAttempt     = sub.LastRefreshAttempt;
+            var oldNextRetry = sub.NextRetryAt;
+            var oldRetryAfter = sub.RetryAfterUtc;
+            var oldFailureCount = sub.RefreshFailureCount;
+            var oldPermanent = sub.LastFailurePermanent;
+            var oldDirect = sub.LastFailureWasDirect;
+            var oldUpdated = sub.LastUpdated;
             var normalizedRefreshInterval =
                 SubscriptionRefreshSchedule.NormalizeInterval(autoRefreshIntervalMinutes);
             var urlChanged = !string.Equals(sub.Url, url, StringComparison.Ordinal);
@@ -151,15 +161,14 @@ namespace XrayUI.ViewModels
             if (scheduleChanged)
             {
                 sub.AutoRefreshIntervalMinutes = normalizedRefreshInterval;
-                // Saving a new schedule starts a fresh interval instead of unexpectedly fetching
-                // immediately. Disabling clears the anchor because there is no next due time.
-                sub.LastRefreshAttempt = normalizedRefreshInterval > 0
-                    ? DateTimeOffset.UtcNow
-                    : null;
+                SubscriptionRefreshSchedule.ClearRetry(sub);
             }
             if (urlChanged)
             {
                 // A different link is a different account, so the old quota/expiry no longer describes it.
+                sub.LastUpdated = null;
+                sub.RetryAfterUtc = null;
+                SubscriptionRefreshSchedule.ClearRetry(sub);
                 sub.LastError = null;
                 sub.Usage     = default;
             }
@@ -168,7 +177,9 @@ namespace XrayUI.ViewModels
             {
                 await _onEdit(sub);
                 editSaved = true;
-                if (urlChanged) await _onRefreshMany([sub], null);
+                if (urlChanged || (scheduleChanged &&
+                    SubscriptionRefreshSchedule.IsDue(sub, DateTimeOffset.UtcNow)))
+                    await _onRefreshMany([sub], null);
             }
             catch (Exception ex)
             {
@@ -179,6 +190,12 @@ namespace XrayUI.ViewModels
                     sub.Usage = oldUsage;
                     sub.AutoRefreshIntervalMinutes = oldAutoRefreshInterval;
                     sub.LastRefreshAttempt = oldLastRefreshAttempt;
+                    sub.LastUpdated = oldUpdated;
+                    sub.NextRetryAt = oldNextRetry;
+                    sub.RetryAfterUtc = oldRetryAfter;
+                    sub.RefreshFailureCount = oldFailureCount;
+                    sub.LastFailurePermanent = oldPermanent;
+                    sub.LastFailureWasDirect = oldDirect;
                 }
 
                 // Fetch failures are handled inside the refresh callback and land in

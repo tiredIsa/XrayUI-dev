@@ -11,6 +11,8 @@
 /// </summary>
 public static class L
 {
+    public static string Subscription_CheckUrl => Loc.GetString("Subscription_CheckUrl");
+    public static string Subscription_WaitingForNetwork => Loc.GetString("Subscription_WaitingForNetwork");
     // ── Generic dialog buttons ─────────────────────────────────────────────
     public static string Dialog_OK        => Loc.GetString("Dialog_OK");
     public static string Dialog_Cancel    => Loc.GetString("Dialog_Cancel");

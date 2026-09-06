@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.ManageSubscriptionsDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -64,6 +64,21 @@
                      Header="备注名称（可选）"
                      PlaceholderText="留空则使用链接域名"
                      Text="{x:Bind ViewModel.SubscriptionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox x:Uid="Subscription_AutoRefreshBox"
+                      Header="自动更新"
+                      SelectedIndex="{x:Bind ViewModel.NewSubscriptionScheduleIndex, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch">
+                <ComboBoxItem x:Uid="Subscription_AutoRefreshOff"
+                              Content="关闭" />
+                <ComboBoxItem x:Uid="Subscription_AutoRefresh1Hour"
+                              Content="每 1 小时" />
+                <ComboBoxItem x:Uid="Subscription_AutoRefresh6Hours"
+                              Content="每 6 小时" />
+                <ComboBoxItem x:Uid="Subscription_AutoRefresh12Hours"
+                              Content="每 12 小时" />
+                <ComboBoxItem x:Uid="Subscription_AutoRefresh24Hours"
+                              Content="每 24 小时" />
+            </ComboBox>
             <TextBlock x:Uid="Subscription_AutoImportHintText"
                        Text="将自动解析并导入该订阅中的全部节点"
                        FontSize="12"

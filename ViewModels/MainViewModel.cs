@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.Net.NetworkInformation;
+using System.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -182,7 +183,6 @@ namespace XrayUI.ViewModels
             if (isBootLaunch && s.IsAutoConnect)
                 await TryAutoConnectAsync(s);
 
-            await ServerList.InitializeSubscriptionRefreshSchedulesAsync(DateTimeOffset.UtcNow);
             StartSubscriptionRefreshScheduler();
 
             // Fire-and-forget background tasks. Failures here must never block
@@ -235,11 +235,8 @@ namespace XrayUI.ViewModels
             timer.Tick += OnSubscriptionRefreshTimerTick;
             _subscriptionRefreshTimer = timer;
             timer.Start();
+            NetworkChange.NetworkAvailabilityChanged += OnSubscriptionNetworkChanged;
 
-            // Check once at startup so a schedule missed while the app was closed is caught up.
-            // Lands immediately on the boot path, where auto-connect has already run above; on a
-            // manual launch the proxy is still down and the sweep declines (see
-            // RefreshDueSubscriptionsAsync) until the connect below wakes it.
             _ = RunSubscriptionRefreshCheckAsync();
         }
 
@@ -248,18 +245,28 @@ namespace XrayUI.ViewModels
             await RunSubscriptionRefreshCheckAsync();
         }
 
+        private void OnSubscriptionNetworkChanged(object? sender, NetworkAvailabilityEventArgs e)
+        {
+            if (e.IsAvailable)
+                _uiDispatcher?.TryEnqueue(() =>
+                {
+                    if (_subscriptionRefreshTimer != null)
+                        _ = RunSubscriptionRefreshCheckAsync(networkRestored: true);
+                });
+        }
+
         /// <summary>
-        /// Fired from three places (startup, the minute timer, and connecting), so calls can overlap;
+        /// Fired on startup, timer ticks, network restoration and proxy connection, so calls can overlap;
         /// re-entrancy is excluded by RefreshDueSubscriptionsAsync, which owns the sweep state. All
         /// this layer adds is the catch — scheduled refreshes are silent background work, per-entry
         /// failures are already handled inside the shared batch runner, and anything unexpected must
         /// stay out of startup and off the UI.
         /// </summary>
-        private async Task RunSubscriptionRefreshCheckAsync()
+        private async Task RunSubscriptionRefreshCheckAsync(bool networkRestored = false, bool proxyConnected = false)
         {
             try
             {
-                await ServerList.RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow);
+                await ServerList.RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, networkRestored, proxyConnected);
             }
             catch (Exception ex)
             {
@@ -270,6 +277,7 @@ namespace XrayUI.ViewModels
 
         public void StopSubscriptionRefreshScheduler()
         {
+            NetworkChange.NetworkAvailabilityChanged -= OnSubscriptionNetworkChanged;
             var timer = _subscriptionRefreshTimer;
             _subscriptionRefreshTimer = null;
             if (timer is null) return;
@@ -499,11 +507,8 @@ namespace XrayUI.ViewModels
             if (isRunning && !ControlPanel.IsUpdateAvailable)
                 QueueUpdateCheck(CurrentProxyUrl());
 
-            // Scheduled refreshes stand down while the proxy is down, so connecting is the moment
-            // an overdue subscription becomes fetchable. Without this it would sit until the next
-            // minute tick — a visible lag right after the user connects and opens the list.
             if (isRunning)
-                _ = RunSubscriptionRefreshCheckAsync();
+                _ = RunSubscriptionRefreshCheckAsync(proxyConnected: true);
         }
 
         private void UpdateActiveServer(ServerEntry? server)
