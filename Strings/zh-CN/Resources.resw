@@ -1336,4 +1336,52 @@
   <data name="Subscription_CheckUrl" xml:space="preserve">
     <value>请检查订阅链接及服务商账户权限。</value>
   </data>
+  <data name="Traffic_Title.Text" xml:space="preserve"><value>流量监控</value></data>
+  <data name="Traffic_OpenTooltip" xml:space="preserve"><value>流量</value></data>
+  <data name="Traffic_Pause.Content" xml:space="preserve"><value>暂停</value></data>
+  <data name="Traffic_Clear.Content" xml:space="preserve"><value>清空</value></data>
+  <data name="Traffic_Download.Text" xml:space="preserve"><value>下载</value></data>
+  <data name="Traffic_Upload.Text" xml:space="preserve"><value>上传</value></data>
+  <data name="Traffic_Volume.Text" xml:space="preserve"><value>已观测流量</value></data>
+  <data name="Traffic_AccessCount.Text" xml:space="preserve"><value>访问次数</value></data>
+  <data name="Traffic_ChartTitle.Text" xml:space="preserve"><value>传输速率</value></data>
+  <data name="Traffic_ChartAccessibleName" xml:space="preserve"><value>传输速率</value></data>
+  <data name="Traffic_ChartEmpty.Text" xml:space="preserve"><value>等待流量数据</value></data>
+  <data name="Traffic_LatestSample.Text" xml:space="preserve"><value>最新采样</value></data>
+  <data name="Traffic_Range" xml:space="preserve"><value>−{0} 分钟</value></data>
+  <data name="Traffic_FiveMinutes.Content" xml:space="preserve"><value>5 分钟</value></data>
+  <data name="Traffic_FifteenMinutes.Content" xml:space="preserve"><value>15 分钟</value></data>
+  <data name="Traffic_Search.PlaceholderText" xml:space="preserve"><value>搜索地址或应用</value></data>
+  <data name="Traffic_SearchAutomationName" xml:space="preserve"><value>搜索流量</value></data>
+  <data name="Traffic_FilterAutomationName" xml:space="preserve"><value>筛选路由</value></data>
+  <data name="Traffic_WindowAutomationName" xml:space="preserve"><value>图表时间范围</value></data>
+  <data name="Traffic_SortAutomationName" xml:space="preserve"><value>排序访问记录</value></data>
+  <data name="Traffic_AllRoutes.Content" xml:space="preserve"><value>所有路由</value></data>
+  <data name="Traffic_Proxy.Content" xml:space="preserve"><value>代理</value></data>
+  <data name="Traffic_Direct.Content" xml:space="preserve"><value>直连</value></data>
+  <data name="Traffic_Blocked.Content" xml:space="preserve"><value>拦截</value></data>
+  <data name="Traffic_Newest.Content" xml:space="preserve"><value>最新优先</value></data>
+  <data name="Traffic_ByAddress.Content" xml:space="preserve"><value>按地址</value></data>
+  <data name="Traffic_Details.Content" xml:space="preserve"><value>详情</value></data>
+  <data name="Traffic_Time.Text" xml:space="preserve"><value>时间</value></data>
+  <data name="Traffic_Destination.Text" xml:space="preserve"><value>目标 / 来源</value></data>
+  <data name="Traffic_Route.Text" xml:space="preserve"><value>路由</value></data>
+  <data name="Traffic_DetailsTitle" xml:space="preserve"><value>访问详情</value></data>
+  <data name="Traffic_CopyAddress" xml:space="preserve"><value>复制目标地址</value></data>
+  <data name="Traffic_Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Traffic_RowCount" xml:space="preserve"><value>显示 {0} 条 · 已收集 {1} 条 · 已淘汰 {2} 条旧记录</value></data>
+  <data name="Traffic_RouteUnknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Traffic_RouteProxy" xml:space="preserve"><value>代理</value></data>
+  <data name="Traffic_RouteDirect" xml:space="preserve"><value>直连</value></data>
+  <data name="Traffic_RouteBlocked" xml:space="preserve"><value>拦截</value></data>
+  <data name="Traffic_UnknownApplication" xml:space="preserve"><value>无法获取应用信息</value></data>
+  <data name="Traffic_Paused" xml:space="preserve"><value>显示已暂停 · 不影响采集</value></data>
+  <data name="Traffic_SourcePending" xml:space="preserve"><value>流量采集尚未接入</value></data>
+  <data name="Traffic_StatusStopped" xml:space="preserve"><value>核心已停止 · 历史记录已保留</value></data>
+  <data name="Traffic_StatusWaitingForSample" xml:space="preserve"><value>等待首次采样</value></data>
+  <data name="Traffic_StatusLive" xml:space="preserve"><value>正在接收 Xray 数据</value></data>
+  <data name="Traffic_StatusUnavailable" xml:space="preserve"><value>数据不可用 · 保留采样间隙</value></data>
+  <data name="Traffic_EmptyPending" xml:space="preserve"><value>页面已就绪。接入流量采集后将显示地址和图表。</value></data>
+  <data name="Traffic_EmptyFilter" xml:space="preserve"><value>没有符合筛选条件的访问记录。</value></data>
+  <data name="Traffic_Empty" xml:space="preserve"><value>暂无访问记录。此处仅显示经过 Xray 的流量。</value></data>
 </root>

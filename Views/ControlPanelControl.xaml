@@ -23,6 +23,18 @@
                         VerticalAlignment="Center"
                         Spacing="2">
 
+                <Button x:Name="TrafficButton" Padding="8" Background="Transparent"
+                        VerticalAlignment="Center"
+                        BorderBrush="Transparent" Command="{x:Bind ViewModel.ShowTrafficCommand}"
+                        AutomationProperties.AutomationId="OpenTrafficMonitor">
+                    <Viewbox Width="16" Height="16">
+                        <Path Data="M 1,1 L 1,15 L 15,15 M 4,11 L 7,7 L 10,9 L 15,3"
+                              Stroke="{ThemeResource TextFillColorPrimaryBrush}"
+                              StrokeThickness="1.5" StrokeLineJoin="Round"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                    </Viewbox>
+                </Button>
+
                 <Button x:Name="PersonalizeButton"
                         Background="Transparent"
                         BorderBrush="Transparent"

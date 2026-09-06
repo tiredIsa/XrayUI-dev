@@ -1333,4 +1333,52 @@ Path: {0}</value>
   <data name="Subscription_CheckUrl" xml:space="preserve">
     <value>Check the subscription link and your access with the provider.</value>
   </data>
+  <data name="Traffic_Title.Text" xml:space="preserve"><value>Traffic</value></data>
+  <data name="Traffic_OpenTooltip" xml:space="preserve"><value>Traffic</value></data>
+  <data name="Traffic_Pause.Content" xml:space="preserve"><value>Pause</value></data>
+  <data name="Traffic_Clear.Content" xml:space="preserve"><value>Clear</value></data>
+  <data name="Traffic_Download.Text" xml:space="preserve"><value>Download</value></data>
+  <data name="Traffic_Upload.Text" xml:space="preserve"><value>Upload</value></data>
+  <data name="Traffic_Volume.Text" xml:space="preserve"><value>Observed traffic</value></data>
+  <data name="Traffic_AccessCount.Text" xml:space="preserve"><value>Access events</value></data>
+  <data name="Traffic_ChartTitle.Text" xml:space="preserve"><value>Transfer speed</value></data>
+  <data name="Traffic_ChartAccessibleName" xml:space="preserve"><value>Transfer speed</value></data>
+  <data name="Traffic_ChartEmpty.Text" xml:space="preserve"><value>Waiting for traffic measurements</value></data>
+  <data name="Traffic_LatestSample.Text" xml:space="preserve"><value>Latest sample</value></data>
+  <data name="Traffic_Range" xml:space="preserve"><value>−{0} min</value></data>
+  <data name="Traffic_FiveMinutes.Content" xml:space="preserve"><value>5 minutes</value></data>
+  <data name="Traffic_FifteenMinutes.Content" xml:space="preserve"><value>15 minutes</value></data>
+  <data name="Traffic_Search.PlaceholderText" xml:space="preserve"><value>Search address or application</value></data>
+  <data name="Traffic_SearchAutomationName" xml:space="preserve"><value>Search traffic</value></data>
+  <data name="Traffic_FilterAutomationName" xml:space="preserve"><value>Filter route</value></data>
+  <data name="Traffic_WindowAutomationName" xml:space="preserve"><value>Chart time range</value></data>
+  <data name="Traffic_SortAutomationName" xml:space="preserve"><value>Sort accesses</value></data>
+  <data name="Traffic_AllRoutes.Content" xml:space="preserve"><value>All routes</value></data>
+  <data name="Traffic_Proxy.Content" xml:space="preserve"><value>Proxy</value></data>
+  <data name="Traffic_Direct.Content" xml:space="preserve"><value>Direct</value></data>
+  <data name="Traffic_Blocked.Content" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Traffic_Newest.Content" xml:space="preserve"><value>Newest first</value></data>
+  <data name="Traffic_ByAddress.Content" xml:space="preserve"><value>By address</value></data>
+  <data name="Traffic_Details.Content" xml:space="preserve"><value>Details</value></data>
+  <data name="Traffic_Time.Text" xml:space="preserve"><value>Time</value></data>
+  <data name="Traffic_Destination.Text" xml:space="preserve"><value>Destination / source</value></data>
+  <data name="Traffic_Route.Text" xml:space="preserve"><value>Route</value></data>
+  <data name="Traffic_DetailsTitle" xml:space="preserve"><value>Access details</value></data>
+  <data name="Traffic_CopyAddress" xml:space="preserve"><value>Copy destination</value></data>
+  <data name="Traffic_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Traffic_RowCount" xml:space="preserve"><value>{0} shown · {1} collected · {2} older events discarded</value></data>
+  <data name="Traffic_RouteUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Traffic_RouteProxy" xml:space="preserve"><value>Proxy</value></data>
+  <data name="Traffic_RouteDirect" xml:space="preserve"><value>Direct</value></data>
+  <data name="Traffic_RouteBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Traffic_UnknownApplication" xml:space="preserve"><value>Application unavailable</value></data>
+  <data name="Traffic_Paused" xml:space="preserve"><value>Display paused · collection is unaffected</value></data>
+  <data name="Traffic_SourcePending" xml:space="preserve"><value>Traffic collection is not connected yet</value></data>
+  <data name="Traffic_StatusStopped" xml:space="preserve"><value>Core stopped · history retained</value></data>
+  <data name="Traffic_StatusWaitingForSample" xml:space="preserve"><value>Waiting for the first measurement</value></data>
+  <data name="Traffic_StatusLive" xml:space="preserve"><value>Receiving measurements from Xray</value></data>
+  <data name="Traffic_StatusUnavailable" xml:space="preserve"><value>Measurements unavailable · gaps are preserved</value></data>
+  <data name="Traffic_EmptyPending" xml:space="preserve"><value>This page is ready. Addresses and graphs will appear after traffic collection is connected.</value></data>
+  <data name="Traffic_EmptyFilter" xml:space="preserve"><value>No accesses match these filters.</value></data>
+  <data name="Traffic_Empty" xml:space="preserve"><value>No access events yet. Only traffic handled by Xray appears here.</value></data>
 </root>

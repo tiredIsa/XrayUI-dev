@@ -1,0 +1,24 @@
+<UserControl x:Class="XrayUI.Controls.TrafficChartControl"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <Grid RowDefinitions="Auto,*,Auto" RowSpacing="6">
+  <TextBlock x:Name="ScaleLabel" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  <Grid x:Name="PlotArea" Grid.Row="1" MinHeight="80" Background="Transparent" SizeChanged="PlotSizeChanged" PointerMoved="PlotPointerMoved" PointerExited="PlotPointerExited">
+   <Grid RowDefinitions="*,*,*,*" IsHitTestVisible="False">
+    <Border Grid.Row="0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" />
+    <Border Grid.Row="1" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" />
+    <Border Grid.Row="2" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" />
+    <Border Grid.Row="3" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,1" />
+   </Grid>
+   <Canvas IsHitTestVisible="False">
+    <Path x:Name="DownloadLine" Stroke="#168BBA" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+    <Path x:Name="UploadLine" Stroke="#A578CE" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+   </Canvas>
+   <TextBlock x:Name="EmptyLabel" x:Uid="Traffic_ChartEmpty" Text="Waiting for traffic measurements" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  </Grid>
+  <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+   <TextBlock x:Name="RangeLabel" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+   <TextBlock Grid.Column="1" x:Uid="Traffic_LatestSample" Text="Latest sample" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+  </Grid>
+ </Grid>
+</UserControl>

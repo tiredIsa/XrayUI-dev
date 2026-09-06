@@ -160,10 +160,12 @@
             </Grid>
         </Grid>
 
-        <Grid x:Name="FullModePanel"
-              Grid.Row="1"
-              Visibility="{x:Bind ViewModel.FullModeVisibility, Mode=OneWay}"
-              Margin="16,0,16,16"
+        <Grid x:Name="FullModePanel" Grid.Row="1" Margin="16,0,16,16"
+              Visibility="{x:Bind ViewModel.FullModeVisibility, Mode=OneWay}">
+        <Grid x:Name="WorkspacePanel"
+              Grid.Row="0"
+              Visibility="{x:Bind ViewModel.WorkspaceVisibility, Mode=OneWay}"
+              Margin="0"
               ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.2*" MinWidth="380" MaxWidth="600" />
@@ -202,6 +204,8 @@
                       Visibility="{x:Bind ViewModel.PersonalizeVisibility, Mode=OneWay}" />
 
             </Grid>
+        </Grid>
+            <Grid x:Name="TrafficHost" Visibility="{x:Bind ViewModel.TrafficVisibility, Mode=OneWay}" />
         </Grid>
     </Grid>
 </Window>

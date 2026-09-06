@@ -22,16 +22,20 @@ namespace XrayUI.ViewModels
         private bool _updateCheckQueued;
         private ServerEntry? _activeServer;
         private string _activeLatencyText = string.Empty;
-        private bool _showPersonalize;
+        private enum MainPage { Main, Personalize, Traffic }
+        private MainPage _page;
+        public TrafficMonitorViewModel Traffic { get; } = new();
 
         public ServerListViewModel   ServerList   { get; }
         public ServerDetailViewModel ServerDetail { get; }
         public ControlPanelViewModel ControlPanel { get; }
         public PersonalizeViewModel  Personalize  { get; }
 
-        public Visibility MainContentVisibility => _showPersonalize ? Visibility.Collapsed : Visibility.Visible;
-        public Visibility PersonalizeVisibility  => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
-        public Visibility BackButtonVisibility   => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
+        public Visibility MainContentVisibility => _page == MainPage.Main ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PersonalizeVisibility => _page == MainPage.Personalize ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility TrafficVisibility => _page == MainPage.Traffic ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility WorkspaceVisibility => _page == MainPage.Traffic ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility BackButtonVisibility => _page != MainPage.Main ? Visibility.Visible : Visibility.Collapsed;
         public Visibility MiniModeVisibility     => IsMiniMode       ? Visibility.Visible   : Visibility.Collapsed;
         public Visibility FullModeVisibility     => IsMiniMode       ? Visibility.Collapsed : Visibility.Visible;
 
@@ -119,6 +123,7 @@ namespace XrayUI.ViewModels
             Personalize.PropertyChanged  += OnPersonalizePropertyChanged;
 
             ControlPanel.ShowPersonalizeRequested += (_, _) => OpenPersonalize();
+            ControlPanel.ShowTrafficRequested += (_, _) => OpenTraffic();
             Personalize.CloseRequested            += (_, _) => ClosePersonalize();
             Personalize.PresetImported            += OnPresetImported;
 
@@ -376,18 +381,32 @@ namespace XrayUI.ViewModels
         private void OpenPersonalize()
         {
             Personalize.LoadFromStore();
-            _showPersonalize = true;
+            _page = MainPage.Personalize;
             OnPropertyChanged(nameof(MainContentVisibility));
             OnPropertyChanged(nameof(PersonalizeVisibility));
             OnPropertyChanged(nameof(BackButtonVisibility));
+            OnPropertyChanged(nameof(TrafficVisibility));
+            OnPropertyChanged(nameof(WorkspaceVisibility));
+        }
+
+        private void OpenTraffic()
+        {
+            _page = MainPage.Traffic;
+            OnPropertyChanged(nameof(MainContentVisibility));
+            OnPropertyChanged(nameof(PersonalizeVisibility));
+            OnPropertyChanged(nameof(BackButtonVisibility));
+            OnPropertyChanged(nameof(TrafficVisibility));
+            OnPropertyChanged(nameof(WorkspaceVisibility));
         }
 
         private void ClosePersonalize()
         {
-            _showPersonalize = false;
+            _page = MainPage.Main;
             OnPropertyChanged(nameof(MainContentVisibility));
             OnPropertyChanged(nameof(PersonalizeVisibility));
             OnPropertyChanged(nameof(BackButtonVisibility));
+            OnPropertyChanged(nameof(TrafficVisibility));
+            OnPropertyChanged(nameof(WorkspaceVisibility));
         }
 
         // ── Back navigation (TitleBar back button) ────────────────────────────
@@ -396,7 +415,7 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private void GoBack()
         {
-            if (!_showPersonalize) return;
+            if (_page == MainPage.Main) return;
             ClosePersonalize();
         }
 

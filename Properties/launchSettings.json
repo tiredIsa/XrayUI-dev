@@ -1,8 +1,5 @@
 {
   "profiles": {
-    "XrayUI-dev (Package)": {
-      "commandName": "MsixPackage"
-    },
     "XrayUI-dev (Unpackaged)": {
       "commandName": "Project"
     }

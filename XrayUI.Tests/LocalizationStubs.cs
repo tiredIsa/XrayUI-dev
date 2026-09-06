@@ -15,6 +15,7 @@ namespace XrayUI.Helpers
 
     public static class Loc
     {
+        public static string GetString(string key) => key;
         public static string Format(string key, params object?[] args) =>
             $"{key}({string.Join(",", args)})";
     }
