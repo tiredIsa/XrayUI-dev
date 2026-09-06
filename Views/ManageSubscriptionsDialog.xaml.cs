@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using XrayUI.Helpers;
 using XrayUI.Models;
@@ -14,20 +14,20 @@ namespace XrayUI.Views
             ViewModel = vm;
             InitializeComponent();
 
-            ToolTipService.SetToolTip(AddPageSegment,    L.Subscription_AddTooltip);
-            ToolTipService.SetToolTip(ManagePageSegment, L.Subscription_ManageTooltip);
+            XrayUI.Helpers.LocalizationBindings.Bind(AddPageSegment, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(AddPageSegment, L.Subscription_AddTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(ManagePageSegment, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(ManagePageSegment, L.Subscription_ManageTooltip));
         }
 
         private void RefreshButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element)
-                ToolTipService.SetToolTip(element, L.Subscription_Refresh);
+                XrayUI.Helpers.LocalizationBindings.Bind(element, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(element, L.Subscription_Refresh));
         }
 
         private void EditButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element)
-                ToolTipService.SetToolTip(element, L.Subscription_EditTooltip);
+                XrayUI.Helpers.LocalizationBindings.Bind(element, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(element, L.Subscription_EditTooltip));
         }
 
         // The edit flyout lives inside a DataTemplate, so x:Name would not generate
@@ -95,7 +95,7 @@ namespace XrayUI.Views
         private void DeleteButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element)
-                ToolTipService.SetToolTip(element, L.Subscription_DeleteTooltip);
+                XrayUI.Helpers.LocalizationBindings.Bind(element, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(element, L.Subscription_DeleteTooltip));
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)

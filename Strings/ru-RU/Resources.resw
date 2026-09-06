@@ -118,1289 +118,1382 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>代理控制台</value>
+    <value>Панель прокси</value>
   </data>
   <data name="MainWindow_ToggleMini" xml:space="preserve">
-    <value>切换mini窗口</value>
+    <value>Компактное окно</value>
   </data>
   <data name="MainWindow_ExpandFull" xml:space="preserve">
-    <value>返回完整窗口</value>
+    <value>Развернуть окно</value>
   </data>
   <data name="MainWindow_Close" xml:space="preserve">
-    <value>关闭</value>
+    <value>Закрыть</value>
   </data>
   <data name="Tray_Open" xml:space="preserve">
-    <value>打开窗口</value>
+    <value>Открыть приложение</value>
   </data>
   <data name="Tray_Exit" xml:space="preserve">
-    <value>退出</value>
+    <value>Выход</value>
   </data>
   <data name="Tray_TooltipRunning" xml:space="preserve">
-    <value>XrayUI - {0}</value>
+    <value>XrayUI — {0}</value>
     <comment>{0} = active node name. Shown as the tray icon tooltip while running.</comment>
   </data>
   <data name="Tray_TooltipIdle" xml:space="preserve">
-    <value>XrayUI - 未连接</value>
+    <value>XrayUI — отключён</value>
   </data>
   <data name="ServerList_Edit" xml:space="preserve">
-    <value>编辑</value>
+    <value>Изменить</value>
   </data>
   <data name="ServerList_Delete" xml:space="preserve">
-    <value>删除</value>
+    <value>Удалить</value>
   </data>
   <data name="ServerList_Share" xml:space="preserve">
-    <value>分享</value>
+    <value>Поделиться</value>
   </data>
   <data name="ServerList_SortActiveHint" xml:space="preserve">
-    <value>只在筛选为「所有服务器」时可用</value>
+    <value>Доступно только с фильтром «Все серверы»</value>
   </data>
   <data name="ServerList_AllServers" xml:space="preserve">
-    <value>所有服务器</value>
+    <value>Все серверы</value>
   </data>
   <data name="ServerList_Ungrouped" xml:space="preserve">
-    <value>未分组</value>
+    <value>Без группы</value>
   </data>
   <data name="ServerList_UnnamedSub" xml:space="preserve">
-    <value>(未命名订阅)</value>
+    <value>(Подписка без названия)</value>
   </data>
   <data name="ServerList_OrphanSub" xml:space="preserve">
-    <value>(已删除订阅)</value>
+    <value>(Удалённая подписка)</value>
   </data>
   <data name="ControlPanel_Start" xml:space="preserve">
-    <value>启动</value>
+    <value>Запустить</value>
   </data>
   <data name="ControlPanel_Stop" xml:space="preserve">
-    <value>停止</value>
+    <value>Остановить</value>
   </data>
   <data name="ControlPanel_StatusNotRunning" xml:space="preserve">
-    <value>未运行</value>
+    <value>Отключён</value>
   </data>
   <data name="ControlPanel_StatusApplying" xml:space="preserve">
-    <value>正在应用...</value>
+    <value>Применение…</value>
   </data>
   <data name="ControlPanel_Personalize" xml:space="preserve">
-    <value>个性化</value>
+    <value>Оформление</value>
   </data>
   <data name="ControlPanel_RoutingGlobal" xml:space="preserve">
-    <value>全局路由</value>
+    <value>Глобальная</value>
   </data>
   <data name="ControlPanel_RoutingSmart" xml:space="preserve">
-    <value>智能分流</value>
+    <value>По правилам</value>
   </data>
   <data name="ControlPanel_UpdateFound" xml:space="preserve">
-    <value>发现新版本 {0}</value>
+    <value>Новая версия {0}</value>
   </data>
   <data name="ServerDetail_Address" xml:space="preserve">
-    <value>地址</value>
+    <value>Адрес</value>
   </data>
   <data name="ServerDetail_Port" xml:space="preserve">
-    <value>端口</value>
+    <value>Порт</value>
   </data>
   <data name="ServerDetail_Encryption" xml:space="preserve">
-    <value>加密</value>
+    <value>Шифрование</value>
   </data>
   <data name="ServerDetail_Security" xml:space="preserve">
-    <value>安全</value>
+    <value>Защита</value>
   </data>
   <data name="ServerDetail_OpenInBrowser" xml:space="preserve">
-    <value>在浏览器中打开 {0}</value>
+    <value>Открыть {0} в браузере</value>
   </data>
   <data name="ServerDetail_RetestLatency" xml:space="preserve">
-    <value>重新测试延迟</value>
+    <value>Повторить замер задержки</value>
   </data>
   <data name="ServerDetail_CopyShareLink" xml:space="preserve">
-    <value>复制分享链接</value>
+    <value>Скопировать ссылку на сервер</value>
   </data>
   <data name="ServerDetail_NoServer" xml:space="preserve">
-    <value>未选择服务器</value>
+    <value>Сервер не выбран</value>
   </data>
   <data name="ServerDetail_NotTested" xml:space="preserve">
-    <value>未测试</value>
+    <value>Не проверено</value>
   </data>
   <data name="ServerDetail_Testing" xml:space="preserve">
-    <value>测试中...</value>
+    <value>Проверка…</value>
   </data>
   <data name="ServerDetail_Timeout" xml:space="preserve">
-    <value>超时</value>
+    <value>Время ожидания истекло</value>
   </data>
   <data name="ServerDetail_Failed" xml:space="preserve">
-    <value>失败</value>
+    <value>Ошибка</value>
   </data>
   <data name="Personalize_Header.Text" xml:space="preserve">
-    <value>个性化设置</value>
+    <value>Оформление</value>
   </data>
   <data name="Personalize_Theme.Text" xml:space="preserve">
-    <value>主题</value>
+    <value>Тема</value>
   </data>
   <data name="Personalize_Light.Content" xml:space="preserve">
-    <value>浅色</value>
+    <value>Светлая</value>
   </data>
   <data name="Personalize_Dark.Content" xml:space="preserve">
-    <value>深色</value>
+    <value>Тёмная</value>
   </data>
   <data name="Personalize_FollowSystem.Content" xml:space="preserve">
-    <value>跟随系统</value>
+    <value>Системная</value>
   </data>
   <data name="Personalize_Backdrop.Text" xml:space="preserve">
-    <value>背景效果</value>
+    <value>Эффект фона</value>
   </data>
   <data name="Personalize_Acrylic.Content" xml:space="preserve">
-    <value>亚克力</value>
+    <value>Акрил</value>
   </data>
   <data name="Personalize_ProtocolColors.Text" xml:space="preserve">
-    <value>协议颜色</value>
+    <value>Цвета протоколов</value>
   </data>
   <data name="Personalize_Reset.Text" xml:space="preserve">
-    <value>重置</value>
+    <value>Сбросить</value>
   </data>
   <data name="Personalize_OtherProtocol.Text" xml:space="preserve">
-    <value>其他协议</value>
+    <value>Другие протоколы</value>
   </data>
   <data name="Personalize_OtherProtocolDesc.Text" xml:space="preserve">
-    <value>未匹配的协议将使用此颜色</value>
+    <value>Цвет для остальных протоколов</value>
   </data>
   <data name="Personalize_DataManagement.Text" xml:space="preserve">
-    <value>数据管理</value>
+    <value>Импорт и экспорт</value>
   </data>
   <data name="Personalize_Done.Content" xml:space="preserve">
-    <value>完成</value>
+    <value>Готово</value>
   </data>
   <data name="Personalize_ExportSuccess" xml:space="preserve">
-    <value>导出成功</value>
+    <value>Экспорт завершён</value>
   </data>
   <data name="Language_FollowSystem" xml:space="preserve">
-    <value>跟随系统</value>
+    <value>Как в системе</value>
     <comment>Display name of the "follow system" language row — referenced by LanguageInfo.DisplayName when Tag is null.</comment>
   </data>
   <data name="Subscription_AddTooltip" xml:space="preserve">
-    <value>添加订阅</value>
+    <value>Добавить подписку</value>
   </data>
   <data name="Subscription_ManageTooltip" xml:space="preserve">
-    <value>管理订阅</value>
+    <value>Управление подписками</value>
   </data>
   <data name="Subscription_Refresh" xml:space="preserve">
-    <value>刷新订阅</value>
+    <value>Обновить подписку</value>
   </data>
   <data name="Subscription_DeleteTooltip" xml:space="preserve">
-    <value>删除订阅</value>
+    <value>Удалить подписку</value>
   </data>
   <data name="Subscription_EditTooltip" xml:space="preserve">
-    <value>编辑订阅</value>
+    <value>Изменить подписку</value>
   </data>
   <data name="Subscription_FetchFailed" xml:space="preserve">
-    <value>订阅拉取失败</value>
+    <value>Не удалось загрузить подписку</value>
   </data>
   <data name="Subscription_NoParsed" xml:space="preserve">
-    <value>未能从订阅中解析出任何有效节点。</value>
+    <value>В подписке не найдено подходящих серверов.</value>
   </data>
   <data name="Subscription_UpdateFailed" xml:space="preserve">
-    <value>更新失败: {0}</value>
+    <value>Не удалось обновить: {0}</value>
   </data>
   <data name="Subscription_StopFirst_Delete" xml:space="preserve">
-    <value>请先停止代理后再删除</value>
+    <value>Перед удалением остановите прокси</value>
   </data>
   <data name="CustomRules_Title" xml:space="preserve">
-    <value>自定义路由规则</value>
+    <value>Правила маршрутизации</value>
   </data>
   <data name="AddRule_Title" xml:space="preserve">
-    <value>添加规则</value>
+    <value>Добавить правило</value>
   </data>
   <data name="AddRule_ErrorEmpty" xml:space="preserve">
-    <value>请填写匹配内容</value>
+    <value>Укажите условие совпадения</value>
   </data>
   <data name="Log_Title" xml:space="preserve">
-    <value>代理日志</value>
+    <value>Журнал прокси</value>
   </data>
   <data name="Log_NotRunning" xml:space="preserve">
-    <value>未运行</value>
+    <value>Остановлен</value>
   </data>
   <data name="Log_Running" xml:space="preserve">
-    <value>运行中</value>
+    <value>Работает</value>
   </data>
   <data name="Log_Lines" xml:space="preserve">
-    <value>({0} 行)</value>
+    <value>(строк: {0})</value>
   </data>
   <data name="Log_PrivacyTooltip" xml:space="preserve">
-    <value>日志设置</value>
+    <value>Настройки журнала</value>
   </data>
   <data name="Log_IpMask" xml:space="preserve">
-    <value>IP地址遮罩</value>
+    <value>Маскирование IP-адресов</value>
   </data>
   <data name="Log_MaskOff" xml:space="preserve">
-    <value>关闭</value>
+    <value>Выключено</value>
   </data>
   <data name="Log_Level" xml:space="preserve">
-    <value>日志级别</value>
+    <value>Уровень журналирования</value>
   </data>
   <data name="Log_DnsLog" xml:space="preserve">
-    <value>DNS 查询日志</value>
+    <value>Журнал DNS-запросов</value>
   </data>
   <data name="Log_DnsLogOn" xml:space="preserve">
-    <value>开启</value>
+    <value>Включён</value>
   </data>
   <data name="Log_AutoScroll" xml:space="preserve">
-    <value>自动滚动</value>
+    <value>Автопрокрутка</value>
   </data>
   <data name="Log_CopyAll" xml:space="preserve">
-    <value>复制全部</value>
+    <value>Скопировать всё</value>
   </data>
   <data name="Log_Clear" xml:space="preserve">
-    <value>清除</value>
+    <value>Очистить</value>
   </data>
   <data name="Log_PrivacyTitle" xml:space="preserve">
-    <value>日志隐私设置</value>
+    <value>Конфиденциальность журнала</value>
   </data>
   <data name="Log_PrivacySaved" xml:space="preserve">
-    <value>已保存，当前 TUN 会话下次启动时生效。</value>
+    <value>Сохранено. Настройки вступят в силу при следующем запуске TUN.</value>
   </data>
   <data name="Log_PrivacyFailed" xml:space="preserve">
-    <value>保存失败：{0}</value>
+    <value>Не удалось сохранить: {0}</value>
   </data>
   <data name="Dialog_OK" xml:space="preserve">
-    <value>确定</value>
+    <value>ОК</value>
   </data>
   <data name="Dialog_Cancel" xml:space="preserve">
-    <value>取消</value>
+    <value>Отмена</value>
   </data>
   <data name="Dialog_Save" xml:space="preserve">
-    <value>保存</value>
+    <value>Сохранить</value>
   </data>
   <data name="Dialog_Done" xml:space="preserve">
-    <value>完成</value>
+    <value>Готово</value>
   </data>
   <data name="Dialog_Confirm" xml:space="preserve">
-    <value>确认</value>
+    <value>Подтвердить</value>
   </data>
   <data name="Dialog_Add" xml:space="preserve">
-    <value>添加</value>
+    <value>Добавить</value>
   </data>
   <data name="Dialog_Delete" xml:space="preserve">
-    <value>删除</value>
+    <value>Удалить</value>
   </data>
   <data name="Dialog_Replace" xml:space="preserve">
-    <value>替换</value>
+    <value>Заменить</value>
   </data>
   <data name="Dialog_Preparing" xml:space="preserve">
-    <value>正在准备…</value>
+    <value>Подготовка…</value>
   </data>
   <data name="Dialog_On" xml:space="preserve">
-    <value>开</value>
+    <value>Вкл.</value>
   </data>
   <data name="Dialog_Off" xml:space="preserve">
-    <value>关</value>
+    <value>Выкл.</value>
   </data>
   <data name="Import_Placeholder" xml:space="preserve">
-    <value>粘贴节点链接（支持多协议）</value>
+    <value>Вставьте ссылки на серверы (поддерживаются разные протоколы)</value>
   </data>
   <data name="Import_Title" xml:space="preserve">
-    <value>导入节点链接</value>
+    <value>Импорт ссылок на серверы</value>
   </data>
   <data name="Import_SupportHint" xml:space="preserve">
-    <value>支持常见协议链接</value>
+    <value>Поддерживаются ссылки распространённых протоколов</value>
   </data>
   <data name="Import_ParseFailed" xml:space="preserve">
-    <value>解析失败</value>
+    <value>Не удалось распознать ссылки</value>
   </data>
   <data name="Import_ParseFailedMsg" xml:space="preserve">
-    <value>无法识别有效的节点链接，请检查后重试。</value>
+    <value>Подходящие ссылки на серверы не найдены. Проверьте введённые данные и повторите попытку.</value>
   </data>
   <data name="EditServer_AddTitle" xml:space="preserve">
-    <value>手动添加服务器</value>
+    <value>Добавить сервер вручную</value>
   </data>
   <data name="EditServer_EditTitle" xml:space="preserve">
-    <value>编辑服务器</value>
+    <value>Изменить сервер</value>
   </data>
   <data name="EditServer_Name" xml:space="preserve">
-    <value>名称</value>
+    <value>Название</value>
   </data>
   <data name="EditServer_Address" xml:space="preserve">
-    <value>地址 / 域名</value>
+    <value>Адрес / домен</value>
   </data>
   <data name="EditServer_Port" xml:space="preserve">
-    <value>端口</value>
+    <value>Порт</value>
   </data>
   <data name="EditServer_Protocol" xml:space="preserve">
-    <value>协议</value>
+    <value>Протокол</value>
   </data>
   <data name="EditServer_Encryption" xml:space="preserve">
-    <value>加密方式 (SS)</value>
+    <value>Шифрование (SS)</value>
   </data>
   <data name="EditServer_Password" xml:space="preserve">
-    <value>密码</value>
+    <value>Пароль</value>
   </data>
   <data name="EditServer_ShowPassword" xml:space="preserve">
-    <value>显示密码</value>
+    <value>Показать пароль</value>
   </data>
   <data name="EditServer_HidePassword" xml:space="preserve">
-    <value>隐藏密码</value>
+    <value>Скрыть пароль</value>
   </data>
   <data name="EditServer_Transport" xml:space="preserve">
-    <value>传输协议</value>
+    <value>Транспортный протокол</value>
   </data>
   <data name="EditServer_Path" xml:space="preserve">
-    <value>路径 (WS/gRPC/XHTTP)</value>
+    <value>Путь (WS/gRPC/XHTTP)</value>
   </data>
   <data name="EditServer_WsHost" xml:space="preserve">
-    <value>Host 头 (WS/XHTTP)</value>
+    <value>Заголовок Host (WS/XHTTP)</value>
   </data>
   <data name="EditServer_Security" xml:space="preserve">
-    <value>安全</value>
+    <value>Защита</value>
   </data>
   <data name="EditServer_Fingerprint" xml:space="preserve">
-    <value>指纹 (uTLS)</value>
+    <value>Отпечаток (uTLS)</value>
   </data>
   <data name="EditServer_AllowInsecure" xml:space="preserve">
-    <value>允许不安全连接（跳过证书校验）</value>
+    <value>Разрешить небезопасное соединение (не проверять сертификат)</value>
   </data>
   <data name="EditServer_CertFingerprint" xml:space="preserve">
-    <value>证书指纹 (SHA-256)</value>
+    <value>Отпечаток сертификата (SHA-256)</value>
   </data>
   <data name="EditServer_FlowPlaceholder" xml:space="preserve">
-    <value>xtls-rprx-vision 或留空</value>
+    <value>xtls-rprx-vision или оставьте пустым</value>
   </data>
   <data name="EditPort_Title" xml:space="preserve">
-    <value>编辑本地端口</value>
+    <value>Изменить локальный порт</value>
   </data>
   <data name="EditPort_Header" xml:space="preserve">
-    <value>本地端口</value>
+    <value>Локальный порт</value>
   </data>
   <data name="EditPort_Range" xml:space="preserve">
-    <value>有效范围：{0} - {1}</value>
+    <value>Диапазон: {0}–{1}</value>
   </data>
   <data name="EditPort_AllowLan" xml:space="preserve">
-    <value>允许局域网设备连接</value>
+    <value>Разрешить подключения из локальной сети</value>
   </data>
   <data name="EditPort_LanAddress" xml:space="preserve">
-    <value>局域网地址：{0}</value>
+    <value>Адрес в локальной сети: {0}</value>
   </data>
   <data name="EditPort_LanUnavailable" xml:space="preserve">
-    <value>未检测到可用的局域网网络</value>
+    <value>Локальная сеть не обнаружена</value>
   </data>
   <data name="EditPort_CopyAddress" xml:space="preserve">
-    <value>复制地址</value>
+    <value>Скопировать адрес</value>
   </data>
   <data name="Share_Title" xml:space="preserve">
-    <value>分享节点</value>
+    <value>Поделиться сервером</value>
   </data>
   <data name="Share_CopyLink" xml:space="preserve">
-    <value>复制链接</value>
+    <value>Скопировать ссылку</value>
   </data>
   <data name="Share_NotSupported" xml:space="preserve">
-    <value>不支持分享</value>
+    <value>Ссылка недоступна</value>
   </data>
   <data name="Share_NotSupportedMsg" xml:space="preserve">
-    <value>该节点协议暂不支持生成分享链接。</value>
+    <value>Для протокола этого сервера нельзя создать ссылку для обмена.</value>
   </data>
   <data name="Startup_Title" xml:space="preserve">
-    <value>开机启动</value>
+    <value>Автозапуск</value>
   </data>
   <data name="Startup_AutoStart" xml:space="preserve">
-    <value>开机自动启动</value>
+    <value>Запускать при входе в систему</value>
   </data>
   <data name="Startup_AutoConnect" xml:space="preserve">
-    <value>自动连接上次节点</value>
+    <value>Автоматически подключаться к последнему серверу</value>
   </data>
   <data name="Startup_SetFailed" xml:space="preserve">
-    <value>开机启动设置失败</value>
+    <value>Не удалось настроить автозапуск</value>
   </data>
   <data name="Confirm_DeleteTitle" xml:space="preserve">
-    <value>确认删除</value>
+    <value>Подтверждение удаления</value>
   </data>
   <data name="Confirm_DeleteMsg" xml:space="preserve">
-    <value>确定要删除 {0}?</value>
+    <value>Удалить {0}?</value>
   </data>
   <data name="Confirm_ReplaceTitle" xml:space="preserve">
-    <value>替换当前配置?</value>
+    <value>Заменить текущую конфигурацию?</value>
   </data>
   <data name="Confirm_ReplaceMsg" xml:space="preserve">
-    <value>此操作将覆盖您当前的全部节点和路由规则,强烈建议先导出备份。是否继续?</value>
+    <value>Все текущие серверы и правила маршрутизации будут заменены. Рекомендуем сначала экспортировать резервную копию. Продолжить?</value>
   </data>
   <data name="EditServer_SocksUsername" xml:space="preserve">
-    <value>用户名</value>
+    <value>Имя пользователя</value>
   </data>
   <data name="EditServer_EchPlaceholder" xml:space="preserve">
-    <value>例如 udp://1.1.1.1 或服务端生成的 ECHConfig</value>
+    <value>Например, udp://1.1.1.1 или ECHConfig сервера</value>
   </data>
   <data name="EditServer_FinalmaskPlaceholder" xml:space="preserve">
-    <value>留空 = none;或 mlkem768x25519plus.native.0rtt....</value>
+    <value>Пусто — без маскирования; или mlkem768x25519plus.native.0rtt…</value>
   </data>
   <data name="ChainProxy_AddTitle" xml:space="preserve">
-    <value>链式代理</value>
+    <value>Добавить цепочку прокси</value>
   </data>
   <data name="ChainProxy_EditTitle" xml:space="preserve">
-    <value>编辑链式代理</value>
+    <value>Изменить цепочку прокси</value>
   </data>
   <data name="Dns_DialogTitle" xml:space="preserve">
-    <value>DNS 设置</value>
+    <value>Настройки DNS</value>
   </data>
   <data name="ControlPanel_DnsItem.Text" xml:space="preserve">
-    <value>DNS设置</value>
+    <value>Настройки DNS</value>
   </data>
   <data name="Dns_ResetDefaults" xml:space="preserve">
-    <value>重置默认</value>
+    <value>Восстановить значения по умолчанию</value>
   </data>
   <data name="Dns_ServerPlaceholder" xml:space="preserve">
-    <value>输入 IP 或 DoH 地址 (留空为自动)</value>
+    <value>IP-адрес или адрес DoH (пусто — автоматически)</value>
   </data>
   <data name="Dns_QueryStrategyLabel" xml:space="preserve">
-    <value>查询策略</value>
+    <value>Стратегия запросов</value>
   </data>
   <data name="Dns_EnableCacheLabel" xml:space="preserve">
-    <value>启用 DNS 缓存</value>
+    <value>Кэшировать DNS-запросы</value>
   </data>
   <data name="Dns_DirectTitle" xml:space="preserve">
-    <value>直连 DNS</value>
+    <value>Прямой DNS</value>
   </data>
   <data name="Dns_DirectDesc" xml:space="preserve">
-    <value>用于国内域名 (geosite:cn)，走直连出站解析</value>
+    <value>Для доменов региона прямой маршрутизации; запросы выполняются без прокси</value>
   </data>
   <data name="Dns_ProxyTitle" xml:space="preserve">
-    <value>代理 DNS</value>
+    <value>DNS через прокси</value>
   </data>
   <data name="Dns_ProxyDesc" xml:space="preserve">
-    <value>用于境外域名，经代理出站解析，防止 DNS 污染</value>
+    <value>Для остальных доменов; запросы идут через прокси для защиты от подмены DNS</value>
   </data>
   <data name="Dns_TunOnlyHint" xml:space="preserve">
-    <value>仅TUN模式有效</value>
+    <value>Только в режиме TUN</value>
   </data>
   <data name="Dns_Experimental" xml:space="preserve">
-    <value>实验性</value>
+    <value>Экспериментально</value>
   </data>
   <data name="Dns_Provider_Ali" xml:space="preserve">
-    <value>阿里</value>
+    <value>Alibaba</value>
   </data>
   <data name="Dns_Provider_Tencent" xml:space="preserve">
-    <value>腾讯</value>
+    <value>Tencent</value>
   </data>
   <data name="Dns_Provider_Google" xml:space="preserve">
-    <value>谷歌</value>
+    <value>Google</value>
   </data>
   <data name="Dns_Strategy_V4Only" xml:space="preserve">
-    <value>仅 IPv4</value>
+    <value>Только IPv4</value>
   </data>
   <data name="Dns_Strategy_V6Only" xml:space="preserve">
-    <value>仅 IPv6</value>
+    <value>Только IPv6</value>
   </data>
   <data name="Dns_Strategy_Auto" xml:space="preserve">
-    <value>自动</value>
+    <value>Автоматически</value>
   </data>
   <data name="Error_NoServer" xml:space="preserve">
-    <value>未选择服务器</value>
+    <value>Сервер не выбран</value>
   </data>
   <data name="Error_NoServerMsg" xml:space="preserve">
-    <value>请先从列表中选择服务器</value>
+    <value>Сначала выберите сервер в списке</value>
   </data>
   <data name="Error_StartFailed" xml:space="preserve">
-    <value>启动失败</value>
+    <value>Не удалось запустить</value>
   </data>
   <data name="Error_XrayStartFailed" xml:space="preserve">
-    <value>xray 启动失败. 请检查服务器配置.</value>
+    <value>Не удалось запустить Xray. Проверьте настройки сервера.</value>
   </data>
   <data name="Error_ReapplyFailed" xml:space="preserve">
-    <value>应用新配置失败</value>
+    <value>Не удалось применить настройки</value>
   </data>
   <data name="Error_XrayReapplyFailed" xml:space="preserve">
-    <value>xray 应用新配置失败，已停止。</value>
+    <value>Xray не смог применить новую конфигурацию и был остановлен.</value>
   </data>
   <data name="Error_UpdateFailed" xml:space="preserve">
-    <value>更新失败</value>
+    <value>Не удалось обновить</value>
   </data>
   <data name="Error_UpdaterLaunchFailed" xml:space="preserve">
-    <value>无法启动升级器：{0}</value>
+    <value>Не удалось запустить программу обновления: {0}</value>
   </data>
   <data name="Update_Updating" xml:space="preserve">
-    <value>正在更新 XrayUI</value>
+    <value>Обновление XrayUI</value>
   </data>
   <data name="Update_ConfirmTitle" xml:space="preserve">
-    <value>XrayUI {0} 已发布</value>
+    <value>Доступна версия XrayUI {0}</value>
   </data>
   <data name="Update_ConfirmNotesHeader" xml:space="preserve">
-    <value>更新内容</value>
+    <value>Что нового</value>
   </data>
   <data name="Update_ChangelogLanguage" xml:space="preserve">
-    <value>zh</value>
+    <value>en</value>
   </data>
   <data name="Update_ConfirmNow" xml:space="preserve">
-    <value>立即更新</value>
+    <value>Обновить сейчас</value>
   </data>
   <data name="Update_ConfirmLater" xml:space="preserve">
-    <value>稍后</value>
+    <value>Позже</value>
   </data>
   <data name="Tun_EnableTitle" xml:space="preserve">
-    <value>开启TUN模式</value>
+    <value>Включить режим TUN</value>
   </data>
   <data name="Tun_EnableMsg.Text" xml:space="preserve">
-    <value>开启虚拟网卡模式需要管理员权限，程序将会重启，是否继续？</value>
+    <value>Для режима TUN нужны права администратора. Приложение будет перезапущено. Продолжить?</value>
   </data>
   <data name="Main_NoSelection" xml:space="preserve">
-    <value>未选择</value>
+    <value>Не выбран</value>
   </data>
   <data name="Main_NotConnected" xml:space="preserve">
-    <value>未连接</value>
+    <value>Нет подключения</value>
   </data>
   <data name="Update_FetchingChecksum" xml:space="preserve">
-    <value>正在获取校验文件…</value>
+    <value>Загрузка файла контрольных сумм…</value>
   </data>
   <data name="Update_ChecksumFormatError" xml:space="preserve">
-    <value>更新校验文件格式异常</value>
+    <value>Неверный формат файла контрольных сумм обновления</value>
   </data>
   <data name="Update_ChecksumDownloadFailed" xml:space="preserve">
-    <value>无法下载更新校验文件：</value>
+    <value>Не удалось загрузить файл контрольных сумм обновления: </value>
   </data>
   <data name="Update_ChecksumMismatch" xml:space="preserve">
-    <value>更新包校验失败：SHA256 与服务器公布的不一致。</value>
+    <value>Проверка обновления не пройдена: SHA-256 не совпадает с контрольной суммой сервера.</value>
   </data>
   <data name="Update_Extracting" xml:space="preserve">
-    <value>正在解压更新包…</value>
+    <value>Распаковка обновления…</value>
   </data>
   <data name="Update_ExtractFailed" xml:space="preserve">
-    <value>更新包解压失败：</value>
+    <value>Не удалось распаковать обновление: </value>
   </data>
   <data name="Update_Verifying" xml:space="preserve">
-    <value>正在验证更新包…</value>
+    <value>Проверка обновления…</value>
   </data>
   <data name="Update_MissingFiles" xml:space="preserve">
-    <value>更新包内容异常：缺少必要文件。</value>
+    <value>Пакет обновления повреждён: отсутствуют необходимые файлы.</value>
   </data>
   <data name="Update_VersionMismatch" xml:space="preserve">
-    <value>更新包版本不匹配：期望 {0}，实际 {1}。</value>
+    <value>Версия обновления не совпадает: ожидалась {0}, получена {1}.</value>
   </data>
   <data name="Update_MissingUpdater" xml:space="preserve">
-    <value>缺少升级器组件，请重新下载完整安装包。</value>
+    <value>Компонент обновления отсутствует. Загрузите полный пакет приложения заново.</value>
   </data>
   <data name="Update_PrepRestart" xml:space="preserve">
-    <value>正在准备重启…</value>
+    <value>Подготовка к перезапуску…</value>
   </data>
   <data name="Update_Downloading" xml:space="preserve">
-    <value>正在下载 {0} … {1:0.0} / {2:0.0} MB</value>
+    <value>Загрузка {0}… {1:0.0} / {2:0.0} МБ</value>
   </data>
   <data name="Update_DownloadingNoTotal" xml:space="preserve">
-    <value>正在下载 {0} … {1:0.0} MB</value>
+    <value>Загрузка {0}… {1:0.0} МБ</value>
   </data>
   <data name="AddRule_EditTitle" xml:space="preserve">
-    <value>编辑规则</value>
+    <value>Изменить правило</value>
   </data>
   <data name="Error_ExportFailed" xml:space="preserve">
-    <value>导出失败</value>
+    <value>Не удалось экспортировать</value>
   </data>
   <data name="Subscription_NeverUpdated" xml:space="preserve">
-    <value>上次更新: 从未更新</value>
+    <value>Ещё не обновлялась</value>
   </data>
   <data name="Subscription_JustNow" xml:space="preserve">
-    <value>刚刚</value>
+    <value>только что</value>
   </data>
   <data name="Subscription_MinutesAgo" xml:space="preserve">
-    <value>{0} 分钟前</value>
+    <value>{0} мин. назад</value>
   </data>
   <data name="Subscription_HoursAgo" xml:space="preserve">
-    <value>{0} 小时前</value>
+    <value>{0} ч. назад</value>
   </data>
   <data name="Subscription_DaysAgo" xml:space="preserve">
-    <value>{0} 天前</value>
+    <value>{0} дн. назад</value>
   </data>
   <data name="Subscription_LastUpdated" xml:space="preserve">
-    <value>上次更新: {0}</value>
+    <value>Последнее обновление: {0}</value>
   </data>
   <data name="Subscription_Expires" xml:space="preserve">
-    <value>到期 {0}</value>
+    <value>Срок действия: до {0}</value>
   </data>
   <data name="Subscription_UpdateAll" xml:space="preserve">
-    <value>全部更新</value>
+    <value>Обновить все</value>
   </data>
   <data name="Subscription_UpdatingAll" xml:space="preserve">
-    <value>更新中 {0}/{1}…</value>
+    <value>Обновление {0}/{1}…</value>
   </data>
   <data name="Subscription_Count" xml:space="preserve">
-    <value>{0} 个订阅</value>
+    <value>Подписок: {0}</value>
   </data>
   <data name="Subscription_AutoRefreshSummary" xml:space="preserve">
-    <value>自动更新：每 {0} 小时</value>
+    <value>Автообновление: каждые {0} ч.</value>
   </data>
   <data name="ControlPanel_EditPortItem.Text" xml:space="preserve">
-    <value>编辑本地端口</value>
+    <value>Изменить порт</value>
   </data>
   <data name="ControlPanel_ViewLogItem.Text" xml:space="preserve">
-    <value>查看日志</value>
+    <value>Журнал</value>
   </data>
   <data name="ControlPanel_ProxySettingsItem.Text" xml:space="preserve">
-    <value>代理设置</value>
+    <value>Настройки прокси</value>
   </data>
   <data name="ControlPanel_GlobalProxyItem.Text" xml:space="preserve">
-    <value>全局代理</value>
+    <value>Системный прокси</value>
   </data>
   <data name="ControlPanel_NoProxyItem.Text" xml:space="preserve">
-    <value>不接管代理</value>
+    <value>Не менять системный прокси</value>
   </data>
   <data name="ControlPanel_StartupItem.Text" xml:space="preserve">
-    <value>开机启动</value>
+    <value>Автозапуск</value>
   </data>
   <data name="ControlPanel_RoutingSettingsItem.Text" xml:space="preserve">
-    <value>路由设置</value>
+    <value>Маршрутизация</value>
   </data>
   <data name="ControlPanel_RoutingGlobalItem.Text" xml:space="preserve">
-    <value>全局路由</value>
+    <value>Глобальная</value>
   </data>
   <data name="ControlPanel_RoutingSmartItem.Text" xml:space="preserve">
-    <value>智能分流</value>
+    <value>По правилам</value>
   </data>
   <data name="ControlPanel_CustomRulesItem.Text" xml:space="preserve">
-    <value>自定义规则...</value>
+    <value>Свои правила…</value>
   </data>
   <data name="ControlPanel_TunModeLabel.Text" xml:space="preserve">
-    <value>TUN 模式</value>
+    <value>Режим TUN</value>
   </data>
   <data name="ControlPanel_RoutingLbl.Text" xml:space="preserve">
-    <value>路由:</value>
+    <value>Маршрут:</value>
   </data>
   <data name="Personalize_LanguageLbl.Text" xml:space="preserve">
-    <value>语言和区域</value>
+    <value>Язык и регион</value>
   </data>
   <data name="ServerList_HeaderText.Text" xml:space="preserve">
-    <value>服务器列表</value>
+    <value>Список серверов</value>
   </data>
   <data name="ServerList_AddBtnText.Text" xml:space="preserve">
-    <value>添加</value>
+    <value>Добавить</value>
   </data>
   <data name="ServerList_ImportNodeItem.Text" xml:space="preserve">
-    <value>导入节点</value>
+    <value>Импорт серверов</value>
   </data>
   <data name="ServerList_AddSubscriptionItem.Text" xml:space="preserve">
-    <value>添加订阅</value>
+    <value>Добавить подписку</value>
   </data>
   <data name="ServerList_AddManualItem.Text" xml:space="preserve">
-    <value>手动添加</value>
+    <value>Добавить вручную</value>
   </data>
   <data name="ServerList_AddChainProxyItem.Text" xml:space="preserve">
-    <value>链式代理</value>
+    <value>Цепочка прокси</value>
   </data>
   <data name="ServerList_EditText.Text" xml:space="preserve">
-    <value>编辑</value>
+    <value>Изменить</value>
   </data>
   <data name="ServerList_DeleteText.Text" xml:space="preserve">
-    <value>删除</value>
+    <value>Удалить</value>
   </data>
   <data name="ServerList_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>搜索服务器</value>
+    <value>Поиск серверов</value>
   </data>
   <data name="ServerList_FilterLabelText.Text" xml:space="preserve">
-    <value>筛选条件:</value>
+    <value>Фильтр:</value>
   </data>
   <data name="ServerList_SortDefaultItem.Text" xml:space="preserve">
-    <value>默认</value>
+    <value>По умолчанию</value>
   </data>
   <data name="ServerList_SortActiveItem.Text" xml:space="preserve">
-    <value>当前连接</value>
+    <value>По активности</value>
   </data>
   <data name="ServerList_SortProtocolItem.Text" xml:space="preserve">
-    <value>协议</value>
+    <value>По протоколу</value>
   </data>
   <data name="ServerList_SortLatencyItem.Text" xml:space="preserve">
-    <value>延迟</value>
+    <value>По задержке</value>
   </data>
   <data name="ServerList_ActivatedBadge.Text" xml:space="preserve">
-    <value>● 已连接</value>
+    <value>● Активен</value>
   </data>
   <data name="ServerList_ChainBadgeText.Text" xml:space="preserve">
-    <value>链式代理</value>
+    <value>Цепочка прокси</value>
   </data>
   <data name="ServerList_Favorites" xml:space="preserve">
-    <value>收藏列表</value>
+    <value>Избранное</value>
   </data>
   <data name="ServerList_AddFavorite" xml:space="preserve">
-    <value>加入收藏</value>
+    <value>В избранное</value>
   </data>
   <data name="ServerList_RemoveFavorite" xml:space="preserve">
-    <value>取消收藏</value>
+    <value>Убрать из избранного</value>
   </data>
   <data name="ServerList_FilterTooltip" xml:space="preserve">
-    <value>分组和排序</value>
+    <value>Группы и сортировка</value>
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
-    <value>排序</value>
+    <value>Сортировка</value>
   </data>
   <data name="ServerList_TestLatencyTooltip" xml:space="preserve">
-    <value>测试延迟</value>
+    <value>Измерить задержку</value>
   </data>
   <data name="Confirm_DeleteBatchMsg" xml:space="preserve">
-    <value>确定要删除当前 {0} 个项目?</value>
+    <value>Удалить выбранные элементы ({0})?</value>
   </data>
   <data name="Subscription_UnknownError" xml:space="preserve">
-    <value>未知错误</value>
+    <value>Неизвестная ошибка</value>
   </data>
   <data name="ServerDetail_HeaderText.Text" xml:space="preserve">
-    <value>服务器详情</value>
+    <value>Сведения о сервере</value>
   </data>
   <data name="ServerDetail_GroupLabel.Text" xml:space="preserve">
-    <value>分组</value>
+    <value>Группа</value>
   </data>
   <data name="ServerDetail_Favorited" xml:space="preserve">
-    <value>已加入收藏列表</value>
+    <value>В избранном</value>
   </data>
   <data name="ServerDetail_ProtocolLabel.Text" xml:space="preserve">
-    <value>协议</value>
+    <value>Протокол</value>
   </data>
   <data name="ServerDetail_TransportLabel.Text" xml:space="preserve">
-    <value>传输</value>
+    <value>Транспорт</value>
   </data>
   <data name="ServerDetail_AiUnlockLabel.Text" xml:space="preserve">
-    <value>AI 访问解锁</value>
+    <value>Доступ к ИИ-сервисам</value>
   </data>
   <data name="ServerDetail_LatencyLabel.Text" xml:space="preserve">
-    <value>网络延迟</value>
+    <value>Задержка</value>
   </data>
   <data name="ServerDetail_Entry" xml:space="preserve">
-    <value>入口</value>
+    <value>Вход</value>
   </data>
   <data name="ServerDetail_Exit" xml:space="preserve">
-    <value>出口</value>
+    <value>Выход</value>
   </data>
   <data name="ServerDetail_EntryMissing" xml:space="preserve">
-    <value>(入口节点缺失)</value>
+    <value>(входной сервер отсутствует)</value>
   </data>
   <data name="ServerDetail_ExitMissing" xml:space="preserve">
-    <value>(出口节点缺失)</value>
+    <value>(выходной сервер отсутствует)</value>
   </data>
   <data name="ServerDetail_AuthLabel" xml:space="preserve">
-    <value>认证</value>
+    <value>Авторизация</value>
   </data>
   <data name="ServerDetail_ChainLabel" xml:space="preserve">
-    <value>链路</value>
+    <value>Цепочка</value>
   </data>
   <data name="ServerDetail_NoAuth" xml:space="preserve">
-    <value>无认证</value>
+    <value>Без авторизации</value>
   </data>
   <data name="ServerDetail_UserPass" xml:space="preserve">
-    <value>用户名/密码</value>
+    <value>Имя пользователя / пароль</value>
   </data>
   <data name="ServerDetail_LatencyMs" xml:space="preserve">
-    <value>{0} ms</value>
+    <value>{0} мс</value>
   </data>
   <data name="MainWindow_TitleText.Text" xml:space="preserve">
-    <value>代理控制台</value>
+    <value>Панель прокси</value>
   </data>
   <data name="CustomRules_RuleListText.Text" xml:space="preserve">
-    <value>规则列表</value>
+    <value>Правила</value>
   </data>
   <data name="CustomRules_AddBtnText.Text" xml:space="preserve">
-    <value>添加</value>
+    <value>Добавить</value>
   </data>
   <data name="CustomRules_NotEffectiveText.Text" xml:space="preserve">
-    <value>当前为全局路由模式，自定义规则不生效。切回智能分流后自动启用。</value>
+    <value>Включена глобальная маршрутизация. Свои правила действуют только в режиме «По правилам».</value>
   </data>
   <data name="CustomRules_SaveBtn.Content" xml:space="preserve">
-    <value>保存</value>
+    <value>Сохранить</value>
   </data>
   <data name="CustomRules_CancelBtn.Content" xml:space="preserve">
-    <value>取消</value>
+    <value>Отмена</value>
   </data>
   <data name="CustomRules_AdvancedEditorTooltip" xml:space="preserve">
-    <value>高级编辑 (用外部编辑器打开 settings.json)</value>
+    <value>Расширенное редактирование (открыть settings.json во внешнем редакторе)</value>
   </data>
   <data name="CustomRules_EditRowTooltip" xml:space="preserve">
-    <value>编辑</value>
+    <value>Изменить</value>
   </data>
   <data name="CustomRules_DeleteRowTooltip" xml:space="preserve">
-    <value>删除</value>
+    <value>Удалить</value>
   </data>
   <data name="CustomRules_PrepFailedTitle" xml:space="preserve">
-    <value>无法准备 settings.json</value>
+    <value>Не удалось подготовить settings.json</value>
   </data>
   <data name="CustomRules_OpenEditorFailedTitle" xml:space="preserve">
-    <value>无法打开编辑器</value>
+    <value>Не удалось открыть редактор</value>
   </data>
   <data name="CustomRules_OpenEditorFailedMsg" xml:space="preserve">
-    <value>未找到 .json 关联程序或启动失败：{0}</value>
+    <value>Для .json не назначено приложение или запуск не удался: {0}</value>
   </data>
   <data name="AddRule_TypeLabelText.Text" xml:space="preserve">
-    <value>类型</value>
+    <value>Тип</value>
   </data>
   <data name="AddRule_TypeDomainItem.Content" xml:space="preserve">
-    <value>域名（Domain）</value>
+    <value>Домен</value>
   </data>
   <data name="AddRule_TypeProcessItem.Content" xml:space="preserve">
-    <value>进程（Process）</value>
+    <value>Процесс</value>
   </data>
   <data name="AddRule_MatchLabelText.Text" xml:space="preserve">
-    <value>匹配内容</value>
+    <value>Условие совпадения</value>
   </data>
   <data name="AddRule_BrowseNameItem.Content" xml:space="preserve">
-    <value>匹配同名进程</value>
+    <value>По имени</value>
   </data>
   <data name="AddRule_BrowsePathItem.Content" xml:space="preserve">
-    <value>匹配完整路径</value>
+    <value>По полному пути</value>
   </data>
   <data name="AddRule_BrowseFolderItem.Content" xml:space="preserve">
-    <value>匹配整个目录</value>
+    <value>По всей папке</value>
   </data>
   <data name="AddRule_OutboundLabelText.Text" xml:space="preserve">
-    <value>出站</value>
+    <value>Направление</value>
   </data>
   <data name="AddRule_OutboundProxyItem.Content" xml:space="preserve">
-    <value>proxy（代理）</value>
+    <value>Через прокси</value>
   </data>
   <data name="AddRule_OutboundDirectItem.Content" xml:space="preserve">
-    <value>direct（直连）</value>
+    <value>Напрямую</value>
   </data>
   <data name="AddRule_OutboundBlockItem.Content" xml:space="preserve">
-    <value>block（阻断）</value>
+    <value>Блокировать</value>
   </data>
   <data name="AddRule_ErrorTextElem.Text" xml:space="preserve">
-    <value>请填写匹配内容</value>
+    <value>Укажите условие совпадения</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>选择 exe（可多选）...</value>
+    <value>Выбрать exe-файлы…</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
-    <value>浏览文件夹...</value>
+    <value>Выбрать папку…</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>每行一个域名或规则，例如 youtube.com 或 geosite:cn</value>
+    <value>Домен или правило на каждой строке (например, youtube.com или geosite:cn)</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>每行一个 IP 规则，例如 192.168.0.0/16 或 geoip:cn</value>
+    <value>IP-правило на каждой строке (например, 192.168.0.0/16 или geoip:cn)</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>每行输入一个进程名、完整路径或文件夹</value>
+    <value>Имя процесса, полный путь или папка на каждой строке</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>支持精确匹配及 regexp:、geosite: 前缀；每行填写一个值。</value>
+    <value>Точное совпадение или префиксы regexp:/geosite:. Каждое значение — на отдельной строке.</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>支持 CIDR 与 geoip: 前缀；每行填写一个值。</value>
+    <value>Поддерживаются CIDR и префикс geoip:. Каждое значение — на отдельной строке.</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>每行填写一个值；浏览支持多选，并会自动去重。</value>
+    <value>Каждое значение — на отдельной строке. При выборе файлов можно выделить несколько; дубликаты удаляются.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
-    <value>应用语言</value>
+    <value>Язык приложения</value>
   </data>
   <data name="Personalize_AppLanguageDesc.Text" xml:space="preserve">
-    <value>选择应用界面的显示语言</value>
+    <value>Выберите язык интерфейса</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
-    <value>重启 XrayUI 以应用路由区域</value>
+    <value>Перезапустите XrayUI для применения региона маршрутизации</value>
   </data>
   <data name="Personalize_LangRestartBtn.Content" xml:space="preserve">
-    <value>重启</value>
+    <value>Перезапустить</value>
   </data>
   <data name="Personalize_ProtocolColorsDesc.Text" xml:space="preserve">
-    <value>自定义不同协议的颜色标识</value>
+    <value>Настройте цвет индикатора для каждого протокола</value>
   </data>
   <data name="Personalize_DisplaySettings.Text" xml:space="preserve">
-    <value>显示设置</value>
+    <value>Отображение</value>
   </data>
   <data name="Personalize_DetailsHeader.Text" xml:space="preserve">
-    <value>服务器信息显示</value>
+    <value>Сведения о сервере</value>
   </data>
   <data name="Personalize_DetailsDesc.Text" xml:space="preserve">
-    <value>选择详情卡片上的信息展示</value>
+    <value>Выберите данные для карточки сервера</value>
   </data>
   <data name="Personalize_DetailLatency.Text" xml:space="preserve">
-    <value>延迟</value>
+    <value>Задержка</value>
   </data>
   <data name="Personalize_DetailLatencyDesc.Text" xml:space="preserve">
-    <value>节点卡片上展示延迟</value>
+    <value>Показывать задержку в карточке сервера</value>
   </data>
   <data name="Personalize_DetailAiUnlock.Text" xml:space="preserve">
-    <value>AI 解锁</value>
+    <value>Доступ к ИИ</value>
   </data>
   <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
-    <value>节点卡片上展示AI的解锁状态</value>
+    <value>Показывать доступность ИИ-сервисов в карточке</value>
   </data>
   <data name="Personalize_DetailGroup.Text" xml:space="preserve">
-    <value>分组</value>
+    <value>Группа</value>
   </data>
   <data name="Personalize_DetailGroupDesc.Text" xml:space="preserve">
-    <value>节点卡片上展示所属订阅分组</value>
+    <value>Показывать группу подписки в карточке сервера</value>
   </data>
   <data name="Personalize_OpenFilterPanelOnStartup.Text" xml:space="preserve">
-    <value>启动时展开筛选栏</value>
+    <value>Разворачивать фильтры при запуске</value>
   </data>
   <data name="Personalize_OpenFilterPanelOnStartupDesc.Text" xml:space="preserve">
-    <value>默认显示分组和排序选项</value>
+    <value>Показывать выбор групп и сортировки по умолчанию</value>
   </data>
   <data name="Personalize_DisplaySettingsUnsavedBar.Message" xml:space="preserve">
-    <value>已生效，记得点击下方「完成」保存</value>
+    <value>Применено. Нажмите «Готово» внизу, чтобы сохранить</value>
   </data>
   <data name="Personalize_Hotkeys.Text" xml:space="preserve">
-    <value>快捷键</value>
+    <value>Горячие клавиши</value>
   </data>
   <data name="Personalize_HotkeysHeader.Text" xml:space="preserve">
-    <value>激活快捷键</value>
+    <value>Сочетания клавиш</value>
   </data>
   <data name="Personalize_HotkeysDialogTitle" xml:space="preserve">
-    <value>激活快捷键</value>
-    <comment>Same text as Personalize_HotkeysHeader.Text above — separate key because a resw entry
-    can't be both a plain value and a scope. This one is the shared dialog title for both hotkey
-    recorder dialogs (read from C#); the .Text one is the section header (read from XAML).</comment>
+    <value>Сочетания клавиш</value>
   </data>
   <data name="Personalize_HotkeysDesc.Text" xml:space="preserve">
-    <value>配置快捷键操作触发常用功能</value>
+    <value>Быстрый доступ к основным действиям с клавиатуры</value>
   </data>
   <data name="Personalize_HotkeyToggleTitle.Text" xml:space="preserve">
-    <value>启动/停止代理</value>
+    <value>Запуск / остановка прокси</value>
   </data>
   <data name="Personalize_HotkeyRestoreTitle.Text" xml:space="preserve">
-    <value>从托盘恢复窗口</value>
+    <value>Открытие окна из трея</value>
   </data>
   <data name="Personalize_HotkeyNotSet" xml:space="preserve">
-    <value>分配快捷方式</value>
+    <value>Назначить сочетание</value>
   </data>
   <data name="Personalize_HotkeyConflictTitle" xml:space="preserve">
-    <value>快捷键设置失败</value>
+    <value>Не удалось назначить сочетание</value>
   </data>
   <data name="Personalize_HotkeyConflictMsg" xml:space="preserve">
-    <value>该组合键已被系统或其他程序占用，请更换一个组合。</value>
+    <value>Это сочетание уже занято системой или другим приложением. Попробуйте другое.</value>
   </data>
   <data name="Personalize_HotkeySavedMsg" xml:space="preserve">
-    <value>快捷键已生效，记得点击下方「完成」保存</value>
+    <value>Сочетание действует. Нажмите «Готово» внизу, чтобы сохранить</value>
   </data>
   <data name="Personalize_HotkeyClearedMsg" xml:space="preserve">
-    <value>快捷键已清除，记得点击下方「完成」保存</value>
+    <value>Сочетание удалено. Нажмите «Готово» внизу, чтобы сохранить</value>
   </data>
   <data name="Personalize_HotkeyInvalidTitle" xml:space="preserve">
-    <value>组合键无效</value>
+    <value>Недопустимое сочетание</value>
   </data>
   <data name="Personalize_HotkeyInvalidMsg" xml:space="preserve">
-    <value>请至少包含一个 Ctrl、Alt、Shift 或 Win 键。</value>
+    <value>Добавьте хотя бы одну клавишу: Ctrl, Alt, Shift или Win.</value>
   </data>
   <data name="Personalize_HotkeyRecordTooltip" xml:space="preserve">
-    <value>点击设置快捷键</value>
+    <value>Нажмите, чтобы назначить сочетание</value>
   </data>
   <data name="Personalize_HotkeyToggleAutomationName" xml:space="preserve">
-    <value>启动/停止代理快捷键</value>
+    <value>Сочетание клавиш для запуска и остановки прокси</value>
   </data>
   <data name="Personalize_HotkeyRestoreAutomationName" xml:space="preserve">
-    <value>从托盘恢复窗口快捷键</value>
+    <value>Сочетание клавиш для открытия окна из трея</value>
   </data>
   <data name="Personalize_ImportExportTitle.Text" xml:space="preserve">
-    <value>配置导入与导出</value>
+    <value>Импорт и экспорт данных</value>
   </data>
   <data name="Personalize_ImportExportDesc.Text" xml:space="preserve">
-    <value>将当前的节点和路由规则备份到本地，或从已有文件中恢复</value>
+    <value>Сохраните серверы и правила маршрутизации или восстановите их из файла</value>
   </data>
   <data name="Personalize_ExportBtn.Content" xml:space="preserve">
-    <value>导出</value>
+    <value>Экспорт</value>
   </data>
   <data name="Personalize_ImportBtn.Content" xml:space="preserve">
-    <value>导入</value>
+    <value>Импорт</value>
   </data>
   <data name="Personalize_ImportMenuRestore.Text" xml:space="preserve">
-    <value>恢复配置备份</value>
+    <value>Восстановить из копии</value>
   </data>
   <data name="Personalize_ImportMenuClash.Text" xml:space="preserve">
-    <value>导入 Clash 配置</value>
+    <value>Импорт конфигурации Clash</value>
   </data>
   <data name="Personalize_ClashImportSuccess" xml:space="preserve">
-    <value>Clash 配置导入成功</value>
+    <value>Конфигурация Clash импортирована</value>
   </data>
   <data name="Personalize_ClashImportSuccessMsg" xml:space="preserve">
-    <value>已导入 {0} 个节点，跳过 {1} 个不支持的节点。</value>
+    <value>Импортировано серверов: {0}; пропущено неподдерживаемых: {1}.</value>
   </data>
   <data name="Personalize_ClashImportNoNodesTitle" xml:space="preserve">
-    <value>未导入任何节点</value>
+    <value>Серверы не импортированы</value>
   </data>
   <data name="Personalize_ClashImportNoNodesMsg" xml:space="preserve">
-    <value>该文件中没有可导入的节点（可能都是不支持的协议，或不是有效的 Clash 配置）。</value>
+    <value>В файле нет подходящих серверов: протоколы не поддерживаются или это не конфигурация Clash.</value>
   </data>
   <data name="Personalize_ClashImportFailed" xml:space="preserve">
-    <value>Clash 配置导入失败</value>
+    <value>Не удалось импортировать Clash</value>
   </data>
   <data name="Personalize_ImportBlockedTitle" xml:space="preserve">
-    <value>请先停止代理</value>
+    <value>Сначала остановите прокси</value>
   </data>
   <data name="Personalize_ImportBlockedMsg" xml:space="preserve">
-    <value>导入会重新加载节点列表,请先断开当前连接后再导入。</value>
+    <value>Импорт перезагружает список серверов. Перед импортом отключите соединение.</value>
   </data>
   <data name="Personalize_ExportTooltip" xml:space="preserve">
-    <value>导出预置配置</value>
+    <value>Экспорт конфигурации</value>
   </data>
   <data name="Personalize_ImportTooltip" xml:space="preserve">
-    <value>导入预置配置</value>
+    <value>Импорт конфигурации</value>
   </data>
   <data name="Personalize_ExportSuccessMsgFmt" xml:space="preserve">
-    <value>已导出至 {0}</value>
+    <value>Экспортировано в {0}</value>
   </data>
   <data name="Personalize_ImportFailed" xml:space="preserve">
-    <value>导入失败</value>
+    <value>Не удалось импортировать</value>
   </data>
   <data name="Personalize_ImportSuccess" xml:space="preserve">
-    <value>导入成功</value>
+    <value>Импорт завершён</value>
   </data>
   <data name="Personalize_ImportSuccessMsg" xml:space="preserve">
-    <value>已导入 {0} 个节点、{1} 条订阅、{2} 条规则{3}。</value>
+    <value>Импортировано: серверов — {0}, подписок — {1}, правил — {2}{3}.</value>
   </data>
   <data name="Personalize_ImportAdvancedSuffix" xml:space="preserve">
-    <value>、含高级路由</value>
+    <value>, включая расширенную маршрутизацию</value>
   </data>
   <data name="Personalize_PresetMissingTitle" xml:space="preserve">
-    <value>未找到预置文件</value>
+    <value>Файлы конфигурации не найдены</value>
   </data>
   <data name="Personalize_PresetMissingMsg" xml:space="preserve">
-    <value>请先准备 Import 文件夹下的 servers.json / settings.json。</value>
+    <value>Сначала поместите servers.json / settings.json в папку Import.</value>
   </data>
   <data name="ChainProxy_NameLabel.Text" xml:space="preserve">
-    <value>名称</value>
+    <value>Название</value>
   </data>
   <data name="ChainProxy_NameBox.PlaceholderText" xml:space="preserve">
-    <value>链式代理名称</value>
+    <value>Название цепочки прокси</value>
   </data>
   <data name="ChainProxy_EntryLabel.Text" xml:space="preserve">
-    <value>入口代理</value>
+    <value>Входной прокси</value>
   </data>
   <data name="ChainProxy_EntryBox.PlaceholderText" xml:space="preserve">
-    <value>选择前置节点</value>
+    <value>Выберите входной сервер</value>
   </data>
   <data name="ChainProxy_ExitLabel.Text" xml:space="preserve">
-    <value>出口代理</value>
+    <value>Выходной прокси</value>
   </data>
   <data name="ChainProxy_ExitBox.PlaceholderText" xml:space="preserve">
-    <value>选择落地节点</value>
+    <value>Выберите выходной сервер</value>
   </data>
   <data name="ChainProxy_Hint.Text" xml:space="preserve">
-    <value>流量经入口代理转发，再由出口代理出站</value>
+    <value>Трафик проходит через входной прокси и выходит в сеть через выходной</value>
   </data>
   <data name="ChainProxy_NameRequired" xml:space="preserve">
-    <value>请输入链式代理名称。</value>
+    <value>Введите название цепочки прокси.</value>
   </data>
   <data name="ChainProxy_EntryRequired" xml:space="preserve">
-    <value>请选择入口代理。</value>
+    <value>Выберите входной прокси.</value>
   </data>
   <data name="ChainProxy_ExitRequired" xml:space="preserve">
-    <value>请选择出口代理。</value>
+    <value>Выберите выходной прокси.</value>
   </data>
   <data name="ChainProxy_EntryExitSame" xml:space="preserve">
-    <value>入口代理和出口代理不能是同一个节点。</value>
+    <value>Входной и выходной прокси должны быть разными серверами.</value>
   </data>
   <data name="Tun_MoreOptionsBtn.Content" xml:space="preserve">
-    <value>更多选项</value>
+    <value>Дополнительные параметры</value>
   </data>
   <data name="Tun_MtuLabel.Text" xml:space="preserve">
-    <value>最大传输单元</value>
+    <value>Максимальный размер пакета (MTU)</value>
   </data>
   <data name="Tun_InterfaceLabel.Text" xml:space="preserve">
-    <value>出口网卡</value>
+    <value>Исходящий интерфейс</value>
   </data>
   <data name="Tun_InterfaceTooltip" xml:space="preserve">
-    <value>默认使用 Xray 自动选择；只有自动模式不可用时才手动指定。</value>
+    <value>Xray выбирает интерфейс автоматически. Укажите его вручную, только если автоматический выбор не работает.</value>
   </data>
   <data name="Tun_AutoInterfaceLabel" xml:space="preserve">
-    <value>auto（推荐）</value>
+    <value>Автоматически (рекомендуется)</value>
   </data>
   <data name="Tun_Ipv6Label.Text" xml:space="preserve">
-    <value>开启IPv6</value>
+    <value>Включить адрес IPv6</value>
   </data>
   <data name="Subscription_DialogTitle_Add" xml:space="preserve">
-    <value>添加订阅</value>
+    <value>Добавить подписку</value>
   </data>
   <data name="Subscription_DialogTitle_Manage" xml:space="preserve">
-    <value>管理订阅</value>
+    <value>Управление подписками</value>
   </data>
   <data name="Subscription_UrlBox.Header" xml:space="preserve">
-    <value>订阅链接</value>
+    <value>URL подписки</value>
   </data>
   <data name="Subscription_NameBox.Header" xml:space="preserve">
-    <value>备注名称（可选）</value>
+    <value>Название (необязательно)</value>
   </data>
   <data name="Subscription_NameBox.PlaceholderText" xml:space="preserve">
-    <value>留空则使用链接域名</value>
+    <value>Пусто — использовать домен ссылки</value>
   </data>
   <data name="Subscription_AutoRefreshBox.Header" xml:space="preserve">
-    <value>自动更新</value>
+    <value>Автообновление</value>
   </data>
   <data name="Subscription_AutoRefreshOff.Content" xml:space="preserve">
-    <value>关闭</value>
+    <value>Выключено</value>
   </data>
   <data name="Subscription_AutoRefresh1Hour.Content" xml:space="preserve">
-    <value>每 1 小时</value>
+    <value>Каждый час</value>
   </data>
   <data name="Subscription_AutoRefresh6Hours.Content" xml:space="preserve">
-    <value>每 6 小时</value>
+    <value>Каждые 6 часов</value>
   </data>
   <data name="Subscription_AutoRefresh12Hours.Content" xml:space="preserve">
-    <value>每 12 小时</value>
+    <value>Каждые 12 часов</value>
   </data>
   <data name="Subscription_AutoRefresh24Hours.Content" xml:space="preserve">
-    <value>每 24 小时</value>
+    <value>Каждые 24 часа</value>
   </data>
   <data name="Subscription_AutoImportHintText.Text" xml:space="preserve">
-    <value>将自动解析并导入该订阅中的全部节点</value>
+    <value>Серверы подписки будут распознаны и импортированы автоматически.</value>
   </data>
   <data name="Subscription_EmptyText.Text" xml:space="preserve">
-    <value>暂无订阅</value>
+    <value>Нет подписок</value>
   </data>
   <data name="Subscription_DeleteConfirmText.Text" xml:space="preserve">
-    <value>删除订阅？</value>
+    <value>Удалить подписку?</value>
   </data>
   <data name="Subscription_DeleteDescText.Text" xml:space="preserve">
-    <value>将同时删除该订阅下的所有节点。</value>
+    <value>Все серверы этой подписки также будут удалены.</value>
   </data>
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
-    <value>删除</value>
+    <value>Удалить</value>
   </data>
   <data name="Subscription_SaveBtn.Content" xml:space="preserve">
-    <value>保存</value>
+    <value>Сохранить</value>
   </data>
   <data name="Xray_ExeNotFound" xml:space="preserve">
-    <value>找不到 xray.exe
-路径：{0}</value>
+    <value>Не найден xray.exe
+Путь: {0}</value>
   </data>
   <data name="Xray_ExitedImmediately" xml:space="preserve">
-    <value>xray 立即退出（退出码 {0}）</value>
+    <value>Xray завершился сразу после запуска (код {0})</value>
   </data>
   <data name="XrayLog_Started" xml:space="preserve">
-    <value>[启动] {0}</value>
+    <value>[Запущен] {0}</value>
   </data>
   <data name="XrayLog_Config" xml:space="preserve">
-    <value>[配置] {0}</value>
+    <value>[Конфигурация] {0}</value>
   </data>
   <data name="XrayLog_Error" xml:space="preserve">
-    <value>[错误] {0}</value>
+    <value>[Ошибка] {0}</value>
   </data>
   <data name="XrayLog_StartFailed" xml:space="preserve">
-    <value>[错误] 启动失败：{0}</value>
+    <value>[Ошибка] Не удалось запустить: {0}</value>
   </data>
   <data name="XrayLog_Exception" xml:space="preserve">
-    <value>[异常] {0}</value>
+    <value>[Исключение] {0}</value>
   </data>
   <data name="XrayLog_Stopped" xml:space="preserve">
-    <value>[已停止]</value>
+    <value>[Остановлен]</value>
   </data>
   <data name="XrayLog_Shutdown" xml:space="preserve">
-    <value>[关机] xray 已停止</value>
+    <value>[Завершение] Xray остановлен</value>
   </data>
   <data name="XrayLog_ProcessExited" xml:space="preserve">
-    <value>[xray 进程已退出]</value>
+    <value>[Процесс Xray завершён]</value>
   </data>
   <data name="XrayLog_JobCreateFailed" xml:space="preserve">
-    <value>[警告] CreateJobObject 失败 (err={0})，孤儿进程兜底已禁用</value>
+    <value>[Предупреждение] Ошибка CreateJobObject ({0}); защита от оставшихся процессов отключена</value>
   </data>
   <data name="XrayLog_JobAssignFailed" xml:space="preserve">
-    <value>[警告] AssignProcessToJobObject 失败 (err={0})，孤儿进程兜底未生效</value>
+    <value>[Предупреждение] Ошибка AssignProcessToJobObject ({0}); защита от оставшихся процессов не действует</value>
   </data>
   <data name="XrayLog_JobBindException" xml:space="preserve">
-    <value>[警告] Job Object 绑定异常：{0}</value>
+    <value>[Предупреждение] Ошибка привязки Job Object: {0}</value>
   </data>
   <data name="Chain_NeedServerList" xml:space="preserve">
-    <value>链式代理需要服务器列表才能解析入口和出口节点。</value>
+    <value>Для определения входного и выходного серверов цепочке прокси нужен список серверов.</value>
   </data>
   <data name="Chain_EndpointMissing" xml:space="preserve">
-    <value>链式代理引用的入口或出口节点不存在，请重新编辑该链式代理。</value>
+    <value>Входной или выходной сервер цепочки больше не существует. Измените цепочку прокси.</value>
   </data>
   <data name="Chain_NoNesting" xml:space="preserve">
-    <value>链式代理不能嵌套链式代理，请重新选择入口和出口节点。</value>
+    <value>Цепочка прокси не может содержать другую цепочку. Выберите другие входной и выходной серверы.</value>
   </data>
   <data name="Tun_PreflightErrorTitle" xml:space="preserve">
-    <value>TUN 模式错误</value>
+    <value>Ошибка режима TUN</value>
   </data>
   <data name="Tun_WintunNotFound" xml:space="preserve">
-    <value>找不到 wintun.dll
-路径：{0}</value>
+    <value>Не найдена wintun.dll
+Путь: {0}</value>
   </data>
   <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
-    <value>Tcping延迟</value>
+    <value>Задержка TCP</value>
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
-    <value>真连接延迟</value>
+    <value>Задержка подключения</value>
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
-    <value>区域设置</value>
+    <value>Регион</value>
   </data>
   <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
-    <value>应用语言和区域设置</value>
+    <value>Настройки языка и региона приложения</value>
   </data>
   <data name="Personalize_Region_CN.Content" xml:space="preserve">
-    <value>中国</value>
+    <value>Китай</value>
   </data>
   <data name="Personalize_Region_RU.Content" xml:space="preserve">
-    <value>俄罗斯</value>
+    <value>Россия</value>
   </data>
   <data name="Personalize_Region_IR.Content" xml:space="preserve">
-    <value>伊朗</value>
+    <value>Иран</value>
   </data>
   <data name="Personalize_RoutingRegionDesc.Text" xml:space="preserve">
-    <value>选择智能路由的国家或地区</value>
+    <value>Регион прямой маршрутизации</value>
   </data>
   <data name="Personalize_HotkeyDialogClear" xml:space="preserve">
-    <value>清除快捷键</value>
+    <value>Удалить сочетание</value>
   </data>
   <data name="Personalize_HotkeyRecorderPlaceholder" xml:space="preserve">
-    <value>请按下组合键…</value>
+    <value>Нажмите сочетание клавиш…</value>
   </data>
   <data name="HotkeyRecorder_Instruction.Text" xml:space="preserve">
-    <value>点击下方区域，然后按下想要绑定的组合键</value>
+    <value>Нажмите на поле ниже и введите нужное сочетание клавиш</value>
   </data>
   <data name="Subscription_WaitingForNetwork" xml:space="preserve">
-    <value>网络未连接。网络恢复后将继续更新。</value>
+    <value>Нет подключения к сети. Обновление продолжится, когда сеть станет доступна.</value>
   </data>
   <data name="Subscription_CheckUrl" xml:space="preserve">
-    <value>请检查订阅链接及服务商账户权限。</value>
+    <value>Проверьте ссылку на подписку и доступ у провайдера.</value>
   </data>
-  <data name="Traffic_Title.Text" xml:space="preserve"><value>流量监控</value></data>
-  <data name="Traffic_OpenTooltip" xml:space="preserve"><value>流量</value></data>
-  <data name="Traffic_Pause.Content" xml:space="preserve"><value>暂停</value></data>
-  <data name="Traffic_Clear.Content" xml:space="preserve"><value>清空</value></data>
-  <data name="Traffic_Download.Text" xml:space="preserve"><value>下载</value></data>
-  <data name="Traffic_Upload.Text" xml:space="preserve"><value>上传</value></data>
-  <data name="Traffic_Volume.Text" xml:space="preserve"><value>已观测流量</value></data>
-  <data name="Traffic_AccessCount.Text" xml:space="preserve"><value>访问次数</value></data>
-  <data name="Traffic_ChartTitle.Text" xml:space="preserve"><value>传输速率</value></data>
-  <data name="Traffic_ChartAccessibleName" xml:space="preserve"><value>传输速率</value></data>
-  <data name="Traffic_ChartEmpty.Text" xml:space="preserve"><value>等待流量数据</value></data>
-  <data name="Traffic_LatestSample.Text" xml:space="preserve"><value>最新采样</value></data>
-  <data name="Traffic_Range" xml:space="preserve"><value>−{0} 分钟</value></data>
-  <data name="Traffic_FiveMinutes.Content" xml:space="preserve"><value>5 分钟</value></data>
-  <data name="Traffic_FifteenMinutes.Content" xml:space="preserve"><value>15 分钟</value></data>
-  <data name="Traffic_Search.PlaceholderText" xml:space="preserve"><value>搜索地址或应用</value></data>
-  <data name="Traffic_SearchAutomationName" xml:space="preserve"><value>搜索流量</value></data>
-  <data name="Traffic_FilterAutomationName" xml:space="preserve"><value>筛选路由</value></data>
-  <data name="Traffic_WindowAutomationName" xml:space="preserve"><value>图表时间范围</value></data>
-  <data name="Traffic_SortAutomationName" xml:space="preserve"><value>排序访问记录</value></data>
-  <data name="Traffic_AllRoutes.Content" xml:space="preserve"><value>所有路由</value></data>
-  <data name="Traffic_Proxy.Content" xml:space="preserve"><value>代理</value></data>
-  <data name="Traffic_Direct.Content" xml:space="preserve"><value>直连</value></data>
-  <data name="Traffic_Blocked.Content" xml:space="preserve"><value>拦截</value></data>
-  <data name="Traffic_Newest.Content" xml:space="preserve"><value>最新优先</value></data>
-  <data name="Traffic_ByAddress.Content" xml:space="preserve"><value>按地址</value></data>
-  <data name="Traffic_Details.Content" xml:space="preserve"><value>详情</value></data>
-  <data name="Traffic_Time.Text" xml:space="preserve"><value>时间</value></data>
-  <data name="Traffic_Destination.Text" xml:space="preserve"><value>目标 / 来源</value></data>
-  <data name="Traffic_Route.Text" xml:space="preserve"><value>路由</value></data>
-  <data name="Traffic_DetailsTitle" xml:space="preserve"><value>访问详情</value></data>
-  <data name="Traffic_CopyAddress" xml:space="preserve"><value>复制目标地址</value></data>
-  <data name="Traffic_Close" xml:space="preserve"><value>关闭</value></data>
-  <data name="Traffic_RowCount" xml:space="preserve"><value>显示 {0} 条 · 已收集 {1} 条 · 已淘汰 {2} 条旧记录</value></data>
-  <data name="Traffic_RouteUnknown" xml:space="preserve"><value>未知</value></data>
-  <data name="Traffic_RouteProxy" xml:space="preserve"><value>代理</value></data>
-  <data name="Traffic_RouteDirect" xml:space="preserve"><value>直连</value></data>
-  <data name="Traffic_RouteBlocked" xml:space="preserve"><value>拦截</value></data>
-  <data name="Traffic_UnknownApplication" xml:space="preserve"><value>无法获取应用信息</value></data>
-  <data name="Traffic_Paused" xml:space="preserve"><value>显示已暂停 · 不影响采集</value></data>
-  <data name="Traffic_SourcePending" xml:space="preserve"><value>流量采集尚未接入</value></data>
-  <data name="Traffic_StatusStopped" xml:space="preserve"><value>核心已停止 · 历史记录已保留</value></data>
-  <data name="Traffic_StatusWaitingForSample" xml:space="preserve"><value>等待首次采样</value></data>
-  <data name="Traffic_StatusLive" xml:space="preserve"><value>正在接收 Xray 数据</value></data>
-  <data name="Traffic_StatusUnavailable" xml:space="preserve"><value>数据不可用 · 保留采样间隙</value></data>
-  <data name="Traffic_EmptyPending" xml:space="preserve"><value>页面已就绪。接入流量采集后将显示地址和图表。</value></data>
-  <data name="Traffic_EmptyFilter" xml:space="preserve"><value>没有符合筛选条件的访问记录。</value></data>
-  <data name="Traffic_Empty" xml:space="preserve"><value>暂无访问记录。此处仅显示经过 Xray 的流量。</value></data>
-  <data name="Copy_Copied" xml:space="preserve"><value>已复制到剪贴板</value></data>
-  <data name="CustomRules_Domain.Text" xml:space="preserve"><value>域名</value></data>
-  <data name="CustomRules_Process.Text" xml:space="preserve"><value>进程</value></data>
-  <data name="Log_MaskQuarter" xml:space="preserve"><value>四分之一</value></data>
-  <data name="Log_MaskHalf" xml:space="preserve"><value>一半</value></data>
-  <data name="Log_MaskFull" xml:space="preserve"><value>全部</value></data>
-  <data name="Log_LevelDebug" xml:space="preserve"><value>调试</value></data>
-  <data name="Log_LevelInfo" xml:space="preserve"><value>信息</value></data>
-  <data name="Log_LevelWarning" xml:space="preserve"><value>警告</value></data>
-  <data name="Traffic_AccessAccepted" xml:space="preserve"><value>入站已接受</value></data>
-  <data name="Traffic_AccessRejected" xml:space="preserve"><value>已拒绝</value></data>
-  <data name="Traffic_UnitBytes" xml:space="preserve"><value>B</value></data>
-  <data name="Traffic_UnitKiB" xml:space="preserve"><value>KiB</value></data>
-  <data name="Traffic_UnitMiB" xml:space="preserve"><value>MiB</value></data>
-  <data name="Traffic_UnitGiB" xml:space="preserve"><value>GiB</value></data>
-  <data name="Traffic_UnitTiB" xml:space="preserve"><value>TiB</value></data>
-  <data name="Traffic_PerSecond" xml:space="preserve"><value>/秒</value></data>
-  <data name="Traffic_TransportUnknown" xml:space="preserve"><value>未知</value></data>
-  <data name="Language_ChangeFailed" xml:space="preserve"><value>无法更改界面语言</value></data>
+  <data name="Traffic_Title.Text" xml:space="preserve">
+    <value>Трафик</value>
+  </data>
+  <data name="Traffic_OpenTooltip" xml:space="preserve">
+    <value>Монитор трафика</value>
+  </data>
+  <data name="Traffic_Pause.Content" xml:space="preserve">
+    <value>Пауза</value>
+  </data>
+  <data name="Traffic_Clear.Content" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="Traffic_Download.Text" xml:space="preserve">
+    <value>Приём</value>
+  </data>
+  <data name="Traffic_Upload.Text" xml:space="preserve">
+    <value>Передача</value>
+  </data>
+  <data name="Traffic_Volume.Text" xml:space="preserve">
+    <value>Учтённый трафик</value>
+  </data>
+  <data name="Traffic_AccessCount.Text" xml:space="preserve">
+    <value>Обращения</value>
+  </data>
+  <data name="Traffic_ChartTitle.Text" xml:space="preserve">
+    <value>Скорость передачи</value>
+  </data>
+  <data name="Traffic_ChartAccessibleName" xml:space="preserve">
+    <value>Скорость передачи</value>
+  </data>
+  <data name="Traffic_ChartEmpty.Text" xml:space="preserve">
+    <value>Ожидание измерений трафика</value>
+  </data>
+  <data name="Traffic_LatestSample.Text" xml:space="preserve">
+    <value>Последний замер</value>
+  </data>
+  <data name="Traffic_Range" xml:space="preserve">
+    <value>−{0} мин.</value>
+  </data>
+  <data name="Traffic_FiveMinutes.Content" xml:space="preserve">
+    <value>5 минут</value>
+  </data>
+  <data name="Traffic_FifteenMinutes.Content" xml:space="preserve">
+    <value>15 минут</value>
+  </data>
+  <data name="Traffic_Search.PlaceholderText" xml:space="preserve">
+    <value>Поиск адреса или приложения</value>
+  </data>
+  <data name="Traffic_SearchAutomationName" xml:space="preserve">
+    <value>Поиск трафика</value>
+  </data>
+  <data name="Traffic_FilterAutomationName" xml:space="preserve">
+    <value>Фильтр маршрутов</value>
+  </data>
+  <data name="Traffic_WindowAutomationName" xml:space="preserve">
+    <value>Период графика</value>
+  </data>
+  <data name="Traffic_SortAutomationName" xml:space="preserve">
+    <value>Сортировка обращений</value>
+  </data>
+  <data name="Traffic_AllRoutes.Content" xml:space="preserve">
+    <value>Все маршруты</value>
+  </data>
+  <data name="Traffic_Proxy.Content" xml:space="preserve">
+    <value>Прокси</value>
+  </data>
+  <data name="Traffic_Direct.Content" xml:space="preserve">
+    <value>Напрямую</value>
+  </data>
+  <data name="Traffic_Blocked.Content" xml:space="preserve">
+    <value>Блокировка</value>
+  </data>
+  <data name="Traffic_Newest.Content" xml:space="preserve">
+    <value>Сначала новые</value>
+  </data>
+  <data name="Traffic_ByAddress.Content" xml:space="preserve">
+    <value>По адресу</value>
+  </data>
+  <data name="Traffic_Details.Content" xml:space="preserve">
+    <value>Подробнее</value>
+  </data>
+  <data name="Traffic_Time.Text" xml:space="preserve">
+    <value>Время</value>
+  </data>
+  <data name="Traffic_Destination.Text" xml:space="preserve">
+    <value>Назначение / источник</value>
+  </data>
+  <data name="Traffic_Route.Text" xml:space="preserve">
+    <value>Маршрут</value>
+  </data>
+  <data name="Traffic_DetailsTitle" xml:space="preserve">
+    <value>Сведения об обращении</value>
+  </data>
+  <data name="Traffic_CopyAddress" xml:space="preserve">
+    <value>Скопировать адрес назначения</value>
+  </data>
+  <data name="Traffic_Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Traffic_RowCount" xml:space="preserve">
+    <value>Показано: {0} · собрано: {1} · удалено старых: {2}</value>
+  </data>
+  <data name="Traffic_RouteUnknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Traffic_RouteProxy" xml:space="preserve">
+    <value>Прокси</value>
+  </data>
+  <data name="Traffic_RouteDirect" xml:space="preserve">
+    <value>Напрямую</value>
+  </data>
+  <data name="Traffic_RouteBlocked" xml:space="preserve">
+    <value>Блокировка</value>
+  </data>
+  <data name="Traffic_UnknownApplication" xml:space="preserve">
+    <value>Приложение не определено</value>
+  </data>
+  <data name="Traffic_Paused" xml:space="preserve">
+    <value>Отображение приостановлено · сбор данных продолжается</value>
+  </data>
+  <data name="Traffic_SourcePending" xml:space="preserve">
+    <value>Сбор трафика ещё не подключён</value>
+  </data>
+  <data name="Traffic_StatusStopped" xml:space="preserve">
+    <value>Ядро остановлено · история сохранена</value>
+  </data>
+  <data name="Traffic_StatusWaitingForSample" xml:space="preserve">
+    <value>Ожидание первого измерения</value>
+  </data>
+  <data name="Traffic_StatusLive" xml:space="preserve">
+    <value>Получение измерений от Xray</value>
+  </data>
+  <data name="Traffic_StatusUnavailable" xml:space="preserve">
+    <value>Измерения недоступны · пропуски сохраняются</value>
+  </data>
+  <data name="Traffic_EmptyPending" xml:space="preserve">
+    <value>Страница готова. Адреса и графики появятся после подключения сбора трафика.</value>
+  </data>
+  <data name="Traffic_EmptyFilter" xml:space="preserve">
+    <value>Нет обращений, соответствующих фильтрам.</value>
+  </data>
+  <data name="Traffic_Empty" xml:space="preserve">
+    <value>Обращений пока нет. Здесь отображается только трафик, обработанный Xray.</value>
+  </data>
+  <data name="Copy_Copied" xml:space="preserve"><value>Скопировано в буфер обмена</value></data>
+  <data name="CustomRules_Domain.Text" xml:space="preserve"><value>Домен</value></data>
+  <data name="CustomRules_Process.Text" xml:space="preserve"><value>Процесс</value></data>
+  <data name="Log_MaskQuarter" xml:space="preserve"><value>На четверть</value></data>
+  <data name="Log_MaskHalf" xml:space="preserve"><value>Наполовину</value></data>
+  <data name="Log_MaskFull" xml:space="preserve"><value>Полностью</value></data>
+  <data name="Log_LevelDebug" xml:space="preserve"><value>Отладка</value></data>
+  <data name="Log_LevelInfo" xml:space="preserve"><value>Информация</value></data>
+  <data name="Log_LevelWarning" xml:space="preserve"><value>Предупреждения</value></data>
+  <data name="Traffic_AccessAccepted" xml:space="preserve"><value>Принято входящим обработчиком</value></data>
+  <data name="Traffic_AccessRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="Traffic_UnitBytes" xml:space="preserve"><value>Б</value></data>
+  <data name="Traffic_UnitKiB" xml:space="preserve"><value>КиБ</value></data>
+  <data name="Traffic_UnitMiB" xml:space="preserve"><value>МиБ</value></data>
+  <data name="Traffic_UnitGiB" xml:space="preserve"><value>ГиБ</value></data>
+  <data name="Traffic_UnitTiB" xml:space="preserve"><value>ТиБ</value></data>
+  <data name="Traffic_PerSecond" xml:space="preserve"><value>/с</value></data>
+  <data name="Traffic_TransportUnknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Language_ChangeFailed" xml:space="preserve"><value>Не удалось изменить язык интерфейса</value></data>
 </root>

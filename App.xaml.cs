@@ -28,7 +28,12 @@ namespace XrayUI
         {
             // Must run before InitializeComponent — the XAML resource loader caches the
             // current locale at first touch, and that happens during component init.
+#if LOCALIZATION_SMOKE_TEST
+            LanguageHelper.ApplyOverride("ru-RU");
+            Loc.Initialize("ru-RU");
+#else
             ApplyPersistedLanguageOverride();
+#endif
 
             this.InitializeComponent();
 			ConfigureProcessShutdownBehavior();
@@ -58,10 +63,15 @@ namespace XrayUI
             }
 
             LanguageHelper.ApplyOverride(language);
+            Loc.Initialize(LanguageHelper.Normalize(language));
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+#if LOCALIZATION_SMOKE_TEST
+            await Diagnostics.LocalizationSmokeTest.RunAsync();
+            return;
+#else
             var cmdArgs = Environment.GetCommandLineArgs();
             var parentPid = TryGetParentProcessId(cmdArgs);
             var startMinimized = cmdArgs.Contains(StartupService.StartupMinimizedArgument, StringComparer.OrdinalIgnoreCase);
@@ -111,6 +121,7 @@ namespace XrayUI
                 _pendingExternalActivation = false;
                 mainWindow.RestoreFromTray();
             }
+#endif
         }
 
         public void RequestShutdown(bool fastShutdown = false)

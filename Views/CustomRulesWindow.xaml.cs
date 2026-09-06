@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
@@ -31,7 +31,7 @@ namespace XrayUI.Views
             _owner = owner;
 
             this.SetWindowSize(620, 460);
-            AppWindow.Title = L.CustomRules_Title;
+            XrayUI.Helpers.LocalizationBindings.Bind(AppWindow, "Title", () => AppWindow.Title = L.CustomRules_Title);
             AppWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "icons", "output.ico"));
             ThemeHelper.FollowAppTheme(this, WindowRoot);
             // Set the backdrop in code, AFTER FollowAppTheme has applied the correct theme.
@@ -39,7 +39,7 @@ namespace XrayUI.Views
             // when the theme switches — the unwanted transition flash. Mirrors LogWindow.
             SystemBackdrop = new MicaBackdrop();
 
-            ToolTipService.SetToolTip(OpenAdvancedEditorButton, L.CustomRules_AdvancedEditorTooltip);
+            XrayUI.Helpers.LocalizationBindings.Bind(OpenAdvancedEditorButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(OpenAdvancedEditorButton, L.CustomRules_AdvancedEditorTooltip));
 
 			var presenter = OverlappedPresenter.CreateForDialog();
 
@@ -127,13 +127,13 @@ namespace XrayUI.Views
         private void EditRuleButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element)
-                ToolTipService.SetToolTip(element, L.CustomRules_EditRowTooltip);
+                XrayUI.Helpers.LocalizationBindings.Bind(element, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(element, L.CustomRules_EditRowTooltip));
         }
 
         private void DeleteRuleButton_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element)
-                ToolTipService.SetToolTip(element, L.CustomRules_DeleteRowTooltip);
+                XrayUI.Helpers.LocalizationBindings.Bind(element, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(element, L.CustomRules_DeleteRowTooltip));
         }
 
         private void EditRuleButton_Click(object sender, RoutedEventArgs e)

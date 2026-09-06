@@ -1,3 +1,4 @@
+using XrayUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,8 +14,8 @@ namespace XrayUI.Services
         Task<ServerEntry?> ShowEditServerDialogAsync(ServerEntry? existing);
         Task<ServerEntry?> ShowChainProxyDialogAsync(IEnumerable<ServerEntry> servers, ServerEntry? existing = null);
         Task<(int port, bool allowLan)?> ShowEditPortDialogAsync(int currentPort, bool currentAllowLan);
-        Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null);
-        Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null, string? cancelText = null, bool isDanger = false);
+        Task ShowErrorAsync(LocalizedText title, LocalizedText message, XamlRoot? xamlRoot = null);
+        Task<bool> ShowConfirmationAsync(LocalizedText title, LocalizedText message, LocalizedText? confirmText = null, LocalizedText? cancelText = null, bool isDanger = false);
         /// <summary>
         /// Shows the TUN confirmation dialog. Mutates <paramref name="settings"/>.TunMtu,
         /// <paramref name="settings"/>.TunOutboundInterface, and <paramref name="settings"/>.TunIpv6Enabled
@@ -40,7 +41,7 @@ namespace XrayUI.Services
         /// When progress percent is null, the progress bar is indeterminate.
         /// </summary>
         /// <param name="xamlRoot">Override which window the dialog is rooted in. Null = MainWindow.</param>
-        Task ShowProgressBarDialogAsync(string title, Func<IProgress<ProgressDialogUpdate>, CancellationToken, Task> work, XamlRoot? xamlRoot = null);
+        Task ShowProgressBarDialogAsync(LocalizedText title, Func<IProgress<ProgressDialogUpdate>, CancellationToken, Task> work, XamlRoot? xamlRoot = null);
 
         /// <summary>
         /// Shows the DNS settings dialog. Mutates <paramref name="settings"/> in-place on save.
@@ -58,6 +59,6 @@ namespace XrayUI.Services
         /// has no Win32 knowledge — the caller is responsible for probing/registering with
         /// user32 and only persisting on success.
         /// </summary>
-        Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk);
+        Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(LocalizedText title, uint currentMods, uint currentVk);
     }
 }

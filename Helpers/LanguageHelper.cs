@@ -17,11 +17,13 @@ namespace XrayUI.Helpers
     /// passes a <c>resourceKey</c> and the display string is resolved against the
     /// current UI locale instead.
     /// </summary>
-    public sealed partial class LanguageInfo
+    public sealed partial class LanguageInfo : System.ComponentModel.INotifyPropertyChanged
     {
         private readonly string _displayName;
         private readonly string? _resourceKey;
 
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        public void RefreshLocalization() => PropertyChanged?.Invoke(this, new(nameof(DisplayName)));
         public string? Tag { get; }
 
         public string DisplayName =>
@@ -53,6 +55,7 @@ namespace XrayUI.Helpers
             new(null,    "跟随系统", resourceKey: "Language_FollowSystem"),
             new("zh-CN", "简体中文"),
             new("en-US", "English"),
+            new("ru-RU", "Русский"),
         ];
 
         /// <summary>

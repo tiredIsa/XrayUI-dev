@@ -978,7 +978,7 @@
     <value>Choose interface language</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
-    <value>Restart XrayUI to apply changes</value>
+    <value>Restart XrayUI to apply the routing region</value>
   </data>
   <data name="Personalize_LangRestartBtn.Content" xml:space="preserve">
     <value>Restart</value>
@@ -1381,4 +1381,23 @@ Path: {0}</value>
   <data name="Traffic_EmptyPending" xml:space="preserve"><value>This page is ready. Addresses and graphs will appear after traffic collection is connected.</value></data>
   <data name="Traffic_EmptyFilter" xml:space="preserve"><value>No accesses match these filters.</value></data>
   <data name="Traffic_Empty" xml:space="preserve"><value>No access events yet. Only traffic handled by Xray appears here.</value></data>
+  <data name="Copy_Copied" xml:space="preserve"><value>Copied to clipboard</value></data>
+  <data name="CustomRules_Domain.Text" xml:space="preserve"><value>Domain</value></data>
+  <data name="CustomRules_Process.Text" xml:space="preserve"><value>Process</value></data>
+  <data name="Log_MaskQuarter" xml:space="preserve"><value>Quarter</value></data>
+  <data name="Log_MaskHalf" xml:space="preserve"><value>Half</value></data>
+  <data name="Log_MaskFull" xml:space="preserve"><value>Full</value></data>
+  <data name="Log_LevelDebug" xml:space="preserve"><value>Debug</value></data>
+  <data name="Log_LevelInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="Log_LevelWarning" xml:space="preserve"><value>Warning</value></data>
+  <data name="Traffic_AccessAccepted" xml:space="preserve"><value>Accepted by inbound</value></data>
+  <data name="Traffic_AccessRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="Traffic_UnitBytes" xml:space="preserve"><value>B</value></data>
+  <data name="Traffic_UnitKiB" xml:space="preserve"><value>KiB</value></data>
+  <data name="Traffic_UnitMiB" xml:space="preserve"><value>MiB</value></data>
+  <data name="Traffic_UnitGiB" xml:space="preserve"><value>GiB</value></data>
+  <data name="Traffic_UnitTiB" xml:space="preserve"><value>TiB</value></data>
+  <data name="Traffic_PerSecond" xml:space="preserve"><value>/s</value></data>
+  <data name="Traffic_TransportUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Language_ChangeFailed" xml:space="preserve"><value>Could not change the interface language</value></data>
 </root>

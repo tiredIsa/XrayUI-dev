@@ -15,7 +15,16 @@ namespace XrayUI.Helpers
 
     public static class Loc
     {
-        public static string GetString(string key) => key;
+        public static string GetString(string key) => key switch
+        {
+            "Traffic_UnitBytes" => "B",
+            "Traffic_UnitKiB" => "KiB",
+            "Traffic_UnitMiB" => "MiB",
+            "Traffic_UnitGiB" => "GiB",
+            "Traffic_UnitTiB" => "TiB",
+            "Traffic_PerSecond" => "/s",
+            _ => key
+        };
         public static string Format(string key, params object?[] args) =>
             $"{key}({string.Join(",", args)})";
     }

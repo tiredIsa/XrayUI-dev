@@ -31,8 +31,7 @@ namespace XrayUI.Services
 
         public async Task<string?> ShowImportLinkDialogAsync()
         {
-            var textBox = new TextBox
-            {
+            var textBox = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 PlaceholderText = L.Import_Placeholder,
                 AcceptsReturn = true,
                 Width = 360,
@@ -40,12 +39,12 @@ namespace XrayUI.Services
                 TextWrapping = TextWrapping.Wrap,
                 VerticalAlignment = VerticalAlignment.Top,
                 VerticalContentAlignment = VerticalAlignment.Top
-            };
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.Import_Placeholder);
 
             var dialog = CreateDialog();
-            dialog.Title = L.Import_Title;
-            dialog.PrimaryButtonText = L.Dialog_OK;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = L.Import_Title);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_OK);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -53,11 +52,10 @@ namespace XrayUI.Services
                 Spacing = 12,
                 Children =
                 {
-                    new TextBlock
-                    {
+                    XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                         Text = L.Import_SupportHint,
                         Opacity = 0.65,
-                    },
+                    }, "Text", localized => localized.Text = L.Import_SupportHint),
                     textBox
                 }
             };
@@ -78,17 +76,17 @@ namespace XrayUI.Services
 
             void SyncDialogButtons()
             {
+                LocalizationBindings.Bind(dialog, "PrimaryButtonText", () =>
+                    dialog.PrimaryButtonText = vm.IsAddPage ? L.Dialog_Add : string.Empty);
                 if (vm.IsAddPage)
                 {
-                    dialog.PrimaryButtonText = L.Dialog_Add;
-                    dialog.CloseButtonText = L.Dialog_Cancel;
+                    XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
                     dialog.DefaultButton = ContentDialogButton.Primary;
                     dialog.IsPrimaryButtonEnabled = vm.CanAddSubscription;
                     return;
                 }
 
-                dialog.PrimaryButtonText = string.Empty;
-                dialog.CloseButtonText = L.Dialog_Done;
+                XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Done);
                 dialog.DefaultButton = ContentDialogButton.Close;
                 dialog.IsPrimaryButtonEnabled = false;
             }
@@ -113,19 +111,18 @@ namespace XrayUI.Services
         public async Task<ServerEntry?> ShowEditServerDialogAsync(ServerEntry? existing)
         {
             // ── Controls ──────────────────────────────────────────────────────
-            var txtName = new TextBox { Header = L.EditServer_Name, Text = existing?.Name ?? string.Empty, MinWidth = 420 };
-            var txtHost = new TextBox { Header = L.EditServer_Address, Text = existing?.Host ?? string.Empty };
-            var numPort = new NumberBox
-            {
+            var txtName = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_Name, Text = existing?.Name ?? string.Empty, MinWidth = 420 }, "Header", localized => localized.Header = L.EditServer_Name);
+            var txtHost = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_Address, Text = existing?.Host ?? string.Empty }, "Header", localized => localized.Header = L.EditServer_Address);
+            var numPort = XrayUI.Helpers.LocalizationBindings.BindValue(new NumberBox {
                 Header = L.EditServer_Port, Value = existing?.Port ?? 443, Minimum = 1, Maximum = 65535,
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
-            };
-            var cmbProtocol = new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 };
+            }, "Header", localized => localized.Header = L.EditServer_Port);
+            var cmbProtocol = XrayUI.Helpers.LocalizationBindings.BindValue(new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 }, "Header", localized => localized.Header = L.EditServer_Protocol);
             foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks", "http", "wireguard" })
                 cmbProtocol.Items.Add(new ComboBoxItem { Content = ServerEntry.GetDisplayProtocol(p), Tag = p });
             SetProtocolCode(cmbProtocol, existing?.Protocol?.ToLower() ?? "ss");
 
-            var cmbEncryption = new ComboBox { Header = L.EditServer_Encryption, MinWidth = 200 };
+            var cmbEncryption = XrayUI.Helpers.LocalizationBindings.BindValue(new ComboBox { Header = L.EditServer_Encryption, MinWidth = 200 }, "Header", localized => localized.Header = L.EditServer_Encryption);
             foreach (var m in new[]
                      {
                          "aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305", "2022-blake3-aes-128-gcm",
@@ -135,18 +132,17 @@ namespace XrayUI.Services
             if (existing?.Encryption is { Length: > 0 } existingEnc && !cmbEncryption.Items.Contains(existingEnc))
                 cmbEncryption.Items.Add(existingEnc);
             cmbEncryption.SelectedItem = existing?.Encryption ?? "aes-128-gcm";
-            var txtUsername = new TextBox { Header = L.EditServer_SocksUsername, Text = existing?.Username ?? string.Empty };
-            var txtPassword = CreateRevealablePasswordBox(L.EditServer_Password, existing?.Password);
+            var txtUsername = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_SocksUsername, Text = existing?.Username ?? string.Empty }, "Header", localized => localized.Header = L.EditServer_SocksUsername);
+            var txtPassword = CreateRevealablePasswordBox(() => L.EditServer_Password, existing?.Password);
             var txtUuid = new TextBox { Header = "UUID (VMess / VLESS)", Text = existing?.Uuid ?? string.Empty };
-            var numAlterId = new NumberBox
-                { Header = "AlterId (VMess)", Value = existing?.AlterId ?? 0, Minimum = 0, Maximum = 65535 };
-            var cmbNetwork = new ComboBox { Header = L.EditServer_Transport, MinWidth = 200 };
+            var numAlterId = new NumberBox { Header = "AlterId (VMess)", Value = existing?.AlterId ?? 0, Minimum = 0, Maximum = 65535 };
+            var cmbNetwork = XrayUI.Helpers.LocalizationBindings.BindValue(new ComboBox { Header = L.EditServer_Transport, MinWidth = 200 }, "Header", localized => localized.Header = L.EditServer_Transport);
             foreach (var n in new[] { "tcp", "ws", "grpc", "xhttp" })
                 cmbNetwork.Items.Add(n);
             cmbNetwork.SelectedItem = existing?.Network ?? "tcp";
 
-            var txtPath = new TextBox { Header = L.EditServer_Path, Text = existing?.Path ?? string.Empty };
-            var txtWsHost = new TextBox { Header = L.EditServer_WsHost, Text = existing?.WsHost ?? string.Empty };
+            var txtPath = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_Path, Text = existing?.Path ?? string.Empty }, "Header", localized => localized.Header = L.EditServer_Path);
+            var txtWsHost = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_WsHost, Text = existing?.WsHost ?? string.Empty }, "Header", localized => localized.Header = L.EditServer_WsHost);
             // Literal English headers — technical fields, same convention as SNI / Finalmask (JSON).
             // Blank first item = "not set": omitted from the config so xray defaults to auto.
             var cmbXhttpMode = new ComboBox { Header = "XHTTP Mode", MinWidth = 200 };
@@ -155,30 +151,27 @@ namespace XrayUI.Services
                 cmbXhttpMode.Items.Add(m);
             cmbXhttpMode.SelectedItem = XhttpSettings.NormalizeMode(existing?.XhttpMode);
             var txtXhttpExtra = CreateJsonTextBox("XHTTP Extra (JSON)", existing?.XhttpExtra);
-            var cmbSecurity = new ComboBox { Header = L.EditServer_Security, MinWidth = 200 };
+            var cmbSecurity = XrayUI.Helpers.LocalizationBindings.BindValue(new ComboBox { Header = L.EditServer_Security, MinWidth = 200 }, "Header", localized => localized.Header = L.EditServer_Security);
             foreach (var s in new[] { "none", "tls", "reality" })
                 cmbSecurity.Items.Add(s);
             cmbSecurity.SelectedItem = existing?.Security ?? "none";
 
             var txtSni = new TextBox { Header = "SNI", Text = existing?.Sni ?? string.Empty };
-            var txtFp = new TextBox { Header = L.EditServer_Fingerprint, Text = existing?.Fingerprint ?? string.Empty };
-            var chkAllowInsecure = new CheckBox
-                { Content = L.EditServer_AllowInsecure, IsChecked = existing?.AllowInsecure ?? false };
+            var txtFp = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox { Header = L.EditServer_Fingerprint, Text = existing?.Fingerprint ?? string.Empty }, "Header", localized => localized.Header = L.EditServer_Fingerprint);
+            var chkAllowInsecure = XrayUI.Helpers.LocalizationBindings.BindValue(new CheckBox { Content = L.EditServer_AllowInsecure, IsChecked = existing?.AllowInsecure ?? false }, "Content", localized => localized.Content = L.EditServer_AllowInsecure);
             // Localized on purpose, unlike the PublicKey (Reality) / Flow (VLESS) rows below:
             // it pairs with 指纹 (uTLS) above, of which 证书指纹 is the qualified form.
-            var txtPinnedCert = new TextBox
-            {
+            var txtPinnedCert = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Header = L.EditServer_CertFingerprint,
                 Text = existing?.PinnedPeerCertSha256 ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
-            };
-            var txtEchConfigList = new TextBox
-            {
+            }, "Header", localized => localized.Header = L.EditServer_CertFingerprint);
+            var txtEchConfigList = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Header = "ECH ConfigList",
                 PlaceholderText = L.EditServer_EchPlaceholder,
                 Text = existing?.EchConfigList ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
-            };
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.EditServer_EchPlaceholder);
             var cmbEchForceQuery = new ComboBox { Header = "ECH Force Query", MinWidth = 200 };
             foreach (var q in new[] { EchSettings.None, EchSettings.Half, EchSettings.Full })
                 cmbEchForceQuery.Items.Add(q);
@@ -189,17 +182,15 @@ namespace XrayUI.Services
             var txtPk = new TextBox { Header = "PublicKey (Reality)", Text = existing?.PublicKey ?? string.Empty };
             var txtSid = new TextBox { Header = "ShortId (Reality)", Text = existing?.ShortId ?? string.Empty };
             var txtSpx = new TextBox { Header = "SpiderX (Reality)", Text = existing?.SpiderX ?? string.Empty };
-            var txtFlow = new TextBox
-            {
+            var txtFlow = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Header = "Flow (VLESS)", PlaceholderText = L.EditServer_FlowPlaceholder, Text = existing?.Flow ?? string.Empty
-            };
-            var txtVlessEncryption = new TextBox
-            {
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.EditServer_FlowPlaceholder);
+            var txtVlessEncryption = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Header = "VLESS encryption (PQ)",
                 PlaceholderText = L.EditServer_FinalmaskPlaceholder,
                 Text = existing?.VlessEncryption ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
-            };
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.EditServer_FinalmaskPlaceholder);
             var txtFinalmask = CreateJsonTextBox("Finalmask (JSON)", existing?.Finalmask);
 
             // WireGuard. Literal English headers, matching the other technical fields above
@@ -207,8 +198,7 @@ namespace XrayUI.Services
             var txtWgPrivateKey = new TextBox { Header = "Private Key", Text = existing?.WgPrivateKey ?? string.Empty };
             var txtWgPublicKey = new TextBox { Header = "Peer Public Key", Text = existing?.WgPublicKey ?? string.Empty };
             var txtWgPreSharedKey = new TextBox { Header = "Pre-shared Key", Text = existing?.WgPreSharedKey ?? string.Empty };
-            var txtWgLocalAddress = new TextBox
-            {
+            var txtWgLocalAddress = new TextBox {
                 Header = "Local Address",
                 PlaceholderText = "172.16.0.2/32, fd00::2/128",
                 Text = existing?.WgLocalAddress ?? string.Empty
@@ -343,8 +333,7 @@ namespace XrayUI.Services
                 }
             };
 
-            var scrollViewer = new ScrollView
-            {
+            var scrollViewer = new ScrollView {
                 Content = form,
                 MaxHeight = 520,
                 VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Auto,
@@ -357,9 +346,9 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = existing == null ? L.EditServer_AddTitle : L.EditServer_EditTitle;
-            dialog.PrimaryButtonText = L.Dialog_Save;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = existing == null ? L.EditServer_AddTitle : L.EditServer_EditTitle);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Save);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = scrollViewer;
 
@@ -521,9 +510,9 @@ namespace XrayUI.Services
             ServerEntry? saved = null;
 
             var dialog = CreateDialog();
-            dialog.Title = existing is null ? L.ChainProxy_AddTitle : L.ChainProxy_EditTitle;
-            dialog.PrimaryButtonText = L.Dialog_Save;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = existing is null ? L.ChainProxy_AddTitle : L.ChainProxy_EditTitle);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Save);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = content;
 
@@ -543,35 +532,31 @@ namespace XrayUI.Services
 
         public async Task<(int port, bool allowLan)?> ShowEditPortDialogAsync(int currentPort, bool currentAllowLan)
         {
-            var numBox = new NumberBox
-            {
+            var numBox = XrayUI.Helpers.LocalizationBindings.BindValue(new NumberBox {
                 Header = L.EditPort_Header,
                 Value = currentPort,
                 Minimum = 1024,
                 Maximum = 65535,
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
-            };
+            }, "Header", localized => localized.Header = L.EditPort_Header);
 
-            var lanToggle = new ToggleSwitch
-            {
+            var lanToggle = XrayUI.Helpers.LocalizationBindings.BindValue(new ToggleSwitch {
                 IsOn = currentAllowLan,
                 OnContent = L.Dialog_On,
                 OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
-            };
-            var lanRow = CreateLabelRow(L.EditPort_AllowLan, lanToggle);
+            }, "OnOff", localized => { localized.OnContent = L.Dialog_On; localized.OffContent = L.Dialog_Off; });
+            var lanRow = CreateLabelRow(() => L.EditPort_AllowLan, lanToggle);
 
-            var lanAddressText = new TextBlock
-            {
+            var lanAddressText = new TextBlock {
                 Opacity = 0.65,
                 TextWrapping = TextWrapping.Wrap,
                 VerticalAlignment = VerticalAlignment.Center,
             };
 
             var transparentBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
-            var lanCopyBtn = new CopyButton
-            {
+            var lanCopyBtn = new CopyButton {
                 Content = "",
                 FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons"),
                 Width = 28,
@@ -582,7 +567,7 @@ namespace XrayUI.Services
                 Background = transparentBrush,
                 BorderBrush = transparentBrush,
             };
-            ToolTipService.SetToolTip(lanCopyBtn, L.EditPort_CopyAddress);
+            XrayUI.Helpers.LocalizationBindings.Bind(lanCopyBtn, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(lanCopyBtn, L.EditPort_CopyAddress));
 
             var lanAddressRow = new Grid { ColumnSpacing = 4 };
             lanAddressRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -606,13 +591,13 @@ namespace XrayUI.Services
                 if (lanAddress is not null)
                 {
                     var address = $"{lanAddress}:{CurrentPortValue()}";
-                    lanAddressText.Text = Loc.Format("EditPort_LanAddress", address);
+                    XrayUI.Helpers.LocalizationBindings.Bind(lanAddressText, "Text", () => lanAddressText.Text = Loc.Format("EditPort_LanAddress", address));
                     lanCopyBtn.TextToCopy = address;
                     lanCopyBtn.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    lanAddressText.Text = L.EditPort_LanUnavailable;
+                    XrayUI.Helpers.LocalizationBindings.Bind(lanAddressText, "Text", () => lanAddressText.Text = L.EditPort_LanUnavailable);
                     lanCopyBtn.Visibility = Visibility.Collapsed;
                 }
                 lanAddressRow.Visibility = Visibility.Visible;
@@ -623,9 +608,9 @@ namespace XrayUI.Services
             UpdateLanAddressText();
 
             var dialog = CreateDialog();
-            dialog.Title = L.EditPort_Title;
-            dialog.PrimaryButtonText = L.Dialog_OK;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = L.EditPort_Title);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_OK);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -634,8 +619,7 @@ namespace XrayUI.Services
                 Children =
                 {
                     numBox,
-                    new TextBlock
-                    {
+                    new TextBlock {
                         Text = Loc.Format("EditPort_Range", numBox.Minimum, numBox.Maximum),
                         Opacity = 0.65,
                     },
@@ -652,23 +636,22 @@ namespace XrayUI.Services
 
         // ── Error ─────────────────────────────────────────────────────────────
 
-        public async Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null,
-            string? cancelText = null, bool isDanger = false)
+        public async Task<bool> ShowConfirmationAsync(LocalizedText title, LocalizedText message, LocalizedText? confirmText = null,
+            LocalizedText? cancelText = null, bool isDanger = false)
         {
-            confirmText ??= L.Dialog_OK;
-            cancelText  ??= L.Dialog_Cancel;
-            var content = new TextBlock
-            {
-                Text = message,
+            confirmText ??= LocalizedText.Key("Dialog_OK");
+            cancelText ??= LocalizedText.Key("Dialog_Cancel");
+            var content = LocalizationBindings.BindValue(new TextBlock {
+                Text = message.Value,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 280
-            };
+            }, "Text", text => text.Text = message.Value);
 
             var dialog = CreateDialog();
-            dialog.Title = title;
+            LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = title.Value);
             dialog.Content = content;
-            dialog.PrimaryButtonText = confirmText;
-            dialog.CloseButtonText = cancelText;
+            LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = confirmText.Value);
+            LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = cancelText.Value);
             dialog.DefaultButton = isDanger ? ContentDialogButton.None : ContentDialogButton.Primary;
 
             if (isDanger && Application.Current.Resources.TryGetValue("DangerAccentButtonStyle", out var style) &&
@@ -684,10 +667,10 @@ namespace XrayUI.Services
             var content = new TunConfirmationDialog(settings.TunMtu, settings.TunOutboundInterface, settings.TunIpv6Enabled);
 
             var dialog = CreateDialog();
-            dialog.Title = L.Tun_EnableTitle;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = L.Tun_EnableTitle);
             dialog.Content = content;
-            dialog.PrimaryButtonText = L.Dialog_Confirm;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Confirm);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary)
@@ -699,16 +682,16 @@ namespace XrayUI.Services
             return true;
         }
 
-        public async Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk)
+        public async Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(LocalizedText title, uint currentMods, uint currentVk)
         {
             var content = new HotkeyRecorderControl(currentMods, currentVk);
 
             var dialog = CreateDialog();
-            dialog.Title = title;
+            LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = title.Value);
             dialog.Content = content;
-            dialog.PrimaryButtonText = L.Dialog_Save;
-            dialog.SecondaryButtonText = L.Personalize_HotkeyDialogClear;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Save);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "SecondaryButtonText", () => dialog.SecondaryButtonText = L.Personalize_HotkeyDialogClear);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.IsPrimaryButtonEnabled = currentVk != 0;
             dialog.IsSecondaryButtonEnabled = currentVk != 0;
             dialog.DefaultButton = ContentDialogButton.Primary;
@@ -724,32 +707,30 @@ namespace XrayUI.Services
             };
         }
 
-        public async Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null)
+        public async Task ShowErrorAsync(LocalizedText title, LocalizedText message, XamlRoot? xamlRoot = null)
         {
             var dialog = CreateDialog(xamlRoot);
-            dialog.Title = title;
-            dialog.Content = message;
-            dialog.CloseButtonText = L.Dialog_OK;
+            LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = title.Value);
+            LocalizationBindings.Bind(dialog, "Content", () => dialog.Content = message.Value);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_OK);
             await dialog.ShowAsync();
         }
 
         // ── Progress ──────────────────────────────────────────────────────────
 
-        public async Task ShowProgressBarDialogAsync(string title,
+        public async Task ShowProgressBarDialogAsync(LocalizedText title,
             Func<IProgress<ProgressDialogUpdate>, CancellationToken, Task> work, XamlRoot? xamlRoot = null)
         {
             using var cts = new CancellationTokenSource();
 
-            var statusText = new TextBlock
-            {
+            var statusText = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                 Text = L.Dialog_Preparing,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 320,
                 HorizontalAlignment = HorizontalAlignment.Center,
-            };
+            }, "Text", localized => localized.Text = L.Dialog_Preparing);
 
-            var progressBar = new ProgressBar
-            {
+            var progressBar = new ProgressBar {
                 IsIndeterminate = true,
                 Minimum = 0,
                 Maximum = 100,
@@ -757,8 +738,8 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog(xamlRoot);
-            dialog.Title = title;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = title.Value);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.Content = new StackPanel
             {
                 Spacing = 12,
@@ -769,7 +750,7 @@ namespace XrayUI.Services
 
             var progress = new Progress<ProgressDialogUpdate>(update =>
             {
-                statusText.Text = update.Message;
+                LocalizationBindings.Bind(statusText, "Text", () => statusText.Text = update.Message.Value);
 
                 if (update.Percent.HasValue)
                 {
@@ -850,8 +831,7 @@ namespace XrayUI.Services
             var dialog = CreateDialog();
 
             // ── X close button ────────────────────────────────────────────────
-            var closeBtn = new Button
-            {
+            var closeBtn = new Button {
                 Content = "\uE711",
                 FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons"),
                 Width = 32,
@@ -867,21 +847,19 @@ namespace XrayUI.Services
             var header = new Grid { Margin = new Thickness(0, 0, 0, 0) };
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var titleText = new TextBlock
-            {
+            var titleText = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                 Text = L.Share_Title,
                 FontSize = 20,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 VerticalAlignment = VerticalAlignment.Center,
-            };
+            }, "Text", localized => localized.Text = L.Share_Title);
             Grid.SetColumn(titleText, 0);
             Grid.SetColumn(closeBtn, 1);
             header.Children.Add(titleText);
             header.Children.Add(closeBtn);
 
             // ── Link box ──────────────────────────────────────────────────────
-            var linkBox = new TextBox
-            {
+            var linkBox = new TextBox {
                 Text = link,
                 IsReadOnly = true,
                 TextWrapping = TextWrapping.Wrap,
@@ -890,8 +868,7 @@ namespace XrayUI.Services
 
 
             // ── Name row (server name + animated copy icon button) ────────────
-            var nameCopyBtn = new Button
-            {
+            var nameCopyBtn = new Button {
                 Content = "\uE8C8",
                 FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons"),
                 Width = 28,
@@ -902,7 +879,7 @@ namespace XrayUI.Services
             };
             if (Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle2))
                 nameCopyBtn.Style = (Style)subtleStyle2;
-            ToolTipService.SetToolTip(nameCopyBtn, L.Share_CopyLink);
+            XrayUI.Helpers.LocalizationBindings.Bind(nameCopyBtn, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(nameCopyBtn, L.Share_CopyLink));
 
             nameCopyBtn.Click += async (_, _) =>
             {
@@ -917,8 +894,7 @@ namespace XrayUI.Services
             var nameRow = new Grid { ColumnSpacing = 4 };
             nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             nameRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var nameText = new TextBlock
-            {
+            var nameText = new TextBlock {
                 Text = serverName,
                 FontSize = 12,
                 Opacity = 0.65,
@@ -952,20 +928,18 @@ namespace XrayUI.Services
         public async Task<(bool enabled, bool autoConnect)?> ShowStartupDialogAsync(bool currentEnabled,
             bool currentAutoConnect)
         {
-            var toggle = new ToggleSwitch
-            {
+            var toggle = XrayUI.Helpers.LocalizationBindings.BindValue(new ToggleSwitch {
                 IsOn = currentEnabled,
                 OnContent = L.Dialog_On,
                 OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
-            };
+            }, "OnOff", localized => { localized.OnContent = L.Dialog_On; localized.OffContent = L.Dialog_Off; });
 
-            var toggleLabel = new TextBlock
-            {
+            var toggleLabel = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                 Text = L.Startup_AutoStart,
                 VerticalAlignment = VerticalAlignment.Center,
-            };
+            }, "Text", localized => localized.Text = L.Startup_AutoStart);
 
             var toggleRow = new Grid { ColumnSpacing = 8 };
             toggleRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -975,20 +949,19 @@ namespace XrayUI.Services
             toggleRow.Children.Add(toggleLabel);
             toggleRow.Children.Add(toggle);
 
-            var checkBox = new CheckBox
-            {
+            var checkBox = XrayUI.Helpers.LocalizationBindings.BindValue(new CheckBox {
                 Content = L.Startup_AutoConnect,
                 IsChecked = currentAutoConnect,
                 IsEnabled = currentEnabled,
                 Margin = new Thickness(16, 0, 0, 0),
-            };
+            }, "Content", localized => localized.Content = L.Startup_AutoConnect);
 
             toggle.Toggled += (_, _) => checkBox.IsEnabled = toggle.IsOn;
 
             var dialog = CreateDialog();
-            dialog.Title = L.Startup_Title;
-            dialog.PrimaryButtonText = L.Dialog_Confirm;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = L.Startup_Title);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Confirm);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -1009,9 +982,9 @@ namespace XrayUI.Services
             Version newVersion, IReadOnlyList<string> notes)
         {
             var dialog = CreateDialog();
-            dialog.Title = Loc.Format("Update_ConfirmTitle", newVersion);
-            dialog.PrimaryButtonText = L.Update_ConfirmNow;
-            dialog.CloseButtonText = L.Update_ConfirmLater;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = Loc.Format("Update_ConfirmTitle", newVersion));
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Update_ConfirmNow);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Update_ConfirmLater);
             dialog.DefaultButton = ContentDialogButton.Primary;
 
             // No notes → no Content at all: the dialog stays a compact title + buttons.
@@ -1028,13 +1001,12 @@ namespace XrayUI.Services
                 // Opacity instead of TextFillColorSecondaryBrush: Application.Current.Resources
                 // resolves theme brushes against the app-level theme (never set here), which goes
                 // stale under the Personalize theme override — see Views/LogWindow.xaml.
-                var notesHeader = new TextBlock
-                {
+                var notesHeader = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                     Text = L.Update_ConfirmNotesHeader,
                     FontSize = 12,
                     Opacity = 0.65,
                     Margin = new Thickness(0, 0, 0, 6),
-                };
+                }, "Text", localized => localized.Text = L.Update_ConfirmNotesHeader);
                 Grid.SetRow(notesHeader, 0);
                 root.Children.Add(notesHeader);
 
@@ -1042,8 +1014,7 @@ namespace XrayUI.Services
                 foreach (var line in notes)
                     list.Children.Add(BuildNoteLine(line));
 
-                var scroller = new ScrollViewer
-                {
+                var scroller = new ScrollViewer {
                     Content = list,
                     MaxHeight = 220,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -1069,16 +1040,14 @@ namespace XrayUI.Services
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            var bullet = new TextBlock
-            {
+            var bullet = new TextBlock {
                 Text = "•",
                 FontSize = 13,
                 Opacity = 0.65,
                 VerticalAlignment = VerticalAlignment.Top,
             };
 
-            var body = new TextBlock
-            {
+            var body = new TextBlock {
                 Text = text,
                 FontSize = 13,
                 TextWrapping = TextWrapping.Wrap,
@@ -1094,18 +1063,16 @@ namespace XrayUI.Services
 
         public async Task<bool> ShowDnsSettingsDialogAsync(AppSettings settings, bool isTunMode)
         {
-            var directBox = new TextBox
-            {
+            var directBox = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Text = settings.DirectDnsServer ?? string.Empty,
                 PlaceholderText = L.Dns_ServerPlaceholder,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-            };
-            var proxyBox = new TextBox
-            {
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.Dns_ServerPlaceholder);
+            var proxyBox = XrayUI.Helpers.LocalizationBindings.BindValue(new TextBox {
                 Text = settings.ProxyDnsServer ?? string.Empty,
                 PlaceholderText = L.Dns_ServerPlaceholder,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-            };
+            }, "PlaceholderText", localized => localized.PlaceholderText = L.Dns_ServerPlaceholder);
 
             var directPresets = CreatePresetButtons(directBox,
                 (L.Dns_Provider_Ali, "223.5.5.5"),
@@ -1120,8 +1087,8 @@ namespace XrayUI.Services
                 ("DoH", "https://cloudflare-dns.com/dns-query"));
 
             var strategyCmb = new ComboBox { MinWidth = 100 };
-            foreach (var item in new[] { L.Dns_Strategy_V4Only, L.Dns_Strategy_V6Only, L.Dns_Strategy_Auto })
-                strategyCmb.Items.Add(item);
+            foreach (var key in new[] { "Dns_Strategy_V4Only", "Dns_Strategy_V6Only", "Dns_Strategy_Auto" })
+                strategyCmb.Items.Add(LocalizationBindings.BindValue(new ComboBoxItem(), "Content", item => item.Content = Loc.GetString(key)));
             strategyCmb.SelectedIndex = settings.DnsQueryStrategy switch
             {
                 DnsQueryStrategy.IPv6 => 1,
@@ -1129,31 +1096,28 @@ namespace XrayUI.Services
                 _ => 0,
             };
 
-            var cacheSwitch = new ToggleSwitch
-            {
+            var cacheSwitch = XrayUI.Helpers.LocalizationBindings.BindValue(new ToggleSwitch {
                 IsOn = settings.DnsCacheEnabled,
                 OnContent = L.Dialog_On,
                 OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
-            };
+            }, "OnOff", localized => { localized.OnContent = L.Dialog_On; localized.OffContent = L.Dialog_Off; });
 
-            var fakeDnsSwitch = new ToggleSwitch
-            {
+            var fakeDnsSwitch = XrayUI.Helpers.LocalizationBindings.BindValue(new ToggleSwitch {
                 IsOn = settings.FakeDnsEnabled && isTunMode,
                 IsEnabled = isTunMode,
                 OnContent = L.Dialog_On,
                 OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
-            };
+            }, "OnOff", localized => { localized.OnContent = L.Dialog_On; localized.OffContent = L.Dialog_Off; });
 
-            var fakeDnsTitleText = new TextBlock
-            {
+            var fakeDnsTitleText = new TextBlock {
                 Text = "FakeDNS",
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            ToolTipService.SetToolTip(fakeDnsTitleText, L.Dns_TunOnlyHint);
+            XrayUI.Helpers.LocalizationBindings.Bind(fakeDnsTitleText, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(fakeDnsTitleText, L.Dns_TunOnlyHint));
 
             var fakeDnsLabel = new StackPanel
             {
@@ -1163,15 +1127,14 @@ namespace XrayUI.Services
                 Children =
                 {
                     fakeDnsTitleText,
-                    new TextBlock
-                    {
+                    XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                         Text = L.Dns_Experimental,
                         FontSize = 10,
                         VerticalAlignment = VerticalAlignment.Center,
                         Foreground =
                             (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[
                                 "SystemFillColorAttentionBrush"],
-                    },
+                    }, "Text", localized => localized.Text = L.Dns_Experimental),
                 },
             };
 
@@ -1183,8 +1146,8 @@ namespace XrayUI.Services
             fakeDnsRow.Children.Add(fakeDnsLabel);
             fakeDnsRow.Children.Add(fakeDnsSwitch);
 
-            var strategyRow = CreateLabelRow(L.Dns_QueryStrategyLabel, strategyCmb);
-            var cacheRow = CreateLabelRow(L.Dns_EnableCacheLabel, cacheSwitch);
+            var strategyRow = CreateLabelRow(() => L.Dns_QueryStrategyLabel, strategyCmb);
+            var cacheRow = CreateLabelRow(() => L.Dns_EnableCacheLabel, cacheSwitch);
 
             var content = new StackPanel
             {
@@ -1197,15 +1160,14 @@ namespace XrayUI.Services
                         Spacing = 6,
                         Children =
                         {
-                            new TextBlock { Text = L.Dns_DirectTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                            new TextBlock
-                            {
+                            XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock { Text = L.Dns_DirectTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, "Text", localized => localized.Text = L.Dns_DirectTitle),
+                            XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                                 Text = L.Dns_DirectDesc,
                                 FontSize = 11,
                                 Opacity = 0.6,
                                 TextWrapping = TextWrapping.Wrap,
                                 Margin = new Thickness(0, 0, 0, 4),
-                            },
+                            }, "Text", localized => localized.Text = L.Dns_DirectDesc),
                             directBox,
                             directPresets,
                         }
@@ -1215,15 +1177,14 @@ namespace XrayUI.Services
                         Spacing = 6,
                         Children =
                         {
-                            new TextBlock { Text = L.Dns_ProxyTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
-                            new TextBlock
-                            {
+                            XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock { Text = L.Dns_ProxyTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, "Text", localized => localized.Text = L.Dns_ProxyTitle),
+                            XrayUI.Helpers.LocalizationBindings.BindValue(new TextBlock {
                                 Text = L.Dns_ProxyDesc,
                                 FontSize = 11,
                                 Opacity = 0.6,
                                 TextWrapping = TextWrapping.Wrap,
                                 Margin = new Thickness(0, 0, 0, 4),
-                            },
+                            }, "Text", localized => localized.Text = L.Dns_ProxyDesc),
                             proxyBox,
                             proxyPresets,
                         }
@@ -1233,10 +1194,10 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = L.Dns_DialogTitle;
-            dialog.PrimaryButtonText = L.Dialog_Save;
-            dialog.SecondaryButtonText = L.Dns_ResetDefaults;
-            dialog.CloseButtonText = L.Dialog_Cancel;
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "Title", () => dialog.Title = L.Dns_DialogTitle);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "PrimaryButtonText", () => dialog.PrimaryButtonText = L.Dialog_Save);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "SecondaryButtonText", () => dialog.SecondaryButtonText = L.Dns_ResetDefaults);
+            XrayUI.Helpers.LocalizationBindings.Bind(dialog, "CloseButtonText", () => dialog.CloseButtonText = L.Dialog_Cancel);
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = content;
 
@@ -1279,8 +1240,7 @@ namespace XrayUI.Services
         /// Use object-initializer syntax to set the remaining properties.
         /// </summary>
         /// <param name="xamlRootOverride">If supplied, roots the dialog in this window instead of the MainWindow factory.</param>
-        private ContentDialog CreateDialog(XamlRoot? xamlRootOverride = null) => new ContentDialog
-        {
+        private ContentDialog CreateDialog(XamlRoot? xamlRootOverride = null) => new ContentDialog {
             XamlRoot = xamlRootOverride ?? XamlRoot,
             RequestedTheme = ThemeHelper.ActualTheme,
         };
@@ -1301,13 +1261,12 @@ namespace XrayUI.Services
         /// dead on arrival and the value can never be read back (issue #124).
         /// </para>
         /// </summary>
-        private static PasswordBox CreateRevealablePasswordBox(string header, string? value)
+        private static PasswordBox CreateRevealablePasswordBox(Func<string> header, string? value)
         {
             var box = new PasswordBox { Password = value ?? string.Empty };
 
             var icon = new FontIcon { FontSize = 14 };
-            var toggle = new Button
-            {
+            var toggle = new Button {
                 Content = icon,
                 Padding = new Thickness(6, 0, 6, 0),
                 Height = 22,
@@ -1326,6 +1285,12 @@ namespace XrayUI.Services
                 AutomationProperties.SetName(toggle, label);
             }
 
+            LocalizationBindings.Bind(toggle, "RevealCaption", () =>
+            {
+                var text = box.PasswordRevealMode == PasswordRevealMode.Visible ? L.EditServer_HidePassword : L.EditServer_ShowPassword;
+                ToolTipService.SetToolTip(toggle, text);
+                AutomationProperties.SetName(toggle, text);
+            });
             SetRevealed(false);
             toggle.Click += (_, _) => SetRevealed(box.PasswordRevealMode != PasswordRevealMode.Visible);
 
@@ -1368,12 +1333,12 @@ namespace XrayUI.Services
         /// <summary>
         /// Two-column row: stretchable label on the left, fixed-size control on the right.
         /// </summary>
-        private static Grid CreateLabelRow(string label, FrameworkElement control)
+        private static Grid CreateLabelRow(Func<string> label, FrameworkElement control)
         {
             var grid = new Grid { ColumnSpacing = 8 };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var text = new TextBlock { Text = label, VerticalAlignment = VerticalAlignment.Center };
+            var text = LocalizationBindings.BindValue(new TextBlock { VerticalAlignment = VerticalAlignment.Center }, "Text", caption => caption.Text = label());
             Grid.SetColumn(text, 0);
             Grid.SetColumn(control, 1);
             grid.Children.Add(text);
@@ -1386,8 +1351,7 @@ namespace XrayUI.Services
         /// </summary>
         private static StackPanel CreatePresetButtons(TextBox target, params (string label, string value)[] presets)
         {
-            var panel = new StackPanel
-            {
+            var panel = new StackPanel {
                 Orientation = Orientation.Horizontal,
                 Spacing = 8,
                 Margin = new Thickness(0, 2, 0, 0),
@@ -1395,8 +1359,7 @@ namespace XrayUI.Services
             foreach (var (label, value) in presets)
             {
                 var captured = value;
-                var btn = new Button
-                {
+                var btn = new Button {
                     Content = label,
                     Padding = new Thickness(10, 3, 10, 3),
                     FontSize = 11,

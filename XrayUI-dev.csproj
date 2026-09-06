@@ -12,12 +12,16 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <!-- PRI fallback target when the system locale has no matching Strings/{lang}/Resources.resw.
-         Keeps non-zh/en users (ko/ja/ru/...) on English rather than relying on PRI's
+         Keeps users of unsupported languages on English rather than relying on PRI's
          alphabetical default. -->
     <DefaultLanguage>en-US</DefaultLanguage>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(LocalizationSmokeTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);LOCALIZATION_SMOKE_TEST</DefineConstants>
   </PropertyGroup>
 
 
@@ -81,6 +85,9 @@
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
+    <EmbeddedResource Include="Strings\en-US\Resources.resw" LogicalName="XrayUI.Localization.en-US" />
+    <EmbeddedResource Include="Strings\ru-RU\Resources.resw" LogicalName="XrayUI.Localization.ru-RU" />
+    <EmbeddedResource Include="Strings\zh-CN\Resources.resw" LogicalName="XrayUI.Localization.zh-CN" />
   </ItemGroup>
 
   <!--

@@ -15,12 +15,12 @@ public static class TrafficPresentation
     public static string Bytes(double value)
     {
         if (!double.IsFinite(value) || value < 0) return "—";
-        string[] units = ["B", "KiB", "MiB", "GiB", "TiB"];
+        string[] units = ["Bytes", "KiB", "MiB", "GiB", "TiB"];
         var index = 0;
         while (value >= 1024 && index < units.Length - 1) { value /= 1024; index++; }
-        return $"{value:0.#} {units[index]}";
+        return $"{value:0.#} {Loc.GetString("Traffic_Unit" + units[index])}";
     }
-    public static string Rate(double? value) => value.HasValue ? Bytes(value.Value) + "/s" : "—";
+    public static string Rate(double? value) => value.HasValue ? Bytes(value.Value) + Loc.GetString("Traffic_PerSecond") : "—";
     public static string Address(TrafficAddress? address) => address is null ? "—" :
         address.Port is int port ? $"{(address.Host.Contains(':') ? "[" + address.Host + "]" : address.Host)}:{port}" : address.Host;
 

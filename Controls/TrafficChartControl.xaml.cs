@@ -18,8 +18,9 @@ public sealed partial class TrafficChartControl : UserControl
     {
         InitializeComponent();
         ToolTipService.SetToolTip(PlotArea, _tooltip);
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(this, Loc.GetString("Traffic_ChartAccessibleName"));
+        XrayUI.Helpers.LocalizationBindings.Bind(this, "Microsoft.UI.Xaml.Automation.AutomationProperties.SetName", () => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(this, Loc.GetString("Traffic_ChartAccessibleName")));
     }
+    public void RefreshLocalization() { Draw(); _tooltip.IsOpen = false; }
     public void SetSamples(ImmutableArray<TrafficSample> samples, int minutes)
     {
         _samples = samples; _minutes = minutes; Draw();
@@ -32,7 +33,7 @@ public sealed partial class TrafficChartControl : UserControl
         DownloadLine.Data = Geometry(plot.Download);
         UploadLine.Data = Geometry(plot.Upload);
         ScaleLabel.Text = plot.Download.IsEmpty && plot.Upload.IsEmpty ? "—" : TrafficPresentation.Rate(plot.Maximum);
-        RangeLabel.Text = Loc.Format("Traffic_Range", _minutes);
+        XrayUI.Helpers.LocalizationBindings.Bind(RangeLabel, "Text", () => RangeLabel.Text = Loc.Format("Traffic_Range", _minutes));
         EmptyLabel.Visibility = plot.Download.IsEmpty && plot.Upload.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
     }
     private static PathGeometry Geometry(ImmutableArray<ImmutableArray<TrafficPlotPoint>> segments)

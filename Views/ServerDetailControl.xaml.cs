@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.UI.Xaml.Automation;
 using Windows.System;
 using XrayUI.Helpers;
@@ -17,7 +17,7 @@ namespace XrayUI.Views
         public ServerDetailControl()
         {
             this.InitializeComponent();
-            ApplyLocalizedAttachedProperties();
+            LocalizationBindings.Bind(this, "AttachedCaptions", ApplyLocalizedAttachedProperties);
         }
 
         private void ApplyLocalizedAttachedProperties()
@@ -31,7 +31,7 @@ namespace XrayUI.Views
             SetTooltipAndName(OpenAiLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "OpenAI"));
             SetTooltipAndName(ClaudeLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "Claude"));
             SetTooltipAndName(GeminiLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "Gemini"));
-            ToolTipService.SetToolTip(RetestLatencyButton,  L.ServerDetail_RetestLatency);
+            XrayUI.Helpers.LocalizationBindings.Bind(RetestLatencyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(RetestLatencyButton, L.ServerDetail_RetestLatency));
             SetTooltipAndName(CopyShareLinkButton, L.ServerDetail_CopyShareLink);
         }
 

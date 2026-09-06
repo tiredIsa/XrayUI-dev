@@ -21,6 +21,8 @@ namespace XrayUI.Models
         private string _url = string.Empty;
         private DateTimeOffset? _lastUpdated;
         private string? _lastError;
+        private string? _errorKey;
+        private object?[] _errorArgs = [];
         private bool _isBusy;
         private long? _upload;
         private long? _download;
@@ -67,9 +69,10 @@ namespace XrayUI.Models
 
         public string? LastError
         {
-            get => _lastError;
+            get => _errorKey is null ? _lastError : Loc.Format(_errorKey, _errorArgs);
             set
             {
+                _errorKey = null;
                 _lastError = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasError));
@@ -96,7 +99,16 @@ namespace XrayUI.Models
         }
 
         [JsonIgnore]
-        public string LastErrorText => _lastError ?? string.Empty;
+        public string LastErrorText => LastError ?? string.Empty;
+
+        public void SetLocalizedError(string key, params object?[] args)
+        {
+            _errorKey = key; _errorArgs = args;
+            _lastError = Loc.Format(key, args);
+            RefreshLocalization();
+        }
+
+        public void RefreshLocalization() => OnPropertyChanged(string.Empty);
 
         /// <summary>
         /// Per-subscription automatic refresh interval. Zero disables scheduling; all other values

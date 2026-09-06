@@ -14,10 +14,11 @@ public sealed partial class TrafficMonitorControl : UserControl
     public TrafficMonitorControl()
     {
         InitializeComponent();
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SearchBox, Loc.GetString("Traffic_SearchAutomationName"));
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(FilterBox, Loc.GetString("Traffic_FilterAutomationName"));
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SortBox, Loc.GetString("Traffic_SortAutomationName"));
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ChartWindow, Loc.GetString("Traffic_WindowAutomationName"));
+        XrayUI.Helpers.LocalizationBindings.Bind(SearchBox, "Microsoft.UI.Xaml.Automation.AutomationProperties.SetName", () => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SearchBox, Loc.GetString("Traffic_SearchAutomationName")));
+        XrayUI.Helpers.LocalizationBindings.Bind(FilterBox, "Microsoft.UI.Xaml.Automation.AutomationProperties.SetName", () => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(FilterBox, Loc.GetString("Traffic_FilterAutomationName")));
+        XrayUI.Helpers.LocalizationBindings.Bind(SortBox, "Microsoft.UI.Xaml.Automation.AutomationProperties.SetName", () => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SortBox, Loc.GetString("Traffic_SortAutomationName")));
+        XrayUI.Helpers.LocalizationBindings.Bind(ChartWindow, "Microsoft.UI.Xaml.Automation.AutomationProperties.SetName", () => Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ChartWindow, Loc.GetString("Traffic_WindowAutomationName")));
+        LocalizationBindings.Bind(this, "ChartLanguage", () => { Chart.RefreshLocalization(); }, apply: false);
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
@@ -64,6 +65,13 @@ public sealed partial class TrafficMonitorControl : UserControl
                 Content = new TextBlock { Text = row.Details, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true },
                 PrimaryButtonText = Loc.GetString("Traffic_CopyAddress"), CloseButtonText = Loc.GetString("Traffic_Close"),
             };
+            LocalizationBindings.Bind(dialog, "Details", () =>
+            {
+                dialog.Title = Loc.GetString("Traffic_DetailsTitle");
+                dialog.PrimaryButtonText = Loc.GetString("Traffic_CopyAddress");
+                dialog.CloseButtonText = Loc.GetString("Traffic_Close");
+                ((TextBlock)dialog.Content).Text = row.Details;
+            });
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
                 var package = new DataPackage(); package.SetText(row.Destination); Clipboard.SetContent(package);

@@ -11,12 +11,15 @@ using XrayUI.Services.Traffic;
 
 namespace XrayUI.ViewModels;
 
-public sealed partial record TrafficDisplayRow(TrafficAccessRow Row)
+public sealed partial record TrafficDisplayRow(TrafficAccessRow Row) : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+    public void RefreshLocalization() => PropertyChanged?.Invoke(this, new(string.Empty));
     public string Time => Row.Access.ObservedAt.ToLocalTime().ToString("HH:mm:ss");
     public string Destination => TrafficPresentation.Address(Row.Access.Destination);
     public string Source => TrafficPresentation.Address(Row.Access.Source);
-    public string Protocol => Row.Access.Transport.ToString().ToUpperInvariant();
+    public string Protocol => Row.Access.Transport == TrafficTransport.Unknown
+        ? Loc.GetString("Traffic_TransportUnknown") : Row.Access.Transport.ToString().ToUpperInvariant();
     public string Context => $"{Protocol} · {Source}";
     public string Route => Loc.GetString("Traffic_Route" + Row.Access.Route);
     public string Application => Row.Access.ProcessName ?? Loc.GetString("Traffic_UnknownApplication");
@@ -27,7 +30,7 @@ public sealed partial record TrafficDisplayRow(TrafficAccessRow Row)
         TrafficRouteKind.Blocked => "#C64755",
         _ => "#747B89"
     };
-    public string Details => $"{Destination}\n{Context}\n{Row.Access.InboundTag ?? "—"} → {Row.Access.OutboundTag ?? "—"}\n{Application}\n{Row.Access.Status}";
+    public string Details => $"{Destination}\n{Context}\n{Row.Access.InboundTag ?? "—"} → {Row.Access.OutboundTag ?? "—"}\n{Application}\n{Loc.GetString("Traffic_Access" + Row.Access.Status)}";
 }
 
 /// <summary>UI-thread presentation only. Source injection does not create or control a collector.
@@ -58,6 +61,12 @@ public partial class TrafficMonitorViewModel : ObservableObject
     public string Status => Loc.GetString(IsPaused ? "Traffic_Paused" : !HasSource ? "Traffic_SourcePending" : "Traffic_Status" + _snapshot.Status);
     public string EmptyText => Loc.GetString(!HasSource ? "Traffic_EmptyPending" : _snapshot.AccessCount > 0 ? "Traffic_EmptyFilter" : "Traffic_Empty");
     public string Details => SelectedRow?.Details ?? string.Empty;
+
+    public void RefreshLocalization()
+    {
+        foreach (var row in Rows) row.RefreshLocalization();
+        OnPropertyChanged(string.Empty);
+    }
 
     public void Refresh()
     {

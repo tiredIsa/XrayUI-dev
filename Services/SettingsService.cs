@@ -12,24 +12,28 @@ namespace XrayUI.Services
 {
     public class SettingsService
     {
-        private static readonly string DataDir = AppPaths.LocalAppDataDir;
+        private readonly string DataDir;
 
-        private static readonly string SettingsFile = AppPaths.SettingsJsonPath;
-        private static readonly string ServersFile  = Path.Combine(DataDir, "servers.json");
+        private readonly string SettingsFile;
+        private readonly string ServersFile;
 
-        private AppSettings? _cachedSettings;
+        private static readonly System.Threading.SemaphoreSlim SettingsGate = new(1, 1);
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<AppSettings, System.Text.Json.Nodes.JsonObject> Baselines = new();
 
-        public SettingsService()
+        public SettingsService() : this(AppPaths.LocalAppDataDir) { }
+
+        internal SettingsService(string dataDirectory)
         {
+            DataDir = dataDirectory;
+            SettingsFile = Path.Combine(DataDir, "settings.json");
+            ServersFile = Path.Combine(DataDir, "servers.json");
             Directory.CreateDirectory(DataDir);
         }
 
-        /// <summary>Drop the in-memory cache so the next LoadSettingsAsync re-reads the file.
-        /// Used when an external process (e.g. the user's text editor) may have modified
-        /// settings.json on disk.</summary>
-        public void InvalidateCache() => _cachedSettings = null;
+        /// <summary>Compatibility hook: every read now uses the current file.</summary>
+        public void InvalidateCache() { } // Reads always return fresh snapshots.
 
-        /// <summary>Invalidate the cache and reload from disk in one call.</summary>
+        /// <summary>Read a fresh settings snapshot.</summary>
         public async Task<AppSettings> ReloadAsync()
         {
             InvalidateCache();
@@ -37,8 +41,7 @@ namespace XrayUI.Services
         }
 
         /// <summary>
-        /// Drop the cache and shell-open settings.json in the user's default .json editor.
-        /// Cache is dropped first so subsequent reads pick up whatever the editor writes.
+        /// Shell-open settings.json in the user's default .json editor. Subsequent reads see its changes.
         /// Throws if the OS reports no association for .json.
         /// </summary>
         public void OpenInExternalEditor()
@@ -55,31 +58,33 @@ namespace XrayUI.Services
 
         public async Task<AppSettings> LoadSettingsAsync()
         {
-            if (_cachedSettings is not null)
-                return _cachedSettings;
-
+            await SettingsGate.WaitAsync().ConfigureAwait(false);
             try
             {
-                if (!File.Exists(SettingsFile))
-                {
-                    _cachedSettings = new AppSettings { RoutingRegion = InferDefaultRoutingRegion() };
-                    return _cachedSettings;
-                }
-
-                var json = await File.ReadAllTextAsync(SettingsFile).ConfigureAwait(false);
-                _cachedSettings = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.AppSettings) ?? new AppSettings();
-
-                // One-time migration: settings.json written before XrayLogLevel existed only has
-                // the legacy VerboseXrayLog bool. Populate the new field so every other reader
-                // can trust it's non-null instead of re-deriving the fallback on every read.
-                _cachedSettings.XrayLogLevel ??= _cachedSettings.VerboseXrayLog ? XrayLogLevel.Info : XrayLogLevel.Warning;
-                return _cachedSettings;
+                var settings = await ReadSettingsCoreAsync().ConfigureAwait(false);
+                Baselines.Add(settings, ToNode(settings));
+                return settings;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[SettingsService] Failed to load settings: {ex.Message}");
-                return new AppSettings();
+                var settings = new AppSettings();
+                Baselines.Add(settings, ToNode(settings));
+                return settings;
             }
+            finally { SettingsGate.Release(); }
+        }
+
+        private static System.Text.Json.Nodes.JsonObject ToNode(AppSettings settings) =>
+            (System.Text.Json.Nodes.JsonObject)JsonSerializer.SerializeToNode(settings, AppJsonSerializerContext.Default.AppSettings)!;
+
+        private async Task<AppSettings> ReadSettingsCoreAsync()
+        {
+            var settings = File.Exists(SettingsFile)
+                ? JsonSerializer.Deserialize(await File.ReadAllTextAsync(SettingsFile).ConfigureAwait(false), AppJsonSerializerContext.Default.AppSettings) ?? new AppSettings()
+                : new AppSettings { RoutingRegion = InferDefaultRoutingRegion() };
+            settings.XrayLogLevel ??= settings.VerboseXrayLog ? XrayLogLevel.Info : XrayLogLevel.Warning;
+            return settings;
         }
 
         /// <summary>
@@ -105,9 +110,31 @@ namespace XrayUI.Services
 
         public async Task SaveSettingsAsync(AppSettings settings)
         {
-            _cachedSettings = settings;
-            var json = JsonSerializer.Serialize(settings, AppJsonSerializerContext.Readable<AppSettings>());
-            await WriteAtomicAsync(SettingsFile, json).ConfigureAwait(false);
+            await SettingsGate.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var edited = ToNode(settings);
+                var current = ToNode(await ReadSettingsCoreAsync().ConfigureAwait(false));
+                var merged = Baselines.TryGetValue(settings, out var baseline)
+                    ? SettingsSnapshotMerge.Apply(current, baseline, edited) : edited;
+                await WriteAtomicAsync(SettingsFile, merged.ToJsonString()).ConfigureAwait(false);
+                Baselines.Remove(settings);
+                Baselines.Add(settings, edited);
+            }
+            finally { SettingsGate.Release(); }
+        }
+
+        public async Task UpdateSettingsAsync(Action<AppSettings> update)
+        {
+            await SettingsGate.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var settings = await ReadSettingsCoreAsync().ConfigureAwait(false);
+                update(settings);
+                await WriteAtomicAsync(SettingsFile,
+                    JsonSerializer.Serialize(settings, AppJsonSerializerContext.Readable<AppSettings>())).ConfigureAwait(false);
+            }
+            finally { SettingsGate.Release(); }
         }
 
         // ── Server list ───────────────────────────────────────────────────────

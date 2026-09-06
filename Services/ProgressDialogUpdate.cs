@@ -1,4 +1,5 @@
+using XrayUI.Helpers;
 namespace XrayUI.Services
 {
-    public sealed record ProgressDialogUpdate(string Message, double? Percent = null);
+    public sealed record ProgressDialogUpdate(LocalizedText Message, double? Percent = null);
 }

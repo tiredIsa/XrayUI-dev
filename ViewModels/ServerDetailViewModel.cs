@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace XrayUI.ViewModels
         {
             _latencyProbe = latencyProbe;
             _aiUnlockCheck = aiUnlockCheck;
-            LatencyText = L.ServerDetail_NotTested;
+            SetLatencyMessage("ServerDetail_NotTested");
             ShowLatencyInDetails = true;
             ShowAiUnlockInDetails = true;
             ShowGroupInDetails = true;
@@ -46,6 +46,21 @@ namespace XrayUI.ViewModels
 
         private ServerEntry? ResolveChainServer(string id)
             => string.IsNullOrEmpty(id) ? null : GetAllServers().FirstOrDefault(s => s.Id == id);
+
+        private string _latencyKey = "ServerDetail_NotTested";
+        private object?[] _latencyArgs = [];
+        private void SetLatencyMessage(string key, params object?[] args)
+        {
+            _latencyKey = key; _latencyArgs = args;
+            LatencyText = Loc.Format(key, args);
+        }
+        public LocalizedText CaptureLatencyMessage() => LocalizedText.Format(_latencyKey, _latencyArgs);
+
+        public void RefreshLocalization()
+        {
+            LatencyText = Loc.Format(_latencyKey, _latencyArgs);
+            OnPropertyChanged(string.Empty);
+        }
 
         [ObservableProperty]
         public partial ServerEntry? SelectedServer { get; set; }
@@ -363,7 +378,7 @@ namespace XrayUI.ViewModels
 
         private void ResetLatencyDisplay()
         {
-            LatencyText = L.ServerDetail_NotTested;
+            SetLatencyMessage("ServerDetail_NotTested");
         }
 
         private void ResetAiUnlockDisplay()
@@ -509,7 +524,7 @@ namespace XrayUI.ViewModels
             _latencyTestCts = cts;
 
             IsTestingLatency = true;
-            LatencyText = L.ServerDetail_Testing;
+            SetLatencyMessage("ServerDetail_Testing");
 
             try
             {
@@ -523,12 +538,12 @@ namespace XrayUI.ViewModels
                     return;
                 }
 
-                LatencyText = result.Status switch
+                SetLatencyMessage(result.Status switch
                 {
-                    LatencyProbeStatus.Success => Loc.Format("ServerDetail_LatencyMs", result.Milliseconds ?? 0),
-                    LatencyProbeStatus.Timeout => L.ServerDetail_Timeout,
-                    _                          => L.ServerDetail_Failed
-                };
+                    LatencyProbeStatus.Success => "ServerDetail_LatencyMs",
+                    LatencyProbeStatus.Timeout => "ServerDetail_Timeout",
+                    _ => "ServerDetail_Failed"
+                }, result.Milliseconds ?? 0);
             }
             catch (OperationCanceledException) when (cts.IsCancellationRequested)
             {

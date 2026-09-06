@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Windows.System;
 using XrayUI.Helpers;
 
@@ -14,10 +14,13 @@ namespace XrayUI.Views
         public ControlPanelControl()
         {
             this.InitializeComponent();
-            var trafficLabel = Loc.GetString("Traffic_OpenTooltip");
-            ToolTipService.SetToolTip(TrafficButton, trafficLabel);
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(TrafficButton, trafficLabel);
-            ToolTipService.SetToolTip(PersonalizeButton, L.ControlPanel_Personalize);
+            LocalizationBindings.Bind(TrafficButton, "Caption", () =>
+            {
+                var trafficLabel = Loc.GetString("Traffic_OpenTooltip");
+                ToolTipService.SetToolTip(TrafficButton, trafficLabel);
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(TrafficButton, trafficLabel);
+            });
+            XrayUI.Helpers.LocalizationBindings.Bind(PersonalizeButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(PersonalizeButton, L.ControlPanel_Personalize));
         }
 
         // Called by MainWindow after ViewModel is assigned (via x:Bind the property is set before Loaded)

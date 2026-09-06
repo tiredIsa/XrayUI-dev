@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -147,7 +147,7 @@ namespace XrayUI.Services
             using var client = CreateGithubClient(proxyUrl, TimeSpan.FromMinutes(10));
 
             // ── 1. .sha256 first (small, fail-fast on bad release) ─────────────────
-            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_FetchingChecksum")));
+            progress.Report(new ProgressDialogUpdate(XrayUI.Helpers.LocalizedText.Key("Update_FetchingChecksum")));
             string expectedHash;
             try
             {
@@ -172,7 +172,7 @@ namespace XrayUI.Services
                 throw new InvalidDataException(Loc.GetString("Update_ChecksumMismatch"));
 
             // ── 4. Extract ──────────────────────────────────────────────────────────
-            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_Extracting")));
+            progress.Report(new ProgressDialogUpdate(XrayUI.Helpers.LocalizedText.Key("Update_Extracting")));
             try
             {
                 await ZipFile.ExtractToDirectoryAsync(zipPath, extractDir, overwriteFiles: true, cancellationToken: ct);
@@ -183,7 +183,7 @@ namespace XrayUI.Services
             }
 
             // ── 5. Sanity check extracted contents ──────────────────────────────────
-            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_Verifying")));
+            progress.Report(new ProgressDialogUpdate(XrayUI.Helpers.LocalizedText.Key("Update_Verifying")));
 
             var newAppExe     = Path.Combine(extractDir, AppExeName);
             var newUpdaterExe = Path.Combine(extractDir, UpdaterExeName);
@@ -217,7 +217,7 @@ namespace XrayUI.Services
             var stagedRunner = Path.Combine(runnerDir, UpdaterExeName);
             File.Copy(currentUpdater, stagedRunner, overwrite: true);
 
-            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_PrepRestart")));
+            progress.Report(new ProgressDialogUpdate(XrayUI.Helpers.LocalizedText.Key("Update_PrepRestart")));
 
             return new UpdateStaging(extractDir, stagedRunner, installDir, info.NewVersion);
         }
@@ -355,11 +355,11 @@ namespace XrayUI.Services
                 var mbTotal = total.Value / 1024.0 / 1024.0;
                 var percent = received * 100.0 / total.Value;
                 return new ProgressDialogUpdate(
-                    Loc.Format("Update_Downloading", name, mbReceived, mbTotal),
+                    XrayUI.Helpers.LocalizedText.Format("Update_Downloading", name, mbReceived, mbTotal),
                     percent);
             }
 
-            return new ProgressDialogUpdate(Loc.Format("Update_DownloadingNoTotal", name, mbReceived));
+            return new ProgressDialogUpdate(XrayUI.Helpers.LocalizedText.Format("Update_DownloadingNoTotal", name, mbReceived));
         }
     }
 }

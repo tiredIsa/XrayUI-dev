@@ -79,6 +79,21 @@ namespace XrayUI.ViewModels
             ProtocolColorStore.ColorsChanged += OnProtocolColorsChanged;
         }
 
+        public void RefreshLocalization()
+        {
+            foreach (var chip in GroupChips)
+                chip.DisplayName = chip.Kind switch
+                {
+                    ServerGroupChip.ChipKind.All => AllChipName,
+                    ServerGroupChip.ChipKind.Favorites => FavoritesName,
+                    ServerGroupChip.ChipKind.Ungrouped => UngroupedName,
+                    _ => chip.Subscription is { } sub ? SubscriptionLabel(sub) : OrphanSubLabel
+                };
+            foreach (var subscription in _knownSubscriptions) subscription.RefreshLocalization();
+            GroupNamesChanged?.Invoke();
+            OnPropertyChanged(string.Empty);
+        }
+
         private void OnProtocolColorsChanged(object? sender, EventArgs e)
         {
             foreach (var s in Servers)
@@ -852,7 +867,7 @@ namespace XrayUI.ViewModels
 
             if (added == 0)
             {
-                await _dialogs.ShowErrorAsync(L.Import_ParseFailed, L.Import_ParseFailedMsg);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Import_ParseFailed"), XrayUI.Helpers.LocalizedText.Key("Import_ParseFailedMsg"));
                 return;
             }
 
@@ -902,7 +917,7 @@ namespace XrayUI.ViewModels
                     {
                         // Network outcomes have already updated their schedule. Persistence and
                         // handover errors must not reclassify HTTP failures or count a second attempt.
-                        sub.LastError = Loc.Format("Subscription_UpdateFailed", ex.Message);
+                        sub.SetLocalizedError("Subscription_UpdateFailed", ex.Message);
                         Debug.WriteLine($"[Subscriptions] Refresh failed for {sub.Id}: {ex}");
                         if (!IsKnownSubscription(sub)) return;
                         try
@@ -1051,7 +1066,7 @@ namespace XrayUI.ViewModels
 
             if (entries == null)
             {
-                await _dialogs.ShowErrorAsync(L.Subscription_FetchFailed, error ?? L.Subscription_UnknownError);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Subscription_FetchFailed"), error ?? XrayUI.Helpers.LocalizedText.Key("Subscription_UnknownError"));
             }
         }
 
@@ -1110,7 +1125,7 @@ namespace XrayUI.ViewModels
 
                 if (newEntries == null)
                 {
-                    sub.LastError = Loc.Format("Subscription_UpdateFailed", error);
+                    sub.SetLocalizedError("Subscription_UpdateFailed", error);
                     return urlAtFetch;
                 }
 
@@ -1257,7 +1272,7 @@ namespace XrayUI.ViewModels
         {
             if (IsSubscriptionLocked(sub.Id))
             {
-                sub.LastError = L.Subscription_StopFirst_Delete;
+                sub.SetLocalizedError("Subscription_StopFirst_Delete");
                 return false;
             }
 
@@ -1411,7 +1426,7 @@ namespace XrayUI.ViewModels
             var link = NodeLinkSerializer.ToLink(SelectedServer);
             if (string.IsNullOrEmpty(link))
             {
-                await _dialogs.ShowErrorAsync(L.Share_NotSupported, L.Share_NotSupportedMsg);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Share_NotSupported"), XrayUI.Helpers.LocalizedText.Key("Share_NotSupportedMsg"));
                 return;
             }
 
@@ -1474,14 +1489,14 @@ namespace XrayUI.ViewModels
 
             var isBatchDelete = selectedServers.Count > 1;
             var message = isBatchDelete
-                ? Loc.Format("Confirm_DeleteBatchMsg", selectedServers.Count)
-                : Loc.Format("Confirm_DeleteMsg", selectedServers[0].Name);
+                ? LocalizedText.Format("Confirm_DeleteBatchMsg", selectedServers.Count)
+                : LocalizedText.Format("Confirm_DeleteMsg", selectedServers[0].Name);
 
             var confirmed = await _dialogs.ShowConfirmationAsync(
-                L.Confirm_DeleteTitle,
+                XrayUI.Helpers.LocalizedText.Key("Confirm_DeleteTitle"),
                 message,
-                L.Dialog_Delete,
-                L.Dialog_Cancel,
+                XrayUI.Helpers.LocalizedText.Key("Dialog_Delete"),
+                XrayUI.Helpers.LocalizedText.Key("Dialog_Cancel"),
                 isDanger: true);
             if (!confirmed) return;
 

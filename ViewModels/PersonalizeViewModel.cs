@@ -17,8 +17,8 @@ namespace XrayUI.ViewModels
         /// Window handle), so this VM doesn't own that flow end-to-end.</summary>
         public IDialogService Dialogs => _dialogs;
 
-        private int _initialLanguageIndex = -1;
-        private bool _suppressLanguageRestartHint;
+        private bool _languageChangeBusy;
+        private bool _loadingLanguage;
         private int _initialRegionIndex = -1;
         private bool _suppressRegionRestartHint;
 
@@ -123,17 +123,57 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial int SelectedLanguageIndex { get; set; }
 
+        public bool CanChangeLanguage => !_languageChangeBusy;
+
         partial void OnSelectedLanguageIndexChanged(int value)
         {
-            // Hint visibility tracks divergence from the loaded value, not whether the user
-            // touched the dropdown — flipping back to the initial choice clears the hint too.
-            if (!_suppressLanguageRestartHint)
-                UpdateRestartHint();
+            if (_loadingLanguage) return;
+            if (_languageChangeBusy)
+            {
+                RestoreLanguageSelection();
+                return;
+            }
+            _ = ChangeLanguageAsync(value);
+        }
+
+        private void RestoreLanguageSelection()
+        {
+            _loadingLanguage = true;
+            SelectedLanguageIndex = LanguageHelper.IndexOf(Loc.Current.Preference);
+            _loadingLanguage = false;
+        }
+
+        private async Task ChangeLanguageAsync(int index)
+        {
+            _languageChangeBusy = true;
+            OnPropertyChanged(nameof(CanChangeLanguage));
+            try
+            {
+                await Loc.ChangeAsync(LanguageHelper.TagAt(index), _settings);
+            }
+            catch (Exception ex)
+            {
+                RestoreLanguageSelection();
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Language_ChangeFailed"), ex.Message);
+            }
+            finally
+            {
+                _languageChangeBusy = false;
+                OnPropertyChanged(nameof(CanChangeLanguage));
+            }
+        }
+
+        public void RefreshLocalization()
+        {
+            RestoreLanguageSelection();
+            foreach (var language in SupportedLanguages) language.RefreshLocalization();
+            RefreshDisplay(GlobalHotkeyStore.ToggleId);
+            RefreshDisplay(GlobalHotkeyStore.RestoreId);
+            OnPropertyChanged(string.Empty);
         }
 
         // ── Region (domestic region for smart routing) ─────────────────────────
-        // Lives under the Application-language expander. Like language, it only takes effect
-        // on the next process start, so it shares the restart hint below.
+        // Region affects routing and is applied at restart, independently of the live UI language.
 
         /// <summary>Region codes, in the same order as the region ComboBox items in PersonalizeControl.xaml.</summary>
         private static readonly string[] RegionCodes = { "cn", "ru", "ir" };
@@ -151,24 +191,20 @@ namespace XrayUI.ViewModels
         private string SelectedRegionCode =>
             (uint)SelectedRegionIndex < (uint)RegionCodes.Length ? RegionCodes[SelectedRegionIndex] : RegionCodes[0];
 
-        /// <summary>True when language or region diverges from the loaded baseline — both apply
-        /// only after a process restart, so the InfoBar offers one.</summary>
+        /// <summary>The routing region differs from the running configuration.</summary>
         [ObservableProperty]
         public partial bool ShowRestartHint { get; set; }
 
         private void UpdateRestartHint()
         {
-            var langDiverged   = _initialLanguageIndex >= 0 && SelectedLanguageIndex != _initialLanguageIndex;
             var regionDiverged = _initialRegionIndex   >= 0 && SelectedRegionIndex   != _initialRegionIndex;
-            ShowRestartHint = langDiverged || regionDiverged;
+            ShowRestartHint = regionDiverged;
         }
 
-        /// <summary>Persist the currently-selected language and routing region. Call right before
-        /// <see cref="App.Restart"/> — both only take effect on the next process start.</summary>
+        /// <summary>Persist the routing region before an explicit region restart.</summary>
         public async Task ApplyPendingChangesAsync()
         {
             var s = await _settings.LoadSettingsAsync();
-            s.Language = LanguageHelper.TagAt(SelectedLanguageIndex);
             s.RoutingRegion = SelectedRegionCode;
             await _settings.SaveSettingsAsync(s);
         }
@@ -303,10 +339,10 @@ namespace XrayUI.ViewModels
         public async Task<PresetImportResult?> ConfirmAndImportPresetAsync()
         {
             var confirmed = await _dialogs.ShowConfirmationAsync(
-                L.Confirm_ReplaceTitle,
-                L.Confirm_ReplaceMsg,
-                L.Dialog_Replace,
-                L.Dialog_Cancel,
+                XrayUI.Helpers.LocalizedText.Key("Confirm_ReplaceTitle"),
+                XrayUI.Helpers.LocalizedText.Key("Confirm_ReplaceMsg"),
+                XrayUI.Helpers.LocalizedText.Key("Dialog_Replace"),
+                XrayUI.Helpers.LocalizedText.Key("Dialog_Cancel"),
                 isDanger: true);
             if (!confirmed)
                 return null;
@@ -338,10 +374,7 @@ namespace XrayUI.ViewModels
             // values that were, in fact, already saved here.
             _displaySettingsBaseline = (ShowLatencyInDetails, ShowAiUnlockInDetails, ShowGroupInDetails, OpenServerFilterPanelOnStartup);
             ShowDisplaySettingsUnsavedHint = false;
-            // Language and region don't take effect until the next process start, but Done
-            // still persists them — otherwise the user would have to click the restart hint
-            // to save at all, which is surprising compared to how Theme / Backdrop behave.
-            s.Language = LanguageHelper.TagAt(SelectedLanguageIndex);
+            // Language is already saved by its own transaction.
             s.RoutingRegion = SelectedRegionCode;
             await _settings.SaveSettingsAsync(s);
             CloseRequested?.Invoke(this, EventArgs.Empty);
@@ -381,13 +414,11 @@ namespace XrayUI.ViewModels
 
         public void LoadLanguage(AppSettings settings)
         {
-            // Assign through the field to bypass the setter's InfoBar side effect, then
-            // record this as the baseline so divergence-from-baseline drives the hint.
+            // Loading the initial selection must not execute a language-change transaction.
             var index = LanguageHelper.IndexOf(settings.Language);
-            _suppressLanguageRestartHint = true;
+            _loadingLanguage = true;
             SelectedLanguageIndex = index;
-            _suppressLanguageRestartHint = false;
-            _initialLanguageIndex = index;
+            _loadingLanguage = false;
         }
 
         public void LoadRegion(AppSettings settings)

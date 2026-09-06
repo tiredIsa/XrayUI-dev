@@ -27,7 +27,7 @@ namespace XrayUI.Views
             InitializeComponent();
             Mods = initialMods;
             Vk = initialVk;
-            UpdateDisplay();
+            LocalizationBindings.Bind(this, "Display", UpdateDisplay);
         }
 
         private void UpdateDisplay()
@@ -45,7 +45,7 @@ namespace XrayUI.Views
             var mods = CurrentModifiers();
             if (mods == 0)
             {
-                ErrorInfoBar.Message = L.Personalize_HotkeyInvalidMsg;
+                XrayUI.Helpers.LocalizationBindings.Bind(ErrorInfoBar, "Message", () => ErrorInfoBar.Message = L.Personalize_HotkeyInvalidMsg);
                 ErrorInfoBar.IsOpen = true;
                 return;
             }

@@ -17,14 +17,14 @@ namespace XrayUI.Views
         {
             this.InitializeComponent();
 
-            AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName);
-            AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip);
-            AutomationProperties.SetName(ImportDropDownButton, L.Personalize_ImportTooltip);
+            XrayUI.Helpers.LocalizationBindings.Bind(AppLanguageExpander, "AutomationProperties.SetName", () => AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName));
+            XrayUI.Helpers.LocalizationBindings.Bind(ExportPresetButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(ImportDropDownButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(ImportDropDownButton, L.Personalize_ImportTooltip));
 
-            AutomationProperties.SetName(ToggleHotkeyButton, L.Personalize_HotkeyToggleAutomationName);
-            AutomationProperties.SetName(RestoreHotkeyButton, L.Personalize_HotkeyRestoreAutomationName);
-            ToolTipService.SetToolTip(ToggleHotkeyButton, L.Personalize_HotkeyRecordTooltip);
-            ToolTipService.SetToolTip(RestoreHotkeyButton, L.Personalize_HotkeyRecordTooltip);
+            XrayUI.Helpers.LocalizationBindings.Bind(ToggleHotkeyButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(ToggleHotkeyButton, L.Personalize_HotkeyToggleAutomationName));
+            XrayUI.Helpers.LocalizationBindings.Bind(RestoreHotkeyButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(RestoreHotkeyButton, L.Personalize_HotkeyRestoreAutomationName));
+            XrayUI.Helpers.LocalizationBindings.Bind(ToggleHotkeyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(ToggleHotkeyButton, L.Personalize_HotkeyRecordTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(RestoreHotkeyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(RestoreHotkeyButton, L.Personalize_HotkeyRecordTooltip));
         }
 
         private async void ExportPresetButton_Click(object sender, RoutedEventArgs e)
@@ -33,12 +33,12 @@ namespace XrayUI.Views
             {
                 var exportDir = await ViewModel.ExportPresetAsync();
                 ShowInfo(InfoBarSeverity.Success,
-                    L.Personalize_ExportSuccess,
-                    Loc.Format("Personalize_ExportSuccessMsgFmt", exportDir));
+                    XrayUI.Helpers.LocalizedText.Key("Personalize_ExportSuccess"),
+                    XrayUI.Helpers.LocalizedText.Format("Personalize_ExportSuccessMsgFmt", exportDir));
             }
             catch (Exception ex)
             {
-                ShowInfo(InfoBarSeverity.Error, L.Error_ExportFailed, ex.Message);
+                ShowInfo(InfoBarSeverity.Error, XrayUI.Helpers.LocalizedText.Key("Error_ExportFailed"), ex.Message);
             }
         }
 
@@ -49,26 +49,27 @@ namespace XrayUI.Views
                 if (!PersonalizeViewModel.PresetExists())
                 {
                     ShowInfo(InfoBarSeverity.Warning,
-                        L.Personalize_PresetMissingTitle,
-                        L.Personalize_PresetMissingMsg);
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_PresetMissingTitle"),
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_PresetMissingMsg"));
                     return;
                 }
 
                 if (ViewModel.IsProxyRunning?.Invoke() == true)
                 {
                     ShowInfo(InfoBarSeverity.Warning,
-                        L.Personalize_ImportBlockedTitle,
-                        L.Personalize_ImportBlockedMsg);
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ImportBlockedTitle"),
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ImportBlockedMsg"));
                     return;
                 }
 
                 var result = await ViewModel.ConfirmAndImportPresetAsync();
                 if (result is null) return;
 
-                var advanced = result.ImportedAdvancedRouting ? L.Personalize_ImportAdvancedSuffix : "";
+                LocalizedText advanced = result.ImportedAdvancedRouting
+                    ? LocalizedText.Key("Personalize_ImportAdvancedSuffix") : "";
                 ShowInfo(InfoBarSeverity.Success,
-                    L.Personalize_ImportSuccess,
-                    Loc.Format("Personalize_ImportSuccessMsg",
+                    XrayUI.Helpers.LocalizedText.Key("Personalize_ImportSuccess"),
+                    XrayUI.Helpers.LocalizedText.Format("Personalize_ImportSuccessMsg",
                         result.ImportedServers,
                         result.ImportedSubscriptions,
                         result.ImportedCustomRules,
@@ -76,7 +77,7 @@ namespace XrayUI.Views
             }
             catch (Exception ex)
             {
-                ShowInfo(InfoBarSeverity.Error, L.Personalize_ImportFailed, ex.Message);
+                ShowInfo(InfoBarSeverity.Error, XrayUI.Helpers.LocalizedText.Key("Personalize_ImportFailed"), ex.Message);
             }
         }
 
@@ -87,13 +88,12 @@ namespace XrayUI.Views
                 if (ViewModel.IsProxyRunning?.Invoke() == true)
                 {
                     ShowInfo(InfoBarSeverity.Warning,
-                        L.Personalize_ImportBlockedTitle,
-                        L.Personalize_ImportBlockedMsg);
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ImportBlockedTitle"),
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ImportBlockedMsg"));
                     return;
                 }
 
-                var picker = new FileOpenPicker
-                {
+                var picker = new FileOpenPicker {
                     SuggestedStartLocation = PickerLocationId.ComputerFolder,
                 };
                 picker.FileTypeFilter.Add(".yaml");
@@ -112,26 +112,26 @@ namespace XrayUI.Views
                 if (imported == 0)
                 {
                     ShowInfo(InfoBarSeverity.Warning,
-                        L.Personalize_ClashImportNoNodesTitle,
-                        L.Personalize_ClashImportNoNodesMsg);
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ClashImportNoNodesTitle"),
+                        XrayUI.Helpers.LocalizedText.Key("Personalize_ClashImportNoNodesMsg"));
                     return;
                 }
 
                 ShowInfo(InfoBarSeverity.Success,
-                    L.Personalize_ClashImportSuccess,
-                    Loc.Format("Personalize_ClashImportSuccessMsg", imported, skipped));
+                    XrayUI.Helpers.LocalizedText.Key("Personalize_ClashImportSuccess"),
+                    XrayUI.Helpers.LocalizedText.Format("Personalize_ClashImportSuccessMsg", imported, skipped));
             }
             catch (Exception ex)
             {
-                ShowInfo(InfoBarSeverity.Error, L.Personalize_ClashImportFailed, ex.Message);
+                ShowInfo(InfoBarSeverity.Error, XrayUI.Helpers.LocalizedText.Key("Personalize_ClashImportFailed"), ex.Message);
             }
         }
 
-        private void ShowInfo(InfoBarSeverity severity, string title, string message)
+        private void ShowInfo(InfoBarSeverity severity, LocalizedText title, LocalizedText message)
         {
             OperationInfoBar.Severity = severity;
-            OperationInfoBar.Title = title;
-            OperationInfoBar.Message = message;
+            LocalizationBindings.Bind(OperationInfoBar, "Title", () => OperationInfoBar.Title = title.Value);
+            LocalizationBindings.Bind(OperationInfoBar, "Message", () => OperationInfoBar.Message = message.Value);
             OperationInfoBar.IsOpen = true;
         }
 
@@ -152,7 +152,7 @@ namespace XrayUI.Views
         {
             var id = ReferenceEquals(sender, ToggleHotkeyButton) ? GlobalHotkeyStore.ToggleId : GlobalHotkeyStore.RestoreId;
             var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
-            var result = await ViewModel.Dialogs.ShowHotkeyRecorderDialogAsync(L.Personalize_HotkeysDialogTitle, mods, vk);
+            var result = await ViewModel.Dialogs.ShowHotkeyRecorderDialogAsync(XrayUI.Helpers.LocalizedText.Key("Personalize_HotkeysDialogTitle"), mods, vk);
             if (result is null) return; // cancelled — nothing touched
 
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(ThemeHelper.MainWindow);
@@ -161,30 +161,30 @@ namespace XrayUI.Views
             {
                 HotkeyInterop.UnregisterHotKey(hWnd, id);
                 ViewModel.ClearHotkey(id);
-                ShowHotkeySaved(L.Personalize_HotkeyClearedMsg);
+                ShowHotkeySaved(LocalizedText.Key("Personalize_HotkeyClearedMsg"));
                 return;
             }
 
             HotkeyInterop.UnregisterHotKey(hWnd, id);
             if (!HotkeyInterop.RegisterHotKey(hWnd, id, result.Value.mods | GlobalHotkeyStore.ModNoRepeat, result.Value.vk))
             {
-                await ViewModel.Dialogs.ShowErrorAsync(L.Personalize_HotkeyConflictTitle, L.Personalize_HotkeyConflictMsg);
+                await ViewModel.Dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Personalize_HotkeyConflictTitle"), XrayUI.Helpers.LocalizedText.Key("Personalize_HotkeyConflictMsg"));
                 // Store wasn't mutated — re-assert whatever was previously registered for this id.
                 GlobalHotkeyStore.NotifyHotkeysChanged();
                 return;
             }
 
             ViewModel.SetHotkey(id, result.Value.mods, result.Value.vk);
-            ShowHotkeySaved(L.Personalize_HotkeySavedMsg);
+            ShowHotkeySaved(LocalizedText.Key("Personalize_HotkeySavedMsg"));
         }
 
         // The hotkey is live the moment this fires (RegisterHotKey already succeeded above) —
         // independent of the page's "完成" button, which only persists it to disk for next
         // launch. This confirms that to the user instead of leaving the button's silent text
         // change as the only feedback.
-        private void ShowHotkeySaved(string message)
+        private void ShowHotkeySaved(LocalizedText message)
         {
-            HotkeySavedInfoBar.Message = message;
+            LocalizationBindings.Bind(HotkeySavedInfoBar, "Message", () => HotkeySavedInfoBar.Message = message.Value);
             HotkeySavedInfoBar.IsOpen = true;
         }
     }

@@ -58,23 +58,29 @@ namespace XrayUI.Views
             _queue              = DispatcherQueue.GetForCurrentThread();
 
             this.SetWindowSize(900, 600);
-            AppWindow.Title = L.Log_Title;
+            XrayUI.Helpers.LocalizationBindings.Bind(AppWindow, "Title", () => AppWindow.Title = L.Log_Title);
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            AppTitleBar.Title = L.Log_Title;
+            XrayUI.Helpers.LocalizationBindings.Bind(AppTitleBar, "Title", () => AppTitleBar.Title = L.Log_Title);
             ThemeHelper.FollowAppTheme(this, WindowRoot);
             SystemBackdrop = new MicaBackdrop();
 
-			ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
-            MaskAddressSubMenu.Text = L.Log_IpMask;
-            MaskOffMenuItem.Text    = L.Log_MaskOff;
-            LogLevelSubMenu.Text    = L.Log_Level;
-            DnsLogSubMenu.Text      = L.Log_DnsLog;
-            DnsLogOffMenuItem.Text  = L.Log_MaskOff;
-            DnsLogOnMenuItem.Text   = L.Log_DnsLogOn;
-            AutoScrollToggle.Content = L.Log_AutoScroll;
-            CopyButton.Content       = L.Log_CopyAll;
-            ClearButton.Content      = L.Log_Clear;
+			XrayUI.Helpers.LocalizationBindings.Bind(LogPrivacyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(MaskAddressSubMenu, "Text", () => MaskAddressSubMenu.Text = L.Log_IpMask);
+            XrayUI.Helpers.LocalizationBindings.Bind(MaskOffMenuItem, "Text", () => MaskOffMenuItem.Text = L.Log_MaskOff);
+            XrayUI.Helpers.LocalizationBindings.Bind(MaskQuarterMenuItem, "Text", () => MaskQuarterMenuItem.Text = Loc.GetString("Log_MaskQuarter"));
+            XrayUI.Helpers.LocalizationBindings.Bind(MaskHalfMenuItem, "Text", () => MaskHalfMenuItem.Text = Loc.GetString("Log_MaskHalf"));
+            XrayUI.Helpers.LocalizationBindings.Bind(MaskFullMenuItem, "Text", () => MaskFullMenuItem.Text = Loc.GetString("Log_MaskFull"));
+            XrayUI.Helpers.LocalizationBindings.Bind(LogLevelDebugMenuItem, "Text", () => LogLevelDebugMenuItem.Text = Loc.GetString("Log_LevelDebug"));
+            XrayUI.Helpers.LocalizationBindings.Bind(LogLevelInfoMenuItem, "Text", () => LogLevelInfoMenuItem.Text = Loc.GetString("Log_LevelInfo"));
+            XrayUI.Helpers.LocalizationBindings.Bind(LogLevelWarningMenuItem, "Text", () => LogLevelWarningMenuItem.Text = Loc.GetString("Log_LevelWarning"));
+            XrayUI.Helpers.LocalizationBindings.Bind(LogLevelSubMenu, "Text", () => LogLevelSubMenu.Text = L.Log_Level);
+            XrayUI.Helpers.LocalizationBindings.Bind(DnsLogSubMenu, "Text", () => DnsLogSubMenu.Text = L.Log_DnsLog);
+            XrayUI.Helpers.LocalizationBindings.Bind(DnsLogOffMenuItem, "Text", () => DnsLogOffMenuItem.Text = L.Log_MaskOff);
+            XrayUI.Helpers.LocalizationBindings.Bind(DnsLogOnMenuItem, "Text", () => DnsLogOnMenuItem.Text = L.Log_DnsLogOn);
+            XrayUI.Helpers.LocalizationBindings.Bind(AutoScrollToggle, "Content", () => AutoScrollToggle.Content = L.Log_AutoScroll);
+            XrayUI.Helpers.LocalizationBindings.Bind(CopyButton, "Content", () => CopyButton.Content = L.Log_CopyAll);
+            XrayUI.Helpers.LocalizationBindings.Bind(ClearButton, "Content", () => ClearButton.Content = L.Log_Clear);
 
             _xray.LogReceived     += OnLogReceived;
             _xray.RunningChanged  += OnRunningChanged;
@@ -83,6 +89,7 @@ namespace XrayUI.Views
             RefreshTimestampBrush();
             RenderLog();
             UpdateStatus();
+            LocalizationBindings.Bind(this, "Status", UpdateStatus, apply: false);
             _ = InitializeLogSettingsMenuAsync();
 
             _flushTimer = _queue.CreateTimer();
@@ -215,7 +222,7 @@ namespace XrayUI.Views
             }
 
             _renderedLines = lines;
-            LineCountText.Text = Loc.Format("Log_Lines", lines.Count);
+            XrayUI.Helpers.LocalizationBindings.Bind(LineCountText, "Text", () => LineCountText.Text = Loc.Format("Log_Lines", lines.Count));
             _prevBufferCount = lines.Count;
         }
 
@@ -315,7 +322,7 @@ namespace XrayUI.Views
         private void UpdateStatus()
         {
             var running = _xray.IsRunning;
-            StatusText.Text = running ? L.Log_Running : L.Log_NotRunning;
+            XrayUI.Helpers.LocalizationBindings.Bind(StatusText, "Text", () => StatusText.Text = running ? L.Log_Running : L.Log_NotRunning);
             StatusDot.Fill  = running ? RunningBrush : StoppedBrush;
         }
 
@@ -440,14 +447,13 @@ namespace XrayUI.Views
 
         private async Task ShowInfoAsync(string title, string message)
         {
-            var dialog = new ContentDialog
-            {
+            var dialog = XrayUI.Helpers.LocalizationBindings.BindValue(new ContentDialog {
                 XamlRoot = Content.XamlRoot,
                 RequestedTheme = ThemeHelper.ActualTheme,
                 Title = title,
                 Content = message,
                 CloseButtonText = L.Dialog_OK
-            };
+            }, "CloseButtonText", localized => localized.CloseButtonText = L.Dialog_OK);
 
             await dialog.ShowAsync();
         }

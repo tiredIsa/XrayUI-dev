@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -17,7 +17,7 @@ namespace XrayUI.Views
         public TunConfirmationDialog(int currentMtu, string currentInterface, bool currentIpv6Enabled)
         {
             this.InitializeComponent();
-            ToolTipService.SetToolTip(InterfaceComboBox, L.Tun_InterfaceTooltip);
+            XrayUI.Helpers.LocalizationBindings.Bind(InterfaceComboBox, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(InterfaceComboBox, L.Tun_InterfaceTooltip));
             MtuNumberBox.Value = currentMtu;
             PopulateInterfaceComboBox(currentInterface);
             Ipv6ToggleSwitch.IsOn = currentIpv6Enabled;
@@ -48,11 +48,11 @@ namespace XrayUI.Views
         {
             InterfaceComboBox.Items.Clear();
 
-            var autoItem = new ComboBoxItem
-            {
+            var autoItem = new ComboBoxItem {
                 Content = AutoInterfaceLabel,
                 Tag = XrayConfigConstants.TunOutboundInterfaceAuto,
             };
+            LocalizationBindings.Bind(autoItem, "Content", () => autoItem.Content = AutoInterfaceLabel);
             InterfaceComboBox.Items.Add(autoItem);
 
             ComboBoxItem? matchingItem = null;

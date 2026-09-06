@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,9 +22,12 @@ namespace XrayUI.Views
             this.InitializeComponent();
             this.RequestedTheme = ThemeHelper.ActualTheme;
 
-            Title             = L.AddRule_Title;
-            PrimaryButtonText = L.Dialog_Add;
-            CloseButtonText   = L.Dialog_Cancel;
+            LocalizationBindings.Bind(this, "DialogCaptions", () =>
+            {
+                Title = existing is null ? L.AddRule_Title : L.AddRule_EditTitle;
+                PrimaryButtonText = existing is null ? L.Dialog_Add : L.Dialog_Save;
+                CloseButtonText = L.Dialog_Cancel;
+            });
 
             // Wire up event handlers in code-behind (NOT via XAML markup).
             // The XAML-compiler-generated Connect path for SelectionChanged on a
@@ -58,6 +61,7 @@ namespace XrayUI.Views
             // (SelectionChanged may not fire for SelectedIndex set above pre-load).
             ApplyTypeUiState();
             ApplyBrowseFormatUiState();
+            LocalizationBindings.Bind(this, "TypeCaptions", ApplyTypeUiState, apply: false);
 
             this.PrimaryButtonClick += OnPrimaryClick;
         }
@@ -104,7 +108,7 @@ namespace XrayUI.Views
         {
             if (BrowseButtonText is null) return;
             var isFolder = GetSelectedBrowseFormat() == "folder";
-            BrowseButtonText.Text = isFolder ? L.AddRule_BrowseFolder : L.AddRule_BrowseExe;
+            XrayUI.Helpers.LocalizationBindings.Bind(BrowseButtonText, "Text", () => BrowseButtonText.Text = isFolder ? L.AddRule_BrowseFolder : L.AddRule_BrowseExe);
             if (BrowseButtonIcon is not null)
             {
                 BrowseButtonIcon.Glyph = isFolder ? "\uE8DA" : "\uE8E5";
@@ -142,8 +146,7 @@ namespace XrayUI.Views
 
             if (format == "folder")
             {
-                var folderPicker = new FolderPicker
-                {
+                var folderPicker = new FolderPicker {
                     SuggestedStartLocation = PickerLocationId.ComputerFolder,
                 };
                 folderPicker.FileTypeFilter.Add("*");
@@ -158,8 +161,7 @@ namespace XrayUI.Views
                 return;
             }
 
-            var picker = new FileOpenPicker
-            {
+            var picker = new FileOpenPicker {
                 SuggestedStartLocation = PickerLocationId.ComputerFolder,
             };
             picker.FileTypeFilter.Add(".exe");
@@ -184,8 +186,7 @@ namespace XrayUI.Views
             var typeTag     = GetSelectedType();
             var outboundTag = GetSelectedOutboundTag();
 
-            Result = new CustomRoutingRule
-            {
+            Result = new CustomRoutingRule {
                 Type        = typeTag,
                 Match       = match,
                 OutboundTag = outboundTag,

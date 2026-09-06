@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -83,10 +83,10 @@ namespace XrayUI
 
             InitializeComponent();
 
-            Title = L.MainWindow_Title;
-            ToolTipService.SetToolTip(DockButton,        L.MainWindow_ToggleMini);
-            ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
-            ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
+            LocalizationBindings.Bind(this, "Title", () => Title = L.MainWindow_Title);
+            XrayUI.Helpers.LocalizationBindings.Bind(DockButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(DockButton, L.MainWindow_ToggleMini));
+            XrayUI.Helpers.LocalizationBindings.Bind(MiniExpandButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(MiniExpandButton, L.MainWindow_ExpandFull));
+            XrayUI.Helpers.LocalizationBindings.Bind(MinicloseButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(MinicloseButton, L.MainWindow_Close));
 
             // Initial size and per-mode min-size constraints are established by
             // ApplyWindowMode(isMini: false) below. Get attaches WinUIEx window
@@ -129,6 +129,11 @@ namespace XrayUI
             ApplyWindowMode(isMini: false);
             UpdateCaptionButtonColors();
 
+            Activated += (_, _) =>
+            {
+                try { Loc.RefreshSystemLanguage(); }
+                catch (Exception ex) { Debug.WriteLine($"[Localization] System language refresh failed: {ex}"); }
+            };
             Activated += OnFirstActivated;
             Closed += OnClosed;
         }
@@ -240,13 +245,13 @@ namespace XrayUI
         {
             var flyout = new MenuFlyout();
 
-            var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
+            var openItem = XrayUI.Helpers.LocalizationBindings.BindValue(new MenuFlyoutItem { Text = L.Tray_Open }, "Text", localized => localized.Text = L.Tray_Open);
             openItem.Click += (_, _) => RestoreFromTray();
             flyout.Items.Add(openItem);
 
             flyout.Items.Add(new MenuFlyoutSeparator());
 
-            var exitItem = new MenuFlyoutItem { Text = L.Tray_Exit };
+            var exitItem = XrayUI.Helpers.LocalizationBindings.BindValue(new MenuFlyoutItem { Text = L.Tray_Exit }, "Text", localized => localized.Text = L.Tray_Exit);
             exitItem.Click += (_, _) => ExitApplication();
             flyout.Items.Add(exitItem);
 
@@ -580,8 +585,7 @@ namespace XrayUI
             // Set ViewModel before adding to the visual tree so that, when the
             // host fires Loading, the UserControl's x:Bind initializers see a
             // non-null ViewModel and bind correctly the first time.
-            PersonalizeHost.Children.Add(new Views.PersonalizeControl
-            {
+            PersonalizeHost.Children.Add(new Views.PersonalizeControl {
                 ViewModel = ViewModel.Personalize,
             });
         }

@@ -3,6 +3,7 @@
 <UserControl x:Class="XrayUI.Views.ManageSubscriptionsDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:XrayUI.Helpers"
              xmlns:controls="using:CommunityToolkit.WinUI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -55,32 +56,27 @@
         <StackPanel Grid.Row="1"
                     Spacing="14"
                     Visibility="{x:Bind ViewModel.AddPageVisibility, Mode=OneWay}">
-            <TextBox x:Uid="Subscription_UrlBox"
-                     Header="订阅链接"
+            <TextBox loc:Localize.Header="Subscription_UrlBox.Header"
                      PlaceholderText="https://..."
                      TextWrapping="Wrap"
                      Text="{x:Bind ViewModel.SubscriptionUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBox x:Uid="Subscription_NameBox"
-                     Header="备注名称（可选）"
-                     PlaceholderText="留空则使用链接域名"
+            <TextBox loc:Localize.Header="Subscription_NameBox.Header" loc:Localize.PlaceholderText="Subscription_NameBox.PlaceholderText"
                      Text="{x:Bind ViewModel.SubscriptionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox x:Uid="Subscription_AutoRefreshBox"
-                      Header="自动更新"
+            <ComboBox loc:Localize.Header="Subscription_AutoRefreshBox.Header"
                       SelectedIndex="{x:Bind ViewModel.NewSubscriptionScheduleIndex, Mode=TwoWay}"
                       HorizontalAlignment="Stretch">
-                <ComboBoxItem x:Uid="Subscription_AutoRefreshOff"
-                              Content="关闭" />
-                <ComboBoxItem x:Uid="Subscription_AutoRefresh1Hour"
-                              Content="每 1 小时" />
-                <ComboBoxItem x:Uid="Subscription_AutoRefresh6Hours"
-                              Content="每 6 小时" />
-                <ComboBoxItem x:Uid="Subscription_AutoRefresh12Hours"
-                              Content="每 12 小时" />
-                <ComboBoxItem x:Uid="Subscription_AutoRefresh24Hours"
-                              Content="每 24 小时" />
+                <ComboBoxItem loc:Localize.Content="Subscription_AutoRefreshOff.Content"
+                              />
+                <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh1Hour.Content"
+                              />
+                <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh6Hours.Content"
+                              />
+                <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh12Hours.Content"
+                              />
+                <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh24Hours.Content"
+                              />
             </ComboBox>
-            <TextBlock x:Uid="Subscription_AutoImportHintText"
-                       Text="将自动解析并导入该订阅中的全部节点"
+            <TextBlock loc:Localize.Text="Subscription_AutoImportHintText.Text"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
         </StackPanel>
@@ -98,9 +94,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock x:Uid="Subscription_EmptyText"
+            <TextBlock loc:Localize.Text="Subscription_EmptyText.Text"
                        Grid.Row="1"
-                       Text="暂无订阅"
                        HorizontalAlignment="Center"
                        Margin="0,48,0,48"
                        FontSize="14"
@@ -240,35 +235,32 @@
                                             <Flyout Placement="Bottom"
                                                     Opening="EditFlyout_Opening">
                                                 <StackPanel Spacing="12" Width="280">
-                                                    <TextBox x:Uid="Subscription_UrlBox"
-                                                             Header="订阅链接"
+                                                    <TextBox loc:Localize.Header="Subscription_UrlBox.Header"
                                                              PlaceholderText="https://..."
                                                              TextWrapping="Wrap"
                                                              MaxHeight="120"
                                                              TextChanged="EditUrlBox_TextChanged" />
-                                                    <TextBox x:Uid="Subscription_NameBox"
-                                                             Header="备注名称（可选）"
-                                                             PlaceholderText="留空则使用链接域名" />
-                                                    <ComboBox x:Uid="Subscription_AutoRefreshBox"
-                                                              Header="自动更新"
+                                                    <TextBox loc:Localize.Header="Subscription_NameBox.Header" loc:Localize.PlaceholderText="Subscription_NameBox.PlaceholderText"
+                                                             />
+                                                    <ComboBox loc:Localize.Header="Subscription_AutoRefreshBox.Header"
                                                               SelectedIndex="0"
                                                               HorizontalAlignment="Stretch">
-                                                        <ComboBoxItem x:Uid="Subscription_AutoRefreshOff"
-                                                                      Content="关闭" />
-                                                        <ComboBoxItem x:Uid="Subscription_AutoRefresh1Hour"
-                                                                      Content="每 1 小时" />
-                                                        <ComboBoxItem x:Uid="Subscription_AutoRefresh6Hours"
-                                                                      Content="每 6 小时" />
-                                                        <ComboBoxItem x:Uid="Subscription_AutoRefresh12Hours"
-                                                                      Content="每 12 小时" />
-                                                        <ComboBoxItem x:Uid="Subscription_AutoRefresh24Hours"
-                                                                      Content="每 24 小时" />
+                                                        <ComboBoxItem loc:Localize.Content="Subscription_AutoRefreshOff.Content"
+                                                                      />
+                                                        <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh1Hour.Content"
+                                                                      />
+                                                        <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh6Hours.Content"
+                                                                      />
+                                                        <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh12Hours.Content"
+                                                                      />
+                                                        <ComboBoxItem loc:Localize.Content="Subscription_AutoRefresh24Hours.Content"
+                                                                      />
                                                     </ComboBox>
-                                                    <Button x:Uid="Subscription_SaveBtn"
+                                                    <Button loc:Localize.Content="Subscription_SaveBtn.Content"
                                                             Click="ConfirmEdit_Click"
                                                             Style="{StaticResource AccentButtonStyle}"
                                                             HorizontalAlignment="Right"
-                                                            Content="保存" />
+                                                            />
                                                 </StackPanel>
                                             </Flyout>
                                         </Button.Flyout>
@@ -284,20 +276,18 @@
                                         <Button.Flyout>
                                             <Flyout Placement="Bottom">
                                                 <StackPanel Spacing="12" MaxWidth="240">
-                                                    <TextBlock x:Uid="Subscription_DeleteConfirmText"
-                                                               Text="删除订阅？"
+                                                    <TextBlock loc:Localize.Text="Subscription_DeleteConfirmText.Text"
                                                                TextWrapping="Wrap"
                                                                FontWeight="SemiBold" />
-                                                    <TextBlock x:Uid="Subscription_DeleteDescText"
-                                                               Text="将同时删除该订阅下的所有节点。"
+                                                    <TextBlock loc:Localize.Text="Subscription_DeleteDescText.Text"
                                                                TextWrapping="Wrap"
                                                                FontSize="12"
                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                    <Button x:Uid="Subscription_DeleteConfirmBtn"
+                                                    <Button loc:Localize.Content="Subscription_DeleteConfirmBtn.Content"
                                                             Click="ConfirmDelete_Click"
                                                             Style="{StaticResource DangerAccentButtonStyle}"
                                                             HorizontalAlignment="Right"
-                                                            Content="删除" />
+                                                            />
                                                 </StackPanel>
                                             </Flyout>
                                         </Button.Flyout>

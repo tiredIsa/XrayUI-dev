@@ -45,6 +45,12 @@ namespace XrayUI.ViewModels
 
         /// <summary>True while ReapplyRoutingAsync is mid-restart. UI uses this to
         /// disable related menu items and show the applying state.</summary>
+        public void RefreshLocalization()
+        {
+            StartStopButtonContent = IsRunning ? L.ControlPanel_Stop : L.ControlPanel_Start;
+            OnPropertyChanged(string.Empty);
+        }
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsModeToggleEnabled))]
         [NotifyPropertyChangedFor(nameof(IsTunToggleEnabled))]
@@ -223,7 +229,7 @@ namespace XrayUI.ViewModels
             var server = GetSelectedServer();
             if (server is null)
             {
-                await _dialogs.ShowErrorAsync(L.Error_NoServer, L.Error_NoServerMsg);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_NoServer"), XrayUI.Helpers.LocalizedText.Key("Error_NoServerMsg"));
                 return false;
             }
 
@@ -251,10 +257,10 @@ namespace XrayUI.ViewModels
 
             if (!ok)
             {
-                var detail = string.IsNullOrEmpty(_xray.LastError)
-                    ? L.Error_XrayStartFailed
+                LocalizedText detail = string.IsNullOrEmpty(_xray.LastError)
+                    ? LocalizedText.Key("Error_XrayStartFailed")
                     : _xray.LastError;
-                await _dialogs.ShowErrorAsync(L.Error_StartFailed, detail);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_StartFailed"), detail);
                 return false;
             }
 
@@ -297,7 +303,7 @@ namespace XrayUI.ViewModels
             _activeServer     = null;
             _activeServerName = string.Empty;
             IsRunning = false;
-            await _dialogs.ShowErrorAsync(L.Error_StartFailed, ex.Message);
+            await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_StartFailed"), ex.Message);
         }
 
         /// <summary>
@@ -333,8 +339,8 @@ namespace XrayUI.ViewModels
                     var ok = await _xray.StartAsync(cfg);
                     if (!ok)
                     {
-                        var detail = string.IsNullOrEmpty(_xray.LastError)
-                            ? L.Error_XrayReapplyFailed
+                        LocalizedText detail = string.IsNullOrEmpty(_xray.LastError)
+                            ? LocalizedText.Key("Error_XrayReapplyFailed")
                             : _xray.LastError;
                         await HandleReapplyFailureAsync(detail);
                         return;
@@ -369,7 +375,7 @@ namespace XrayUI.ViewModels
         /// Clear state, revert UI to not-running, notify user.
         /// Caller is already inside _reapplyLock.
         /// </summary>
-        private async Task HandleReapplyFailureAsync(string detail)
+        private async Task HandleReapplyFailureAsync(LocalizedText detail)
         {
             try
             {
@@ -391,7 +397,7 @@ namespace XrayUI.ViewModels
             _activeServerName = string.Empty;
             IsRunning = false;
 
-            await _dialogs.ShowErrorAsync(L.Error_ReapplyFailed, detail);
+            await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_ReapplyFailed"), detail);
         }
 
 
@@ -404,8 +410,8 @@ namespace XrayUI.ViewModels
         {
             if (!_tunService.IsWintunAvailable())
             {
-                await _dialogs.ShowErrorAsync(L.Tun_PreflightErrorTitle,
-                    Loc.Format("Tun_WintunNotFound", _tunService.GetExpectedWintunPath()));
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Tun_PreflightErrorTitle"),
+                    XrayUI.Helpers.LocalizedText.Format("Tun_WintunNotFound", _tunService.GetExpectedWintunPath()));
                 return false;
             }
 
@@ -811,7 +817,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync(L.Startup_SetFailed, ex.Message);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Startup_SetFailed"), ex.Message);
                 return;
             }
 
@@ -899,7 +905,7 @@ namespace XrayUI.ViewModels
             UpdateStaging? staging = null;
             try
             {
-                await _dialogs.ShowProgressBarDialogAsync(L.Update_Updating,
+                await _dialogs.ShowProgressBarDialogAsync(XrayUI.Helpers.LocalizedText.Key("Update_Updating"),
                     async (progress, ct) =>
                     {
                         staging = await _update.DownloadVerifyAndExtractAsync(info, proxy, progress, ct);
@@ -912,7 +918,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync(L.Error_UpdateFailed, ex.Message);
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_UpdateFailed"), ex.Message);
                 return;
             }
 
@@ -927,7 +933,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync(L.Error_UpdateFailed, Loc.Format("Error_UpdaterLaunchFailed", ex.Message));
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_UpdateFailed"), XrayUI.Helpers.LocalizedText.Format("Error_UpdaterLaunchFailed", ex.Message));
                 return;
             }
 

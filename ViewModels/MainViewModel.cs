@@ -21,7 +21,7 @@ namespace XrayUI.ViewModels
         private DispatcherQueueTimer? _subscriptionRefreshTimer;
         private bool _updateCheckQueued;
         private ServerEntry? _activeServer;
-        private string _activeLatencyText = string.Empty;
+        private LocalizedText _activeLatencyText = string.Empty;
         private enum MainPage { Main, Personalize, Traffic }
         private MainPage _page;
         public TrafficMonitorViewModel Traffic { get; } = new();
@@ -65,7 +65,7 @@ namespace XrayUI.ViewModels
         public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;
-        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : L.Main_NotConnected;
+        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText.Value : L.Main_NotConnected;
         public Visibility MiniDotVisibility => ControlPanel.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
         public MainViewModel(
@@ -89,7 +89,7 @@ namespace XrayUI.ViewModels
             var realLatencyProbe = new RealLatencyProbeService(settings, tunService);
             var aiUnlockCheck = new AiUnlockCheckService();
 
-            Title = "Proxy Console";
+            Title = Loc.GetString("MainWindow_Title");
 
             ServerList   = new ServerListViewModel(dialogs, settings, latencyProbe, realLatencyProbe);
             ServerDetail = new ServerDetailViewModel(latencyProbe, aiUnlockCheck);
@@ -128,6 +128,21 @@ namespace XrayUI.ViewModels
             Personalize.PresetImported            += OnPresetImported;
 
             ServerDetail.SelectedServer = ServerList.SelectedServer;
+            LocalizationBindings.Bind(this, "Presentation", RefreshLocalization, apply: false);
+        }
+
+        private void RefreshLocalization()
+        {
+            Title = L.MainWindow_Title;
+            ServerList.RefreshLocalization();
+            ServerDetail.RefreshLocalization();
+            ControlPanel.RefreshLocalization();
+            Personalize.RefreshLocalization();
+            Traffic.RefreshLocalization();
+            OnPropertyChanged(nameof(ActiveServerName));
+            OnPropertyChanged(nameof(TrayTooltip));
+            OnPropertyChanged(nameof(MiniRoutingMode));
+            OnPropertyChanged(nameof(MiniStatusText));
         }
 
         // ── Startup initialisation (call after Window is ready) ───────────────
@@ -489,7 +504,7 @@ namespace XrayUI.ViewModels
                 && ControlPanel.IsRunning
                 && ReferenceEquals(ServerDetail.SelectedServer, _activeServer))
             {
-                _activeLatencyText = ServerDetail.LatencyText;
+                _activeLatencyText = ServerDetail.CaptureLatencyMessage();
                 OnPropertyChanged(nameof(MiniStatusText));
             }
         }
@@ -535,7 +550,7 @@ namespace XrayUI.ViewModels
             var previous = _activeServer;
             if (ReferenceEquals(previous, server))
             {
-                _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
+                _activeLatencyText = server is not null ? ServerDetail.CaptureLatencyMessage() : (LocalizedText)string.Empty;
                 ServerDetail.ActiveServer = server;
                 if (server is not null)
                     server.IsActive = true;
@@ -546,7 +561,7 @@ namespace XrayUI.ViewModels
                 previous.IsActive = false;
 
             _activeServer = server;
-            _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
+            _activeLatencyText = server is not null ? ServerDetail.CaptureLatencyMessage() : (LocalizedText)string.Empty;
             ServerDetail.ActiveServer = server;
 
             if (server is not null)

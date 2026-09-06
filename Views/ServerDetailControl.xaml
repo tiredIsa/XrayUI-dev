@@ -1,8 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.ServerDetailControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:XrayUI.Helpers"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:XrayUI.Controls"
@@ -19,9 +20,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock x:Uid="ServerDetail_HeaderText"
+        <TextBlock loc:Localize.Text="ServerDetail_HeaderText.Text"
                    Grid.Row="0"
-                   Text="服务器详情"
                    FontSize="20"
                    FontWeight="SemiBold"
                    Margin="0,0,0,12" />
@@ -68,8 +68,7 @@
                             <Grid ColumnSpacing="6"
                                   ColumnDefinitions="Auto,*"
                                   Visibility="{x:Bind ViewModel.GroupVisibility, Mode=OneWay}">
-                                <TextBlock x:Uid="ServerDetail_GroupLabel"
-                                           Text="分组"
+                                <TextBlock loc:Localize.Text="ServerDetail_GroupLabel.Text"
                                            FontSize="12"
                                            VerticalAlignment="Center"
                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
@@ -106,8 +105,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Row 0: protocol -->
-                            <TextBlock x:Uid="ServerDetail_ProtocolLabel"
-                                       Text="协议"
+                            <TextBlock loc:Localize.Text="ServerDetail_ProtocolLabel.Text"
                                        Grid.Row="0"
                                        Grid.Column="0"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -151,10 +149,9 @@
                                        Grid.Column="1"
                                        Text="{x:Bind ViewModel.SelectedEncryption, Mode=OneWay}"
                                        FontSize="16" />
-                            <TextBlock x:Uid="ServerDetail_TransportLabel"
+                            <TextBlock loc:Localize.Text="ServerDetail_TransportLabel.Text"
                                        Grid.Row="4"
                                        Grid.Column="0"
-                                       Text="传输"
                                        Visibility="{x:Bind ViewModel.SelectedTransportVisibility, Mode=OneWay}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        VerticalAlignment="Center" />
@@ -173,8 +170,7 @@
                         <StackPanel Margin="{x:Bind views:ServerDetailControl.AiSectionMargin(ViewModel.GroupVisibility), Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AiUnlockVisibility, Mode=OneWay}">
                             <Grid x:Name="AIShadowCastGrid" />
-                            <TextBlock x:Uid="ServerDetail_AiUnlockLabel"
-                                       Text="AI 访问解锁"
+                            <TextBlock loc:Localize.Text="ServerDetail_AiUnlockLabel.Text"
                                        FontSize="13"
                                        CharacterSpacing="80"
                                        Margin="0,0,0,12"
@@ -420,8 +416,7 @@
                               ColumnSpacing="12"
                               VerticalAlignment="Center"
                               Visibility="{x:Bind ViewModel.LatencyVisibility, Mode=OneWay}">
-                            <TextBlock x:Uid="ServerDetail_LatencyLabel"
-                                       Text="网络延迟"
+                            <TextBlock loc:Localize.Text="ServerDetail_LatencyLabel.Text"
                                        FontSize="13"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        VerticalAlignment="Center" />

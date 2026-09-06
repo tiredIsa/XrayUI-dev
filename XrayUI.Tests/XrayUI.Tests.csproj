@@ -24,6 +24,10 @@
 
   <ItemGroup>
     <Compile Include="..\Models\Traffic\*.cs" Link="Prod\Models\Traffic\%(Filename)%(Extension)" />
+    <Compile Include="..\Helpers\LanguageResolver.cs" Link="Prod\Helpers\LanguageResolver.cs" />
+    <Compile Include="..\Helpers\LocalizationBindings.cs" Link="Prod\Helpers\LocalizationBindings.cs" />
+    <Compile Include="..\Services\SettingsSnapshotMerge.cs" Link="Prod\Services\SettingsSnapshotMerge.cs" />
+    <None Include="..\Strings\**\Resources.resw" Link="Locales\%(RecursiveDir)Resources.resw" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Services\Traffic\*.cs" Link="Prod\Services\Traffic\%(Filename)%(Extension)" />
     <Compile Include="..\Helpers\TrafficPresentation.cs" Link="Prod\Helpers\TrafficPresentation.cs" />
     <Compile Include="..\ViewModels\TrafficMonitorViewModel.cs" Link="Prod\ViewModels\TrafficMonitorViewModel.cs" />

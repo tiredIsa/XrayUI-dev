@@ -31,6 +31,11 @@ namespace XrayUI.ViewModels
             Subscriptions.CollectionChanged += OnCollectionChanged;
             SubscriptionUrl = string.Empty;
             SubscriptionName = string.Empty;
+            LocalizationBindings.Bind(this, "Presentation", () =>
+            {
+                foreach (var sub in Subscriptions) sub.RefreshLocalization();
+                OnPropertyChanged(string.Empty);
+            }, apply: false);
         }
 
         [ObservableProperty]

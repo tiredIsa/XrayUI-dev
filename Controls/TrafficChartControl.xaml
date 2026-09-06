@@ -1,6 +1,7 @@
 <UserControl x:Class="XrayUI.Controls.TrafficChartControl"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:XrayUI.Helpers">
  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="6">
   <TextBlock x:Name="ScaleLabel" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
   <Grid x:Name="PlotArea" Grid.Row="1" MinHeight="80" Background="Transparent" SizeChanged="PlotSizeChanged" PointerMoved="PlotPointerMoved" PointerExited="PlotPointerExited">
@@ -14,11 +15,11 @@
     <Path x:Name="DownloadLine" Stroke="#168BBA" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
     <Path x:Name="UploadLine" Stroke="#A578CE" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
    </Canvas>
-   <TextBlock x:Name="EmptyLabel" x:Uid="Traffic_ChartEmpty" Text="Waiting for traffic measurements" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+   <TextBlock x:Name="EmptyLabel" loc:Localize.Text="Traffic_ChartEmpty.Text" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
   </Grid>
   <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
    <TextBlock x:Name="RangeLabel" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-   <TextBlock Grid.Column="1" x:Uid="Traffic_LatestSample" Text="Latest sample" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+   <TextBlock Grid.Column="1" loc:Localize.Text="Traffic_LatestSample.Text" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
   </Grid>
  </Grid>
 </UserControl>

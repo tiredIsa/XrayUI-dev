@@ -16,7 +16,7 @@ public sealed partial class CopyButton : Button
             nameof(CopiedMessage),
             typeof(string),
             typeof(CopyButton),
-            new PropertyMetadata("已复制到剪贴板"));
+            new PropertyMetadata(string.Empty));
 
     public static readonly DependencyProperty TextToCopyProperty =
         DependencyProperty.Register(
@@ -33,6 +33,7 @@ public sealed partial class CopyButton : Button
     public CopyButton()
     {
         DefaultStyleKey = typeof(CopyButton);
+        XrayUI.Helpers.LocalizationBindings.Bind(this, "CopiedMessage", () => CopiedMessage = XrayUI.Helpers.Loc.GetString("Copy_Copied"));
     }
 
     public string CopiedMessage

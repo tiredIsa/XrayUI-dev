@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -169,7 +169,7 @@ namespace XrayUI.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(
-                    L.CustomRules_PrepFailedTitle,
+                    XrayUI.Helpers.LocalizedText.Key("CustomRules_PrepFailedTitle"),
                     ex.Message,
                     xamlRoot);
                 return;
@@ -183,8 +183,8 @@ namespace XrayUI.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(
-                    L.CustomRules_OpenEditorFailedTitle,
-                    Loc.Format("CustomRules_OpenEditorFailedMsg", ex.Message),
+                    XrayUI.Helpers.LocalizedText.Key("CustomRules_OpenEditorFailedTitle"),
+                    XrayUI.Helpers.LocalizedText.Format("CustomRules_OpenEditorFailedMsg", ex.Message),
                     xamlRoot);
             }
         }

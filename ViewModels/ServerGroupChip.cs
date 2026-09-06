@@ -14,7 +14,8 @@ namespace XrayUI.ViewModels
 
         public ChipKind Kind { get; init; }
 
-        public string DisplayName { get; set; } = string.Empty;
+        [ObservableProperty]
+        public partial string DisplayName { get; set; } = string.Empty;
 
         public string? SubscriptionId { get; init; }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.UI.Dispatching;
@@ -22,12 +22,12 @@ namespace XrayUI.Views
             this.InitializeComponent();
 
             // Localize attached properties that x:Uid does not address cleanly.
-            AutomationProperties.SetName(FilterToggle, L.ServerList_FilterTooltip);
-            AutomationProperties.SetName(TestLatencyButton, L.ServerList_TestLatencyTooltip);
-            AutomationProperties.SetName(SortButton,   L.ServerList_SortTooltip);
-            ToolTipService.SetToolTip(FilterToggle, L.ServerList_FilterTooltip);
-            ToolTipService.SetToolTip(TestLatencyButton, L.ServerList_TestLatencyTooltip);
-            ToolTipService.SetToolTip(SortActiveItem,  L.ServerList_SortActiveHint);
+            XrayUI.Helpers.LocalizationBindings.Bind(FilterToggle, "AutomationProperties.SetName", () => AutomationProperties.SetName(FilterToggle, L.ServerList_FilterTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(TestLatencyButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(TestLatencyButton, L.ServerList_TestLatencyTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(SortButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(SortButton, L.ServerList_SortTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(FilterToggle, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(FilterToggle, L.ServerList_FilterTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(TestLatencyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(TestLatencyButton, L.ServerList_TestLatencyTooltip));
+            XrayUI.Helpers.LocalizationBindings.Bind(SortActiveItem, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(SortActiveItem, L.ServerList_SortActiveHint));
         }
 
         private void ServerSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -177,8 +177,7 @@ namespace XrayUI.Views
 
             if (e.TryGetPosition(element, out Point point))
             {
-                flyout.ShowAt(element, new FlyoutShowOptions
-                {
+                flyout.ShowAt(element, new FlyoutShowOptions {
                     Position = point
                 });
             }
