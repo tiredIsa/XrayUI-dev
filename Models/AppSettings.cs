@@ -103,5 +103,6 @@ namespace XrayUI.Models
         // ── Subscriptions ─────────────────────────────────────────────────────
         /// <summary>Persisted subscription sources. Nodes derived from these carry SubscriptionId = the entry's Id.</summary>
         public List<SubscriptionEntry>? Subscriptions { get; set; }
+        public List<string>? CollapsedServerGroups { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace XrayUI
         {
             // Must run before InitializeComponent — the XAML resource loader caches the
             // current locale at first touch, and that happens during component init.
-#if LOCALIZATION_SMOKE_TEST
+#if LOCALIZATION_SMOKE_TEST || SERVER_BROWSER_PROBE
             LanguageHelper.ApplyOverride("ru-RU");
             Loc.Initialize("ru-RU");
 #else
@@ -68,7 +68,10 @@ namespace XrayUI
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
-#if LOCALIZATION_SMOKE_TEST
+#if SERVER_BROWSER_PROBE
+            await Diagnostics.RepeaterProbeView.RunAsync();
+            return;
+#elif LOCALIZATION_SMOKE_TEST
             await Diagnostics.LocalizationSmokeTest.RunAsync();
             return;
 #else

@@ -25,6 +25,11 @@
   <ItemGroup>
     <Compile Include="..\Models\Traffic\*.cs" Link="Prod\Models\Traffic\%(Filename)%(Extension)" />
     <Compile Include="..\Helpers\LanguageResolver.cs" Link="Prod\Helpers\LanguageResolver.cs" />
+    <Compile Include="..\Helpers\ServerSelectionState.cs" Link="Prod\Helpers\ServerSelectionState.cs" />
+    <Compile Include="..\Services\GeoIpDatabase.cs" Link="Prod\Services\GeoIpDatabase.cs" />
+    <Compile Include="..\Services\ServerCountryService.cs" Link="Prod\Services\ServerCountryService.cs" />
+    <Compile Include="..\ViewModels\ServerRowViewModel.cs" Link="Prod\ViewModels\ServerRowViewModel.cs" />
+    <None Include="..\Assets\rules\geoip.dat" Link="Assets\rules\geoip.dat" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Helpers\LocalizationBindings.cs" Link="Prod\Helpers\LocalizationBindings.cs" />
     <Compile Include="..\Services\SettingsSnapshotMerge.cs" Link="Prod\Services\SettingsSnapshotMerge.cs" />
     <None Include="..\Strings\**\Resources.resw" Link="Locales\%(RecursiveDir)Resources.resw" CopyToOutputDirectory="PreserveNewest" />

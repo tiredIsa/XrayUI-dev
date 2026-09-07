@@ -90,6 +90,9 @@ namespace XrayUI.ViewModels
                     _ => chip.Subscription is { } sub ? SubscriptionLabel(sub) : OrphanSubLabel
                 };
             foreach (var subscription in _knownSubscriptions) subscription.RefreshLocalization();
+            foreach (var group in _displayGroups.Values) group.Refresh();
+            foreach (var server in Servers) server.RefreshLocalization();
+            foreach (var row in _rows.Values) row.RefreshLocalization();
             GroupNamesChanged?.Invoke();
             OnPropertyChanged(string.Empty);
         }
@@ -105,6 +108,7 @@ namespace XrayUI.ViewModels
             if (_disposed) return;
             _disposed = true;
             ProtocolColorStore.ColorsChanged -= OnProtocolColorsChanged;
+            foreach (var group in _displayGroups.Values) group.Dispose();
             Servers.CollectionChanged -= OnServersCollectionChanged;
             foreach (var server in _selectedServers)
             {
@@ -252,8 +256,7 @@ namespace XrayUI.ViewModels
         /// <summary>Persists the selection Id for the next launch. Writes are chained on
         /// <see cref="_persistSelectionChain"/> so concurrent saves can never land out of
         /// order, and a queued value is dropped once the selection has moved past it —
-        /// e.g. the transient null every RebuildGroupedView produces through the ListView's
-        /// TwoWay binding, or all but the last entry of a rapid selection burst.</summary>
+        /// e.g. all but the last entry of a rapid selection burst.</summary>
         private async Task PersistSelectedServerIdAsync(Task previous, string? id)
         {
             try { await previous; } catch { }
@@ -337,6 +340,7 @@ namespace XrayUI.ViewModels
 
         public void SetSelectedServers(IReadOnlyList<ServerEntry> selectedServers)
         {
+            SyncBrowserSelection(selectedServers);
             foreach (var server in _selectedServers)
                 server.PropertyChanged -= OnSelectedItemPropertyChanged;
 
@@ -373,6 +377,7 @@ namespace XrayUI.ViewModels
             _knownSubscriptions = settingsTask.Result.Subscriptions != null
                 ? new List<SubscriptionEntry>(settingsTask.Result.Subscriptions)
                 : new List<SubscriptionEntry>();
+            _collapsedGroups = new HashSet<string>(settingsTask.Result.CollapsedServerGroups ?? new(), StringComparer.Ordinal);
 
             MutateServersInBatch(() =>
             {
@@ -654,6 +659,7 @@ namespace XrayUI.ViewModels
 
             foreach (var server in ordered)
                 VisibleServers.Add(server);
+            RebuildGroups();
 
             // Clearing VisibleServers nulls SelectedServer through the ListView's TwoWay
             // selection binding; put it back whenever the entry is still visible so no
@@ -744,11 +750,25 @@ namespace XrayUI.ViewModels
 		[RelayCommand]
         private async Task TestAllLatencies()
         {
-            var servers = VisibleServers.ToList();
+            await RunGroupActionAsync(() => TestServersAsync(VisibleServers.ToList()));
+        }
+
+        private async Task TestServersAsync(List<ServerEntry> servers)
+        {
+            if (IsTestingLatencies) return;
+            if (LatencyTestMode == "real") servers = servers.Where(s => !s.IsChain).ToList();
 
 			if (servers.Count == 0) return;
 
             IsTestingLatencies = true;
+            var testedIds = servers.Select(s => s.SubscriptionId ?? "").ToHashSet();
+            foreach (var group in _displayGroups.Values)
+            {
+                group.Completed = 0;
+                group.TestTotal = servers.Count(s => (s.SubscriptionId ?? "") == group.Id);
+                group.IsTesting = testedIds.Contains(group.Id);
+                group.Refresh();
+            }
             _latencySortUnlocked = false;
             _latencySortRefreshPending = false;
             try
@@ -768,6 +788,7 @@ namespace XrayUI.ViewModels
                     && SortMode == ServerSortMode.Latency;
                 _latencySortRefreshPending = false;
                 IsTestingLatencies = false;
+                foreach (var group in _displayGroups.Values) { group.IsTesting = false; group.Refresh(); }
 
                 if (refreshLatencySort)
                     RebuildGroupedView();
@@ -824,6 +845,7 @@ namespace XrayUI.ViewModels
         private void ApplyLatencyResult(ServerEntry server, int latencyMs)
         {
             server.LatencyMs = latencyMs;
+            if (_displayGroups.TryGetValue(server.SubscriptionId ?? "", out var group)) group.Completed++;
 
             if (!_latencySortUnlocked)
             {

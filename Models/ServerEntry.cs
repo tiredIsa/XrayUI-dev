@@ -246,6 +246,7 @@ namespace XrayUI.Models
         public bool HasLatency => LatencyMs.HasValue;
 
         public void RefreshProtocolColor() => OnPropertyChanged(nameof(Protocol));
+        public void RefreshLocalization() => OnPropertyChanged(nameof(LatencyText));
 
         /// <summary>
         /// Copies every persisted connection-config field (including display name) from

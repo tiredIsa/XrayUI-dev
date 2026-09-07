@@ -20,126 +20,73 @@ namespace XrayUI.Views
         public ServerListControl()
         {
             this.InitializeComponent();
+            Loaded += (_, _) => { ViewModel.GroupToggling += PrepareGroupToggle; ViewModel.PropertyChanged += OnModelChanged; QueueInitialScroll(); };
+            Unloaded += (_, _) => { ViewModel.GroupToggling -= PrepareGroupToggle; ViewModel.PropertyChanged -= OnModelChanged; _anchor = null; };
+            BrowserScroll.AnchorRequested += (_, e) => { if (_anchor is { IsLoaded: true } anchor && IsHeaderVisible(anchor)) e.Anchor = anchor; };
 
-            // Localize attached properties that x:Uid does not address cleanly.
-            XrayUI.Helpers.LocalizationBindings.Bind(FilterToggle, "AutomationProperties.SetName", () => AutomationProperties.SetName(FilterToggle, L.ServerList_FilterTooltip));
-            XrayUI.Helpers.LocalizationBindings.Bind(TestLatencyButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(TestLatencyButton, L.ServerList_TestLatencyTooltip));
-            XrayUI.Helpers.LocalizationBindings.Bind(SortButton, "AutomationProperties.SetName", () => AutomationProperties.SetName(SortButton, L.ServerList_SortTooltip));
-            XrayUI.Helpers.LocalizationBindings.Bind(FilterToggle, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(FilterToggle, L.ServerList_FilterTooltip));
-            XrayUI.Helpers.LocalizationBindings.Bind(TestLatencyButton, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(TestLatencyButton, L.ServerList_TestLatencyTooltip));
-            XrayUI.Helpers.LocalizationBindings.Bind(SortActiveItem, "ToolTipService.SetToolTip", () => ToolTipService.SetToolTip(SortActiveItem, L.ServerList_SortActiveHint));
         }
 
-        private void ServerSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
-                return;
-
-            var query = sender.Text.Trim();
-            ViewModel.SearchQuery = query;
-
-            if (string.IsNullOrEmpty(query))
-            {
-                sender.ItemsSource = null;
-                return;
-            }
-
-            sender.ItemsSource = ViewModel.SearchServers(query);
-        }
-
-        private void ServerSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            if (args.SelectedItem is ServerEntry server)
-            {
-                ViewModel.SelectedServer = server;
-                sender.Text = server.Name;
-            }
-        }
-
-        private void ServerSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            if (args.ChosenSuggestion is ServerEntry chosenServer)
-            {
-                ViewModel.SelectedServer = chosenServer;
-                return;
-            }
-
-            var query = args.QueryText?.Trim();
-            if (string.IsNullOrEmpty(query)) return;
-
-            var match = ViewModel.Servers.FirstOrDefault(s =>
-                string.Equals(s.Name, query, StringComparison.OrdinalIgnoreCase));
-
-            match ??= ViewModel.Servers.FirstOrDefault(s =>
-                !string.IsNullOrEmpty(s.Name) &&
-                s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
-
-            if (match != null)
-            {
-                ViewModel.SelectedServer = match;
-                sender.Text = match.Name;
-            }
-        }
-
-        private async void ServersListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            await ViewModel.SaveOrderAsync();
-        }
-
+        private FrameworkElement? _anchor;
         private bool _initialScrollDone;
-
-        private void ServersListView_Loaded(object sender, RoutedEventArgs e)
-        {
-            QueueInitialScroll();
-        }
-
-        private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            QueueInitialScroll();
-            ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
-        }
-
+        private void OnModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        { if (e.PropertyName == nameof(ServerListViewModel.SelectedServer)) QueueInitialScroll(); }
         private void QueueInitialScroll()
         {
-            if (_initialScrollDone || ServersListView.SelectedItem is null)
-                return;
-
-            ServersListView.DispatcherQueue.TryEnqueue(
-                DispatcherQueuePriority.Low,
-                () =>
-                {
-                    // Startup can restore the selection before the virtualized list has
-                    // completed its first layout pass (more likely with Native AOT's
-                    // faster startup), where ScrollIntoView silently no-ops. Bail without
-                    // consuming the one-time scroll until the control is loaded and the
-                    // current item is known — the next Loaded/SelectionChanged retries.
-                    if (_initialScrollDone ||
-                        !ServersListView.IsLoaded ||
-                        ServersListView.SelectedItem is not { } selectedItem)
-                    {
-                        return;
-                    }
-
-                    ServersListView.UpdateLayout();
-                    ServersListView.ScrollIntoView(
-                        selectedItem,
-                        ScrollIntoViewAlignment.Leading);
-                    _initialScrollDone = true;
-                });
+            if (_initialScrollDone || ViewModel.SelectedServer is not { } selected) return;
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (_initialScrollDone || !IsLoaded) return;
+                var row = ViewModel.NavigableRows.FirstOrDefault(r => r.Server.Id == selected.Id);
+                if (row != null) { BringRowIntoView(row, false); _initialScrollDone = true; }
+            });
         }
-
-        private void ActiveBadge_SizeChanged(object sender, SizeChangedEventArgs e)
+        private bool IsHeaderVisible(FrameworkElement header)
         {
-            if (sender is UIElement element)
-                element.CenterPoint = new Vector3((float)e.NewSize.Width / 2f, (float)e.NewSize.Height / 2f, 0f);
+            var y = header.TransformToVisual(BrowserScroll).TransformPoint(new Point()).Y;
+            return y >= 0 && y < BrowserScroll.ActualHeight;
+        }
+        internal void RegisterHeader(FrameworkElement header) => BrowserScroll.RegisterAnchorCandidate(header);
+        internal void UnregisterHeader(FrameworkElement header)
+        { BrowserScroll.UnregisterAnchorCandidate(header); if (ReferenceEquals(_anchor, header)) _anchor = null; }
+        internal void PrepareGroupToggle(ServerListGroup group)
+        {
+            var index = ViewModel.Groups.IndexOf(group);
+            if (index < 0 || GroupRepeater.TryGetElement(index) is not SubscriptionGroupControl control) return;
+            // Only visible headers can be native anchors. An offscreen header may
+            // need to receive focus when a group is collapsed from a command.
+            _anchor = IsHeaderVisible(control.HeaderAnchor) ? control.HeaderAnchor : null;
+            if (_anchor != null)
+            {
+                BrowserScroll.InvalidateArrange();
+                BrowserScroll.UpdateLayout();
+            }
+            control.PrepareCollapse();
+        }
+        internal void BringRowIntoView(ServerRowViewModel row, bool focus = true)
+        {
+            var group = ViewModel.Groups.FirstOrDefault(g => g.IsExpanded && g.Rows.Contains(row));
+            if (group == null) return;
+            _anchor = null;
+            var control = (SubscriptionGroupControl)GroupRepeater.GetOrCreateElement(ViewModel.Groups.IndexOf(group));
+            control.UpdateLayout();
+            var element = control.GetRow(group.Rows.IndexOf(row));
+            element.UpdateLayout();
+            element.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+            if (focus) element.FocusRow();
+        }
+        internal static ServerListControl? FindBrowser(DependencyObject element)
+        {
+            for (var parent = VisualTreeHelper.GetParent(element); parent != null; parent = VisualTreeHelper.GetParent(parent))
+                if (parent is ServerListControl browser) return browser;
+            return null;
         }
 
-        private async void ServerItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        internal async void ServerItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (sender is not FrameworkElement element)
                 return;
 
-            if (element.DataContext is not ServerEntry server)
+            if (element is not ServerRowControl { Model.Server: var server })
                 return;
 
             if (!ReferenceEquals(ViewModel.SelectedServer, server))
@@ -153,7 +100,7 @@ namespace XrayUI.Views
             await command.ExecuteAsync(null);
         }
 
-        private void ServerItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
+        internal void ServerItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
         {
             if (ViewModel.HasMultipleSelectedServers)
             {
@@ -167,7 +114,7 @@ namespace XrayUI.Views
                 return;
             }
 
-            if (!ReferenceEquals(element.DataContext, ViewModel.SelectedServer))
+            if (!ReferenceEquals((element as ServerRowControl)?.Model.Server, ViewModel.SelectedServer))
             {
                 e.Handled = true;
                 return;
@@ -214,6 +161,11 @@ namespace XrayUI.Views
             flyout.Items.Add(favoriteItem);
             flyout.Items.Add(deleteItem);
             flyout.Items.Add(shareItem);
+            var testItem = CreateMenuItem(Loc.GetString("Groups_TestServer"), "\uEC4A");
+            testItem.IsEnabled = !ViewModel.IsTestingLatencies;
+            var testedServer = ViewModel.SelectedServer;
+            testItem.Click += async (_, _) => { if (testedServer != null) await ViewModel.TestServerAsync(testedServer); };
+            flyout.Items.Add(testItem);
 
             return flyout;
         }
@@ -226,21 +178,6 @@ namespace XrayUI.Views
                 Icon = new FontIcon { Glyph = glyph }
             };
         }
-
-        // Right-click latency-test mode menu pushes the chosen mode into the VM; the toolbar icon
-        // follows automatically via x:Bind on LatencyTestMode (see *IconVisibility below).
-        private void TestModeConnectItem_Click(object sender, RoutedEventArgs e)
-            => ViewModel.LatencyTestMode = "connect";
-
-        private void TestModeRealItem_Click(object sender, RoutedEventArgs e)
-            => ViewModel.LatencyTestMode = "real";
-
-        // Toolbar icon visibility derived from the latency-test mode (bound from XAML).
-        public static Visibility ConnectModeIconVisibility(string mode)
-            => mode == "real" ? Visibility.Collapsed : Visibility.Visible;
-
-        public static Visibility RealModeIconVisibility(string mode)
-            => mode == "real" ? Visibility.Visible : Visibility.Collapsed;
 
         public static double ActiveBadgeOpacity(bool isActive)
             => isActive ? 1.0 : 0.0;

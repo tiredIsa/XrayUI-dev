@@ -1,6 +1,7 @@
 #if LOCALIZATION_SMOKE_TEST
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -34,6 +35,23 @@ internal static class LocalizationSmokeTest
             window.Content = host;
             var dialogs = new DialogService(() => host.XamlRoot);
             var main = new MainViewModel(dialogs, settings, new XrayService(), new TunService(), new StartupService(), new UpdateService());
+            await settings.UpdateSettingsAsync(s => s.Subscriptions = new()
+            {
+                new SubscriptionEntry { Id = "leading", Name = "Leading group", Url = "https://example.test/leading" },
+                new SubscriptionEntry { Id = "fixture", Name = "Test subscription", Url = "https://example.test/sub" },
+                new SubscriptionEntry { Id = "empty", Name = "Empty subscription", Url = "https://example.test/empty" }
+            });
+            await settings.SaveServersAsync(new[]
+            {
+                new ServerEntry { Name = "London", Host = "example.test", Port = 443, Protocol = "vless", SubscriptionId = "fixture" },
+                new ServerEntry { Name = "Manual", Host = "manual.test", Port = 443, Protocol = "vless" }
+            }.Concat(Enumerable.Range(0, 40).Select(i => new ServerEntry
+            { Name = "Leading " + i, Host = "example.test", Port = 443, Protocol = "vless", SubscriptionId = "leading" }))
+             .Concat(Enumerable.Range(0, 60).Select(i => new ServerEntry
+            { Name = "Fixture " + i, Host = "example.test", Port = 443, Protocol = "vless", SubscriptionId = "fixture" }))
+             .Concat(Enumerable.Range(0, 40).Select(i => new ServerEntry
+            { Name = "Manual " + i, Host = "example.test", Port = 443, Protocol = "vless" })));
+            await main.ServerList.LoadServersAsync();
             main.Personalize.LoadLanguage(new AppSettings { Language = "ru-RU" });
             main.Personalize.LoadRegion(new AppSettings());
             main.Personalize.SelectedRegionIndex = 1;
@@ -50,6 +68,78 @@ internal static class LocalizationSmokeTest
             window.Activate();
             window.AppWindow.Hide();
             await ready.Task.WaitAsync(TimeSpan.FromSeconds(15));
+            var group = main.ServerList.Groups.First(g => g.Id == "fixture");
+            Check(main.ServerList.Groups.Count() == 4, "Missing group headers, including empty subscription");
+            await Task.Delay(100);
+            var repeater = (ItemsRepeater)servers.FindName("GroupRepeater");
+            var listScroll = (ScrollViewer)servers.FindName("BrowserScroll");
+            var headerContainer = (SubscriptionGroupControl)repeater.GetOrCreateElement(main.ServerList.Groups.IndexOf(group));
+            var countryRow = group.Rows.First(r => r.Server.Name == "London");
+            countryRow.Server.Host = "136.243.0.1";
+            await countryRow.EnsureCountryAsync();
+            Check(countryRow.CountryCode == "DE", "Local GeoIP lookup did not update the row");
+            var countryControl = headerContainer.GetRow(group.Rows.IndexOf(countryRow));
+            countryControl.UpdateLayout();
+            var countryImage = (Image)countryControl.FindName("CountryFlag");
+            Check(countryImage.Visibility == Visibility.Visible, "Country flag is hidden");
+            var countrySource = (Microsoft.UI.Xaml.Media.Imaging.SvgImageSource)countryImage.Source;
+            var countryOpened = new TaskCompletionSource();
+            countrySource.Opened += (_, _) => countryOpened.TrySetResult();
+            countrySource.OpenFailed += (_, e) => countryOpened.TrySetException(new InvalidOperationException("Country SVG failed: " + e.Status));
+            countrySource.UriSource = null;
+            countrySource.UriSource = countryRow.FlagUri;
+            await countryOpened.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            headerContainer.UpdateLayout();
+            headerContainer.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false, VerticalAlignmentRatio = 0 });
+            await Task.Delay(150);
+            listScroll.ChangeView(null, Math.Max(0, listScroll.VerticalOffset - 40), null, true);
+            await Task.Delay(150);
+            var headerTop = headerContainer.HeaderAnchor.TransformToVisual(listScroll).TransformPoint(new Windows.Foundation.Point()).Y;
+            var mutations = 0;
+            group.Rows.CollectionChanged += (_, _) => mutations++;
+            main.ServerList.Groups.CollectionChanged += (_, _) => mutations++;
+            var selectedBeforeCollapse = main.ServerList.SelectedServer;
+            double maximumHeaderMovement = 0; int sampledFrames = 0;
+            void ObserveHeader(object? sender, object args)
+            {
+                sampledFrames++;
+                var current = headerContainer.HeaderAnchor.TransformToVisual(listScroll).TransformPoint(new Windows.Foundation.Point()).Y;
+                maximumHeaderMovement = Math.Max(maximumHeaderMovement, Math.Abs(current - headerTop));
+            }
+            Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += ObserveHeader;
+            ((Expander)headerContainer.FindName("GroupExpander")).IsExpanded = false;
+            Check(!group.IsExpanded, "Native Expander did not update group state");
+            await Task.Delay(150);
+            repeater.UpdateLayout();
+            var collapsedTop = headerContainer.HeaderAnchor.TransformToVisual(listScroll).TransformPoint(new Windows.Foundation.Point()).Y;
+            Check(Math.Abs(headerTop - collapsedTop) < 2, $"Collapse moved header: {headerTop} -> {collapsedTop}");
+            main.ServerList.ToggleGroup(group);
+            await Task.Delay(150);
+            repeater.UpdateLayout();
+            var expandedTop = headerContainer.HeaderAnchor.TransformToVisual(listScroll).TransformPoint(new Windows.Foundation.Point()).Y;
+            Check(Math.Abs(headerTop - expandedTop) < 2, $"Expand moved header: {headerTop} -> {expandedTop}");
+            for (var i = 0; i < 6; i++)
+            {
+                main.ServerList.ToggleGroup(group);
+                await Task.Delay(30);
+            }
+            await Task.Delay(250);
+            Check(group.IsExpanded, "Rapid toggles left stale expansion state");
+            Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= ObserveHeader;
+            Check(sampledFrames > 0, "No render frames sampled");
+            Check(maximumHeaderMovement < 2, "Header moved during animation: " + maximumHeaderMovement);
+            main.ServerList.ToggleGroup(group);
+            await Task.Delay(150);
+            Check(!group.IsExpanded && mutations == 0, "Collapse mutated the source collections");
+            Check(ReferenceEquals(selectedBeforeCollapse, main.ServerList.SelectedServer), "Collapse lost selected server");
+            main.ServerList.SearchQuery = "London";
+            Check(main.ServerList.NavigableRows.Length == 1 && group.IsExpanded, "Search did not reveal group match");
+            main.ServerList.SearchQuery = "";
+            Check(!group.IsExpanded, "Search overwrote saved collapse state");
+            await main.ServerList.FlushGroupStateAsync();
+            Check((await settings.LoadSettingsAsync()).CollapsedServerGroups!.Contains("fixture"), "Collapse state was not saved");
+            main.ServerList.ToggleGroup(group);
+            await main.ServerList.FlushGroupStateAsync();
 
             var caption = new TextBlock(); Localize.SetText(caption, "Traffic_Title.Text");
             var draft = new TextBox { Text = "unsaved input" }; Localize.SetHeader(draft, "EditServer_Name");
@@ -72,7 +162,13 @@ internal static class LocalizationSmokeTest
                 Check(main.Personalize.ShowRestartHint, "Pending routing region was lost");
                 Check(!main.ControlPanel.IsRunning, "Language change started proxy");
                 Check(main.ControlPanel.StartStopButtonContent == Loc.GetString("ControlPanel_Start"), "Stale Start caption");
-                Check(((Button)panel.FindName("TrafficButton")).Content is Viewbox, "Navigation icon lost");
+                var navigationIcon = ((Button)panel.FindName("TrafficButton")).Content;
+                // Native AOT can recreate an unnamed Viewbox's collected managed
+                // wrapper as FrameworkElement. Verify the actual icon tree rather
+                // than requiring one particular managed projection of that tree.
+                Check(navigationIcon is FrameworkElement { Width: 16, Height: 16 } icon &&
+                    Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(icon) > 0,
+                    "Navigation icon content was replaced or removed");
             }
             stale.LocalMixedPort = 17999;
             await settings.SaveSettingsAsync(stale);
@@ -115,6 +211,7 @@ internal static class LocalizationSmokeTest
                 try { await Loc.ChangeAsync("zh-CN", settings); throw new InvalidOperationException("Locked settings should fail"); }
                 catch (IOException) { Check(Loc.Current.EffectiveTag == "ru-RU", "Failed save changed active language"); }
             }
+            var stress = await CheckLargeBrowserAsync(host, dialogs);
             window.Close();
             var releasedElement = CreateDetachedLocalizedElement();
             for (var attempt = 0; attempt < 5 && releasedElement.IsAlive; attempt++)
@@ -123,8 +220,9 @@ internal static class LocalizationSmokeTest
                 await Task.Delay(50);
             }
             Check(!releasedElement.IsAlive, "Localization retained a detached XAML element");
-            await File.WriteAllTextAsync(report, "PASS: embedded catalogs with Russian startup override; actual XAML construction/loading; en/ru/zh live captions after GC; language ComboBox selection; preserved input/settings/pause/selection; stale settings merge; dialog captions; detached element collection. No proxy started.");
+            await File.WriteAllTextAsync(report, "PASS: embedded catalogs with Russian startup override; actual XAML construction/loading; local GeoIP and bundled SVG country flag loaded; en/ru/zh live captions after GC; language ComboBox selection; preserved input/settings/pause/selection; stale settings merge; dialog captions; detached element collection. No proxy started. " + stress);
             File.Delete(Path.Combine(temp, "settings.json"));
+            File.Delete(Path.Combine(temp, "servers.json"));
             Directory.Delete(temp);
             Environment.Exit(0);
         }
@@ -133,6 +231,56 @@ internal static class LocalizationSmokeTest
             await File.WriteAllTextAsync(report, "FAIL: " + ex);
             Environment.Exit(1);
         }
+    }
+    private static async Task<string> CheckLargeBrowserAsync(Grid host, DialogService dialogs)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "XrayUI-Repeater-" + Guid.NewGuid().ToString("N"));
+        var settings = new SettingsService(path);
+        var subscriptions = Enumerable.Range(0, 50).Select(i => new SubscriptionEntry { Id = "g" + i, Name = "Group " + i }).ToList();
+        await settings.UpdateSettingsAsync(s => s.Subscriptions = subscriptions);
+        await settings.SaveServersAsync(subscriptions.SelectMany(g => Enumerable.Range(0, 100).Select(i =>
+            new ServerEntry { Name = g.Name + " Server " + i, Host = "example.test", Port = 443, Protocol = "vless", SubscriptionId = g.Id })));
+        var main = new MainViewModel(dialogs, settings, new XrayService(), new TunService(), new StartupService(), new UpdateService());
+        await main.ServerList.LoadServersAsync();
+        var browser = new ServerListControl { ViewModel = main.ServerList, Width = 600, Height = 500 };
+        host.Children.Clear(); host.Children.Add(browser);
+        await Task.Delay(250);
+        browser.UpdateLayout();
+        var initial = CountVisual<ServerRowControl>(browser);
+        Check(initial > 0 && initial < 200, "Production browser failed virtualization: " + initial);
+        var target = main.ServerList.Groups[30].Rows[50];
+        browser.ViewModel.SelectRow(target);
+        browser.BringRowIntoView(target);
+        await Task.Delay(250);
+        var distant = CountVisual<ServerRowControl>(browser);
+        Check(distant > 0 && distant < 200, "Production browser retained distant rows: " + distant);
+        var repeater = (ItemsRepeater)browser.FindName("GroupRepeater");
+        var groupControl = (SubscriptionGroupControl)repeater.TryGetElement(30);
+        var rowControl = groupControl.GetRow(50);
+        Check(ReferenceEquals(rowControl.Model, target) && ((ListViewItem)rowControl.FindName("Row")).IsSelected, "Recycled row lost selection binding");
+        Check(FindVisual<TextBlock>(rowControl)!.Text == target.Server.Name, "Recycled row shows stale server");
+        var group = main.ServerList.Groups[30];
+        var next = group.Rows[51];
+        main.ServerList.SelectRow(next, control: true);
+        Check(target.IsSelected && next.IsSelected && main.ServerList.HasMultipleSelectedServers, "Ctrl selection bridge failed");
+        main.ServerList.ToggleGroup(group);
+        Check(!target.IsSelected && !next.IsSelected && ReferenceEquals(main.ServerList.SelectedServer, next.Server), "Collapse lost current details or retained mass selection");
+        main.ServerList.ToggleGroup(group);
+        main.ServerList.SelectRow(target);
+        main.ServerList.SelectRow(group.Rows[54], shift: true);
+        Check(group.Rows.Skip(50).Take(5).All(r => r.IsSelected), "Shift selection bridge failed");
+        await main.ServerList.FlushGroupStateAsync();
+        await Task.Delay(100);
+        host.Children.Clear();
+        File.Delete(Path.Combine(path, "settings.json")); File.Delete(Path.Combine(path, "servers.json")); Directory.Delete(path);
+        return $"Production 5000-row browser: realized {initial}/{distant}; recycling, Ctrl/Shift and collapse selection passed.";
+    }
+    private static int CountVisual<T>(DependencyObject root) where T : DependencyObject
+    {
+        var count = root is T ? 1 : 0;
+        for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(root); i++)
+            count += CountVisual<T>(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(root, i));
+        return count;
     }
     private static void Check(bool condition, string message)
     {
@@ -150,6 +298,16 @@ internal static class LocalizationSmokeTest
         if (element is ComboBox combo && ReferenceEquals(combo.ItemsSource, LanguageHelper.SupportedLanguages)) return combo;
         for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(element); i++)
             if (FindLanguageCombo(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(element, i)) is { } found) return found;
+        return null;
+    }
+    private static T? FindVisual<T>(DependencyObject element) where T : DependencyObject
+    {
+        for (var i = 0; i < Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(element); i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(element, i);
+            if (child is T match) return match;
+            if (FindVisual<T>(child) is { } nested) return nested;
+        }
         return null;
     }
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]

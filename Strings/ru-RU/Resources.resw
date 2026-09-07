@@ -1496,4 +1496,13 @@
   <data name="Traffic_PerSecond" xml:space="preserve"><value>/с</value></data>
   <data name="Traffic_TransportUnknown" xml:space="preserve"><value>Неизвестно</value></data>
   <data name="Language_ChangeFailed" xml:space="preserve"><value>Не удалось изменить язык интерфейса</value></data>
+  <data name="Groups_Settings" xml:space="preserve"><value>Настройки подписки</value></data>
+  <data name="Groups_DeleteTitle" xml:space="preserve"><value>Удалить подписку</value></data>
+  <data name="Groups_DeleteMessage" xml:space="preserve"><value>Удалить подписку «{0}» и её серверы?</value></data>
+  <data name="Groups_Error" xml:space="preserve"><value>Не удалось выполнить действие</value></data>
+  <data name="Groups_Refresh" xml:space="preserve"><value>Обновить подписку</value></data>
+  <data name="Groups_Test" xml:space="preserve"><value>Проверить задержку группы</value></data>
+  <data name="Groups_TestServer" xml:space="preserve"><value>Проверить задержку сервера</value></data>
+  <data name="Groups_Actions" xml:space="preserve"><value>Действия с группой</value></data>
+  <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>Автообновление подписки отключено</value></data>
 </root>

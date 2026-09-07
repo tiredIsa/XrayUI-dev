@@ -1,0 +1,19 @@
+<UserControl x:Class="XrayUI.Diagnostics.RepeaterProbeView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:local="using:XrayUI.Diagnostics">
+ <ScrollViewer x:Name="Scroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+  <ItemsRepeater x:Name="Groups" ItemsSource="{x:Bind Data}">
+   <ItemsRepeater.ItemTemplate>
+    <DataTemplate x:DataType="local:RepeaterProbeGroup">
+     <Expander IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+      <Expander.Header><TextBlock Text="{x:Bind Title}" Height="32"/></Expander.Header>
+      <ItemsRepeater ItemsSource="{x:Bind Rows}" ElementPrepared="RowPrepared" ElementClearing="RowClearing">
+       <ItemsRepeater.ItemTemplate><DataTemplate x:DataType="x:String"><TextBlock Text="{x:Bind}" Height="44"/></DataTemplate></ItemsRepeater.ItemTemplate>
+      </ItemsRepeater>
+     </Expander>
+    </DataTemplate>
+   </ItemsRepeater.ItemTemplate>
+  </ItemsRepeater>
+ </ScrollViewer>
+</UserControl>

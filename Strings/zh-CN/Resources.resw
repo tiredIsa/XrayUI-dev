@@ -1403,4 +1403,13 @@
   <data name="Traffic_PerSecond" xml:space="preserve"><value>/秒</value></data>
   <data name="Traffic_TransportUnknown" xml:space="preserve"><value>未知</value></data>
   <data name="Language_ChangeFailed" xml:space="preserve"><value>无法更改界面语言</value></data>
+  <data name="Groups_Settings" xml:space="preserve"><value>订阅设置</value></data>
+  <data name="Groups_DeleteTitle" xml:space="preserve"><value>删除订阅</value></data>
+  <data name="Groups_DeleteMessage" xml:space="preserve"><value>删除订阅“{0}”及其服务器？</value></data>
+  <data name="Groups_Error" xml:space="preserve"><value>订阅操作失败</value></data>
+  <data name="Groups_Refresh" xml:space="preserve"><value>更新订阅</value></data>
+  <data name="Groups_Test" xml:space="preserve"><value>测试分组延迟</value></data>
+  <data name="Groups_TestServer" xml:space="preserve"><value>测试服务器延迟</value></data>
+  <data name="Groups_Actions" xml:space="preserve"><value>分组操作</value></data>
+  <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>订阅自动更新已关闭</value></data>
 </root>

@@ -1400,4 +1400,13 @@ Path: {0}</value>
   <data name="Traffic_PerSecond" xml:space="preserve"><value>/s</value></data>
   <data name="Traffic_TransportUnknown" xml:space="preserve"><value>Unknown</value></data>
   <data name="Language_ChangeFailed" xml:space="preserve"><value>Could not change the interface language</value></data>
+  <data name="Groups_Settings" xml:space="preserve"><value>Subscription settings</value></data>
+  <data name="Groups_DeleteTitle" xml:space="preserve"><value>Delete subscription</value></data>
+  <data name="Groups_DeleteMessage" xml:space="preserve"><value>Delete subscription “{0}” and its servers?</value></data>
+  <data name="Groups_Error" xml:space="preserve"><value>Subscription action failed</value></data>
+  <data name="Groups_Refresh" xml:space="preserve"><value>Update subscription</value></data>
+  <data name="Groups_Test" xml:space="preserve"><value>Test group latency</value></data>
+  <data name="Groups_TestServer" xml:space="preserve"><value>Test server latency</value></data>
+  <data name="Groups_Actions" xml:space="preserve"><value>Group actions</value></data>
+  <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>Automatic subscription updates are disabled</value></data>
 </root>
