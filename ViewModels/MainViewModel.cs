@@ -200,7 +200,19 @@ namespace XrayUI.ViewModels
             // IsStartupEnabled is deliberately not consulted: the launch itself proves
             // the task exists, and an external launcher passing our internal flag is
             // opting into boot semantics.
-            if (isBootLaunch && s.IsAutoConnect)
+            var updateResume = UpdateResume.Parse(Environment.GetCommandLineArgs());
+            if (updateResume is not null)
+            {
+                // Never fall back to another server if the previous one was removed.
+                var previousServer = ServerList.Servers.FirstOrDefault(server => server.Id == updateResume.ServerId);
+                if (previousServer is not null && ControlPanel.RestoreUpdateMode(updateResume))
+                {
+                    ServerList.SelectedServer = previousServer;
+                    if (ControlPanel.StartStopCommand.CanExecute(null))
+                        await ControlPanel.StartStopCommand.ExecuteAsync(null);
+                }
+            }
+            else if (isBootLaunch && s.IsAutoConnect)
                 await TryAutoConnectAsync(s);
 
             StartSubscriptionRefreshScheduler();

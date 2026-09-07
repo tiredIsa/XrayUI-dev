@@ -618,7 +618,7 @@
     <value>Что нового</value>
   </data>
   <data name="Update_ChangelogLanguage" xml:space="preserve">
-    <value>en</value>
+    <value>ru</value>
   </data>
   <data name="Update_ConfirmNow" xml:space="preserve">
     <value>Обновить сейчас</value>

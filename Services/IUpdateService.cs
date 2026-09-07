@@ -32,7 +32,7 @@ namespace XrayUI.Services
             UpdateInfo info, string? proxyUrl, IProgress<ProgressDialogUpdate> progress, CancellationToken ct);
 
         /// <summary>
-        /// Fetches the user-facing release notes for this upgrade from the website feed.
+        /// Fetches the user-facing release notes for this upgrade from the release's changelog asset.
         /// Best-effort decoration: any failure (offline, feed not updated yet, malformed)
         /// returns an empty list instead of throwing, so the update flow never depends on it.
         /// </summary>
@@ -44,7 +44,7 @@ namespace XrayUI.Services
         /// Spawns the staged updater with handoff arguments. Caller is responsible
         /// for shutting the app down (via <c>App.RequestShutdown</c>) immediately after.
         /// </summary>
-        void LaunchUpdater(UpdateStaging staging);
+        void LaunchUpdater(UpdateStaging staging, Helpers.UpdateResume? resume = null);
 
         /// <summary>
         /// Removes leftover staging directories under

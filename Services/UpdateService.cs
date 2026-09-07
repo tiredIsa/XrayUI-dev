@@ -23,12 +23,9 @@ namespace XrayUI.Services
     public sealed class UpdateService : IUpdateService
     {
         private const string ReleaseApiUrl =
-            "https://api.github.com/repos/PhoenixNil/XrayUI-dev/releases/latest";
+            "https://api.github.com/repos/tiredIsa/XrayUI-dev/releases/latest";
 
-        // User-facing release notes live on the website, not in the GitHub release body —
-        // the release page stays a plain technical PR list, and the notes shown in-app can
-        // be written (and translated) for end users.
-        private const string ChangelogUrl = "https://www.xrayui.site/changelog.json";
+        private const string ReleaseDownloadUrl = "https://github.com/tiredIsa/XrayUI-dev/releases/download";
 
         private const string AppExeName     = "XrayUI-dev.exe";
         private const string UpdaterExeName = "XrayUI.Updater.exe";
@@ -107,7 +104,7 @@ namespace XrayUI.Services
 
                 // Cache-buster: an edge node still holding the previous file would otherwise
                 // hide the notes for a release that just went out.
-                var url = $"{ChangelogUrl}?v={info.NewVersion}";
+                var url = $"{ReleaseDownloadUrl}/{Uri.EscapeDataString(info.TagName)}/changelog.json";
 
                 var feed = await client.GetFromJsonAsync(
                     url, AppJsonSerializerContext.Default.ChangelogFeed, ct);
@@ -222,7 +219,7 @@ namespace XrayUI.Services
             return new UpdateStaging(extractDir, stagedRunner, installDir, info.NewVersion);
         }
 
-        public void LaunchUpdater(UpdateStaging staging)
+        public void LaunchUpdater(UpdateStaging staging, UpdateResume? resume = null)
         {
             var psi = new ProcessStartInfo
             {
@@ -234,6 +231,8 @@ namespace XrayUI.Services
             psi.ArgumentList.Add($"--extracted-dir={staging.ExtractedDir}");
             psi.ArgumentList.Add($"--install-dir={staging.InstallDir}");
             psi.ArgumentList.Add($"--launch-after={AppExeName}");
+            if (resume is not null)
+                psi.ArgumentList.Add(resume.ToArgument());
 
             Process.Start(psi);
         }

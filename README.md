@@ -1,89 +1,132 @@
-﻿<img width="2172" height="724" alt="image" src="https://github.com/user-attachments/assets/ea4d4a40-76cd-48f5-abc5-ce3bc07d6f3c" />
+# XrayUI — Xray client for Windows / Xray-клиент для Windows
 
-<h1 align="center">XrayUI</h1>
-A native Windows GUI client for the Xray core, built with <a style="text-decoration:none" href="https://docs.microsoft.com/windows/apps/winui">WinUI</a>. Designed to be a fast and lightweight proxy client.
+[![Release](https://img.shields.io/github/v/release/tiredIsa/XrayUI-dev)](https://github.com/tiredIsa/XrayUI-dev/releases/latest)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Windows](https://img.shields.io/badge/Windows-x64%20%7C%20ARM64-0078D4)](https://github.com/tiredIsa/XrayUI-dev/releases/latest)
 
+**[Русский](#русский) · [English](#english) · [Download / Скачать](https://github.com/tiredIsa/XrayUI-dev/releases/latest)**
 
-## Features
+## Русский
 
-- Support Shadowsocks, VMess, VLESS, Trojan, Hysteria2, WireGuard and Chain Proxy
-- TUN mode
-- Subscription import and update
-- AI Unlock Status Detection
-- Custom routing rules with geoip / geosite
-- Auto-start on boot, auto-connect
-- Theme and protocol color customization
+**XrayUI — нативный графический клиент Xray для Windows с TUN, VLESS, VMess,
+Shadowsocks и Trojan.** Интерфейс на WinUI 3, управление подписками,
+правила маршрутизации и работа из системного трея.
 
-## Automatic subscription updates
+Это независимый **форк [PhoenixNil/XrayUI-dev](https://github.com/PhoenixNil/XrayUI-dev)**,
+развиваемый в `tiredIsa/XrayUI-dev`. Благодарим автора и участников исходного
+проекта. У форка собственные релизы и канал обновлений.
 
-New subscriptions default to refreshing every 6 hours; choose Off, 1, 6, 12 or
-24 hours when adding or editing a subscription. Existing subscriptions keep their
-saved setting. The interval is measured from the last successful refresh.
+### Что добавляет форк
 
-While the app is running, overdue subscriptions refresh directly if its proxy is
-off, or through its local SOCKS proxy if it is on. Failed proxy requests never
-fall back to direct access. The scheduler checks on startup, every minute, when
-the network becomes available, and when the proxy connects. Closing the app
-pauses scheduling; overdue updates resume on the next launch.
+- Русский интерфейс наряду с английским и китайским.
+- Автоподключение в последнем успешном режиме TUN при входе в Windows.
+- Обновления из этого репозитория с восстановлением активного подключения.
+- Автоматическое обновление подписок с настройкой интервала и повторными попытками.
 
-Failed refreshes keep the previous servers. Transient errors and invalid/empty
-responses retry after 1, 5, 15, 30, then 60 minutes (hourly thereafter). HTTP
-401/403/404 wait the normal interval and show a link/access error. HTTP 429 honors
-Retry-After, including for manual refreshes; without that header it uses the
-retry delay. A restored network can retry transient failures immediately, and
-connecting the proxy can retry a failed direct request, subject to rate limits.
-When no network interface is available, no request or attempt is recorded.
+### Возможности
 
-## UI Preview
-<img width="1465" height="982" alt="image" src="https://github.com/user-attachments/assets/ff288102-d874-4ecb-87dd-0a9d880cc1cf" />
+- VLESS, VMess, Shadowsocks, Trojan, Hysteria2, WireGuard и цепочки прокси.
+- TUN и системный прокси; правила маршрутизации с GeoIP и Geosite.
+- Импорт подписок, группировка и поиск серверов.
+- Автозапуск, автоподключение и настройка оформления.
 
-## Download
+### Скачать и начать
 
-Download the latest release [here](https://github.com/PhoenixNil/XrayUI-dev/releases/latest).
+1. Откройте [последний релиз](https://github.com/tiredIsa/XrayUI-dev/releases/latest).
+2. Выберите **x64** для Intel/AMD или **ARM64** для Windows on ARM.
+   Архив **`-wasdk`** содержит Windows App SDK runtime: используйте его,
+   если обычная сборка не запускается из-за отсутствующего runtime.
+3. Распакуйте **весь архив** в постоянную папку и запустите `XrayUI-dev.exe`.
+   Оставьте `XrayUI.Updater.exe` рядом с приложением.
+4. Добавьте подписку или сервер, выберите сервер и подключитесь.
+   Для TUN требуются права администратора.
 
-## Getting Started
+Приложение не предоставляет VPN-серверы или подписки — нужны собственные
+параметры подключения. Для перехода с исходного проекта установите этот форк
+вручную один раз.
 
-> [!NOTE]
-> Building XrayUI requires [Visual Studio](https://visualstudio.microsoft.com/vs/) and Windows 10 version 1809 or later. Publishing the application also requires the Rust toolchain. If this is your first time building a WinUI 3 application with the Windows App SDK, follow the [installation instructions](https://learn.microsoft.com/windows/apps/get-started/start-here).
+### Обновления и поддержка
 
-Choose either Visual Studio or PowerShell to build the project.
+Новая версия отмечается на шестерёнке. Подтвердите установку: приложение скачает
+архив, проверит его и перезапустится. Активное подключение восстанавливается;
+во время установки оно прерывается.
 
-### Option 1: Visual Studio
+[Обновления и выпуск релизов](docs/updates.md) · [Автозапуск TUN](docs/tun-autostart.md) ·
+[Обновление подписок](docs/subscription-updates.md)
 
-1. Open `XrayUI-dev.slnx` in Visual Studio.
-2. Select the target platform, such as `x64` or `ARM64`.
-3. Build the solution.
+Сообщайте об ошибках в [Issues этого репозитория](https://github.com/tiredIsa/XrayUI-dev/issues).
+Укажите версию, архитектуру Windows и шаги воспроизведения. Удалите из логов
+ссылки подписок, ключи и личные данные перед публикацией.
 
-### Option 2: PowerShell
+## English
 
-#### x64
+**XrayUI is a native Windows GUI client for Xray with TUN mode, VLESS, VMess,
+Shadowsocks and Trojan support.** Built with WinUI 3, it provides subscription
+management, routing rules and system tray operation.
+
+This is an independent **fork of [PhoenixNil/XrayUI-dev](https://github.com/PhoenixNil/XrayUI-dev)**,
+maintained in `tiredIsa/XrayUI-dev`. Credit goes to the original author and
+contributors. This fork ships its own releases and update channel.
+
+### Fork improvements
+
+- Russian UI alongside English and Chinese.
+- Restore the last successful TUN mode when connecting at Windows logon.
+- In-app updates from this repository with active connection restoration.
+- Scheduled subscription refreshes with configurable intervals and retries.
+
+### Features
+
+- VLESS, VMess, Shadowsocks, Trojan, Hysteria2, WireGuard and proxy chains.
+- TUN and system proxy modes, custom GeoIP and Geosite routing rules.
+- Subscription import, server grouping and search.
+- Autostart, automatic connection and appearance settings.
+
+### Download and get started
+
+1. Open the [latest release](https://github.com/tiredIsa/XrayUI-dev/releases/latest).
+2. Choose **x64** for Intel/AMD PCs or **ARM64** for Windows on ARM.
+   The **`-wasdk`** archive bundles the Windows App SDK runtime; use it if the
+   regular build cannot start because the runtime is missing.
+3. Extract the **entire archive** into a permanent folder and run `XrayUI-dev.exe`.
+   Keep `XrayUI.Updater.exe` alongside it.
+4. Import a subscription or add a server, select it and connect.
+   TUN mode requires administrator privileges.
+
+The app does not provide VPN servers or subscriptions. Supply your own connection
+settings. Users of the upstream project need to install this fork manually once
+before receiving updates from this repository.
+
+### Updates and support
+
+An indicator on the settings button announces a newer version. Confirm the update
+to download, verify and install it. The app restarts and restores an active
+connection; connectivity is interrupted during installation.
+
+[Subscription refresh behavior](docs/subscription-updates.md) ·
+[Report a fork issue](https://github.com/tiredIsa/XrayUI-dev/issues)
+
+Include the app version, Windows architecture and reproduction steps in reports.
+Remove subscription URLs, credentials and personal information from logs.
+
+## Build / Сборка
+
+Requires the .NET 10 SDK, Visual Studio Windows/C++ build tools for WinUI 3 and
+Native AOT, and Rust for the updater. Open `XrayUI-dev.slnx` in Visual Studio,
+or publish from PowerShell:
 
 ```powershell
-dotnet build -c Release -p:Platform=x64
-dotnet publish -c Release -r win-x64 -p:Platform=x64
+# x64
+dotnet publish XrayUI-dev.csproj -c Release -r win-x64 -p:Platform=x64
+
+# ARM64
+dotnet publish XrayUI-dev.csproj -c Release -r win-arm64 -p:Platform=ARM64
 ```
 
-#### ARM64
+Local `0.0.0-dev` builds skip update checks. Release builds use the Git tag version.
+Локальные сборки `0.0.0-dev` не проверяют обновления; релиз получает номер из тега.
 
-```powershell
-dotnet build -c Release -p:Platform=ARM64
-dotnet publish -c Release -r win-arm64 -p:Platform=ARM64
-```
+## License / Лицензия
 
-
-
-
-
-
-##  Thanks
-
-
-<p>
-  <a href="https://linux.do">
-    <img src="https://img.shields.io/badge/LinuxDo-community-1f6feb" alt="LinuxDo">
-  </a>
-</p>
-
-## License
-
-Apache License 2.0.
+[Apache License 2.0](LICENSE). Original project / Исходный проект:
+[PhoenixNil/XrayUI-dev](https://github.com/PhoenixNil/XrayUI-dev).

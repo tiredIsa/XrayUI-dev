@@ -54,6 +54,7 @@ fn run() -> i32 {
     let mut install_dir: Option<String> = None;
     let mut launch_after: Option<String> = None;
     let mut elevated = false;
+    let resume_argument = resume_argument(&raw_args);
 
     for a in &raw_args {
         if let Some(v) = strip_prefix_ci(a, PARENT_PID_ARG) {
@@ -107,7 +108,7 @@ fn run() -> i32 {
             // relaunch it so the user isn't stranded with a vanished app.
             log.log("Elevation declined or failed; relaunching existing app without updating.");
             let existing_exe = install_path.join(&launch_after);
-            match launch_app(&existing_exe, install_path, &mut log) {
+            match launch_app(&existing_exe, install_path, resume_argument, &mut log) {
                 Ok(()) => log.log("Existing app relaunched (update skipped)."),
                 Err(e) => log.log(&format!("Failed to relaunch existing app: {e}")),
             }
@@ -136,9 +137,8 @@ fn run() -> i32 {
 
     cleanup_large_staging_dirs(Path::new(&extracted_dir), &mut log);
 
-    // Launch the new app unelevated. Even if we elevated to do the file overwrite,
-    // the app itself should run under the user's normal token.
-    match launch_app(&new_exe, install_path, &mut log) {
+    // Restore the connection when requested, retaining the token needed for TUN.
+    match launch_app(&new_exe, install_path, resume_argument, &mut log) {
         Ok(()) => log.log("New app launched."),
         Err(e) => {
             log.log(&format!("Failed to launch new app: {e}"));
@@ -317,10 +317,28 @@ fn delete_dir_best_effort(path: &Path, log: &mut Logger) {
     }
 }
 
-/// Start the freshly-installed app. If we're elevated, bounce through Explorer so
-/// the app comes back up under the user's normal (unelevated) token.
-fn launch_app(exe_path: &Path, working_directory: &Path, log: &mut Logger) -> std::io::Result<()> {
-    if is_elevated() {
+// Only forward the connection handoff, never arbitrary updater arguments.
+fn resume_argument(arguments: &[String]) -> Option<&str> {
+    let mut matches = arguments.iter().filter(|argument| {
+        argument.starts_with("--resume-update-tun=")
+            || argument.starts_with("--resume-update-proxy=")
+    });
+    let argument = matches.next()?;
+    if matches.next().is_some() {
+        return None;
+    }
+    Some(argument.as_str())
+}
+
+/// Connection resumes inherit our token (TUN needs the existing elevation).
+/// Otherwise retain the normal unelevated launch through Explorer.
+fn launch_app(
+    exe_path: &Path,
+    working_directory: &Path,
+    resume: Option<&str>,
+    log: &mut Logger,
+) -> std::io::Result<()> {
+    if resume.is_none() && is_elevated() {
         match Command::new("explorer.exe").arg(exe_path).spawn() {
             Ok(_) => return Ok(()),
             Err(e) => log.log(&format!("Unelevated launch via Explorer failed: {e}")),
@@ -328,6 +346,7 @@ fn launch_app(exe_path: &Path, working_directory: &Path, log: &mut Logger) -> st
     }
 
     Command::new(exe_path)
+        .args(resume)
         .current_dir(working_directory)
         .spawn()
         .map(|_| ())
@@ -340,9 +359,7 @@ fn is_elevated() -> bool {
             return false;
         }
 
-        let mut elevation = TOKEN_ELEVATION {
-            TokenIsElevated: 0,
-        };
+        let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
         let mut ret_len: u32 = 0;
         let ok = GetTokenInformation(
             token,
@@ -372,8 +389,7 @@ fn strip_prefix_ci<'a>(s: &'a str, prefix: &str) -> Option<&'a str> {
 
 /// Quote a single argument per the Windows CommandLineToArgvW rules.
 fn quote_arg(arg: &str) -> String {
-    let needs_quotes =
-        arg.is_empty() || arg.contains([' ', '\t', '\n', '\u{0B}', '"']);
+    let needs_quotes = arg.is_empty() || arg.contains([' ', '\t', '\n', '\u{0B}', '"']);
     if !needs_quotes {
         return arg.to_string();
     }
@@ -425,7 +441,11 @@ impl Logger {
             path.push("Updates");
             fs::create_dir_all(&path).ok()?;
             path.push("updater.log");
-            OpenOptions::new().create(true).append(true).open(&path).ok()
+            OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&path)
+                .ok()
         })();
         Logger { file }
     }
@@ -450,5 +470,28 @@ fn now_timestamp() -> String {
             "{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:03}",
             st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn forwards_only_one_explicit_connection_handoff() {
+        let args = vec!["--parent-pid=123".into(), "--resume-update-tun=YWJj".into()];
+        assert_eq!(resume_argument(&args), Some("--resume-update-tun=YWJj"));
+        assert_eq!(resume_argument(&["--elevated".into()]), None);
+        assert_eq!(
+            resume_argument(&["--resume-update-proxy=YWJj".into()]),
+            Some("--resume-update-proxy=YWJj")
+        );
+        assert_eq!(
+            resume_argument(&[
+                "--resume-update-tun=YWJj".into(),
+                "--resume-update-proxy=YWJj".into()
+            ]),
+            None
+        );
     }
 }

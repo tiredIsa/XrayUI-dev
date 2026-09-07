@@ -1,0 +1,15 @@
+{
+  "versions": [
+    {
+      "version": "1.19",
+      "en": [
+        "Restore the last successful TUN connection at Windows logon.",
+        "Receive updates from tiredIsa/XrayUI-dev and resume the active connection after updating."
+      ],
+      "ru": [
+        "Восстановление последнего успешного подключения TUN при входе в Windows.",
+        "Обновления из tiredIsa/XrayUI-dev и восстановление активного подключения после установки."
+      ]
+    }
+  ]
+}

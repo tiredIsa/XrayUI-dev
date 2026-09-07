@@ -5,6 +5,15 @@ namespace XrayUI.Tests;
 
 public class ChangelogSelectorTests
 {
+    [Fact]
+    public void PicksRussianReleaseNotesAndFallsBackToEnglish()
+    {
+        var entry = new ChangelogVersion { Version = "2.0", Ru = ["Исправление"], En = ["Fix"] };
+        Assert.Equal(["Исправление"], Select(Feed(entry), "2.0", "ru-RU"));
+        entry.Ru = [];
+        Assert.Equal(["Fix"], Select(Feed(entry), "2.0", "ru"));
+    }
+
     private static ChangelogFeed Feed(params ChangelogVersion[] versions) =>
         new() { Versions = [.. versions] };
 

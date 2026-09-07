@@ -4,62 +4,31 @@ on:
   push:
     tags:
       - '[0-9]+.*'
+      - 'v[0-9]+.*'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  # Blocks the release before any build work when the website changelog does not
-  # already carry this tag's notes. Correctness does not rest on this job — the client
-  # looks its own version up in the feed (ChangelogSelector.SelectForVersion) and shows
-  # nothing when it is absent — but "nothing" means shipping a release whose update
-  # dialog is silently blank, which is what this catches while it is still cheap.
-  #
-  # Order of operations: publish the website entry first, then push the tag. If this
-  # fails, fix the site and hit "Re-run failed jobs" — the tag does not need to be
-  # deleted and re-pushed.
   changelog-gate:
-    name: changelog lists ${{ github.ref_name }}
+    name: validate release notes
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Verify changelog.json lists this version first
+      - uses: actions/checkout@v4
+      - name: Verify local changelog contains the release version
         shell: bash
         run: |
-          # workflow_dispatch runs carry a branch ref, not a version — nothing to check.
-          # This is a step-level early exit rather than a job-level `if:` on purpose:
-          # a skipped job would take the `publish` jobs that need it down with it.
+          jq -e '.versions | type == "array"' changelog.json
           case "$GITHUB_REF" in
             refs/tags/*) ;;
-            *) echo "Not a tag ref ($GITHUB_REF) — skipping changelog check."; exit 0 ;;
+            *) exit 0 ;;
           esac
-
           tag="${GITHUB_REF_NAME#v}"
-
-          # Cache-buster + no-cache: an edge node still holding the previous file would
-          # otherwise fake a pass (or a fail) here. Same reason UpdateService appends
-          # ?v={version} on the client side.
-          if ! json=$(curl -fsSL --retry 3 --retry-delay 5 -H 'Cache-Control: no-cache' \
-                        "https://www.xrayui.site/changelog.json?ci=$GITHUB_RUN_ID"); then
-            echo "::error::changelog.json could not be fetched — the site may be down."
+          if ! jq -e --arg tag "$tag" '.versions[] | select(.version == $tag) | (.en | length > 0) and (.ru | length > 0)' changelog.json; then
+            echo "::error::Add English and Russian notes for $tag to changelog.json before tagging."
             exit 1
           fi
-
-          # Position in the feed is irrelevant — the client matches on the version name.
-          entry=$(jq --arg t "$tag" '[.versions[]? | select(.version == $t)][0] // empty' <<<"$json")
-          if [ -z "$entry" ]; then
-            have=$(jq -r '[.versions[]?.version] | join(", ")' <<<"$json")
-            echo "::error::changelog.json has no entry for '$tag' (found: $have). Publish it, then re-run this job."
-            exit 1
-          fi
-
-          if ! jq -e '(.zh | length > 0) and (.en | length > 0)' <<<"$entry" >/dev/null; then
-            echo "::error::The $tag entry has no zh or no en lines — the dialog would silently fall back to the other language."
-            exit 1
-          fi
-
-          echo "OK: changelog.json lists $tag with both languages."
 
   publish:
     name: publish ${{ matrix.rid }}${{ matrix.wasdk_sc && '-wasdk' || '' }} (AOT)
@@ -130,6 +99,7 @@ jobs:
           -p:CopyOutputSymbolsToPublishDirectory=false
           -p:Version=${{ steps.ver.outputs.version }}
           -p:BuildingForCI=true
+          -p:PublishDir=artifacts/publish/
 
       - name: Install Rust (${{ matrix.rust_target }})
         uses: dtolnay/rust-toolchain@stable
@@ -146,7 +116,7 @@ jobs:
       - name: Bundle updater into staging
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "artifacts/publish"
           $updaterExe = "updater-rs/target/${{ matrix.rust_target }}/release/xrayui-updater.exe"
           if (-not (Test-Path $updaterExe)) {
             Write-Host "::error::Updater build did not produce $updaterExe"
@@ -160,7 +130,7 @@ jobs:
       - name: Verify AOT exe produced
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "artifacts/publish"
           $exe = "$publishDir/XrayUI-dev.exe"
           Write-Host "Listing $publishDir :"
           if (Test-Path $publishDir) {
@@ -177,7 +147,7 @@ jobs:
       - name: Pack zip
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "artifacts/publish"
           $zipName = "XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip"
           Compress-Archive -Path "$publishDir/*" -DestinationPath $zipName -CompressionLevel Optimal
           Write-Host "Created $zipName ($((Get-Item $zipName).Length) bytes)"
@@ -210,6 +180,8 @@ jobs:
       contents: write
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -229,6 +201,14 @@ jobs:
           DL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
         with:
           body: |
+            ## XrayUI fork / Форк XrayUI
+
+            Independent fork of PhoenixNil/XrayUI-dev. Updates are delivered from tiredIsa/XrayUI-dev.
+            Независимый форк PhoenixNil/XrayUI-dev. Обновления поступают из tiredIsa/XrayUI-dev.
+
+            Release notes in English and Russian are included in `changelog.json` and shown in the app.
+            Описание изменений на русском и английском — в `changelog.json` и в приложении.
+
             ## Which one should I download
 
             #### Normal version (Recommended)
@@ -239,5 +219,6 @@ jobs:
           files: |
             release-files/*.zip
             release-files/*.sha256
+            changelog.json
           generate_release_notes: true
           fail_on_unmatched_files: true

@@ -681,6 +681,17 @@ namespace XrayUI.ViewModels
             return true;
         }
 
+        public bool RestoreUpdateMode(UpdateResume resume)
+        {
+            if (resume.TunMode && !AdminHelper.IsAdministrator())
+            {
+                RestartAsAdmin("--tun " + resume.ToArgument());
+                return false;
+            }
+            SetTunEnabledSilently(resume.TunMode);
+            return true;
+        }
+
         // ── Local port ────────────────────────────────────────────────────────
 
         [ObservableProperty]
@@ -973,7 +984,10 @@ namespace XrayUI.ViewModels
             // handoff uses the bounded shutdown cleanup instead.
             try
             {
-                _update.LaunchUpdater(staging);
+                var resume = IsRunning && _activeServer is not null
+                    ? new UpdateResume(_activeServer.Id, IsTunMode)
+                    : null;
+                _update.LaunchUpdater(staging, resume);
             }
             catch (Exception ex)
             {
