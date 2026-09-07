@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.19.1",
+      "en": [
+        "Fix the application failing to reopen after accepting the administrator prompt when enabling TUN mode."
+      ],
+      "ru": [
+        "Исправлено падение приложения при перезапуске после подтверждения UAC для включения TUN."
+      ]
+    },
+    {
       "version": "1.19",
       "en": [
         "Restore the last successful TUN connection at Windows logon.",

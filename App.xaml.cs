@@ -94,6 +94,12 @@ namespace XrayUI
                 return;
             }
 
+            // Finish the process handoff before constructing XAML. Yielding with
+            // a constructed but inactive window can dispatch Loaded before its
+            // activation-time bindings have initialized.
+            if (isTunTakeover && parentPid.HasValue)
+                await TakeOverPreviousInstanceAsync(parentPid.Value, registerSingleInstanceAfterTakeover: true);
+
             _window = new MainWindow(startMinimized);
             _window.Closed += (_, _) => CleanupOnExit();
 
@@ -113,9 +119,6 @@ namespace XrayUI
             {
                 _window.AppWindow.Move(new Windows.Graphics.PointInt32(-32000, -32000));
             }
-
-            if (isTunTakeover && parentPid.HasValue)
-                await TakeOverPreviousInstanceAsync(parentPid.Value, registerSingleInstanceAfterTakeover: true);
 
             _window.Activate();
 

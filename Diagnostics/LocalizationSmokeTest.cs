@@ -29,6 +29,18 @@ internal static class LocalizationSmokeTest
         };
         try
         {
+            if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe"))
+            {
+                await Task.Delay(200);
+                var takeoverWindow = new MainWindow();
+                takeoverWindow.ViewModel.ControlPanel.SetTunEnabledSilently(true);
+                takeoverWindow.RegisterGlobalHotkeysAfterProcessTakeover();
+                takeoverWindow.Activate();
+                await Task.Delay(500);
+                await File.WriteAllTextAsync(report, "PASS: TUN takeover window activated.");
+                Environment.Exit(0);
+                return;
+            }
             var settings = new SettingsService(temp);
             var window = new Window();
             var host = new Grid();

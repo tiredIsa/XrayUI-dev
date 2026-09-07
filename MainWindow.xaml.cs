@@ -142,6 +142,10 @@ namespace XrayUI
         {
             Activated -= OnFirstActivated;
             _initialized = true;
+#if LOCALIZATION_SMOKE_TEST
+            // The diagnostic executable must not start user network services.
+            if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe")) return;
+#endif
 
             // For --startup-minimized we only hide the window here so the XamlRoot
             // stays alive for any dialogs raised during InitializeAsync (e.g.
