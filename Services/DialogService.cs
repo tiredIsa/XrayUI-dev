@@ -967,7 +967,16 @@ namespace XrayUI.Services
             {
                 Width = 260,
                 Spacing = 12,
-                Children = { toggleRow, checkBox },
+                Children =
+                {
+                    toggleRow, checkBox,
+                    LocalizationBindings.BindValue(new TextBlock
+                    {
+                        FontSize = 12,
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                    }, "Text", text => text.Text = Loc.GetString("Startup_TunInfo")),
+                },
             };
 
             var result = await dialog.ShowAsync();

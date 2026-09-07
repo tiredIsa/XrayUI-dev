@@ -211,6 +211,14 @@ internal static class LocalizationSmokeTest
                 try { await Loc.ChangeAsync("zh-CN", settings); throw new InvalidOperationException("Locked settings should fail"); }
                 catch (IOException) { Check(Loc.Current.EffectiveTag == "ru-RU", "Failed save changed active language"); }
             }
+            await settings.UpdateSettingsAsync(s => { s.IsTunMode = true; s.LastConnectionWasTun = false; });
+            var shutdownSnapshot = await settings.LoadSettingsAsync();
+            await settings.UpdateSettingsAsync(s => s.LastConnectionWasTun = true);
+            shutdownSnapshot.IsTunMode = false;
+            await settings.SaveSettingsAsync(shutdownSnapshot);
+            var nextBootSettings = await settings.LoadSettingsAsync();
+            Check(nextBootSettings.LastConnectionWasTun == true && !nextBootSettings.IsTunMode,
+                "Runtime cleanup overwrote the last successful connection mode");
             var stress = await CheckLargeBrowserAsync(host, dialogs);
             window.Close();
             var releasedElement = CreateDetachedLocalizedElement();

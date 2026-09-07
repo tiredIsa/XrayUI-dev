@@ -17,6 +17,8 @@ namespace XrayUI.Models
         public string RoutingRegion { get; set; } = "cn";
         /// <summary>Whether TUN mode is enabled.</summary>
         public bool IsTunMode { get; set; } = false;
+        /// <summary>Last successful connection mode; independent of runtime cleanup. Null migrates legacy state.</summary>
+        public bool? LastConnectionWasTun { get; set; }
         public string? LastTunServerHost { get; set; }
         public int TunMtu { get; set; } = XrayConfigConstants.TunMtuDefault;
         public string TunOutboundInterface { get; set; } = XrayConfigConstants.TunOutboundInterfaceAuto;

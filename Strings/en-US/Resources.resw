@@ -1409,4 +1409,8 @@ Path: {0}</value>
   <data name="Groups_TestServer" xml:space="preserve"><value>Test server latency</value></data>
   <data name="Groups_Actions" xml:space="preserve"><value>Group actions</value></data>
   <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>Automatic subscription updates are disabled</value></data>
+  <data name="Startup_TunInfo" xml:space="preserve"><value>Automatic connection restores the last successful connection mode. TUN needs a one-time administrator confirmation to configure startup.</value></data>
+  <data name="Startup_TunNeedsAdmin" xml:space="preserve"><value>TUN requires administrator privileges. Restart the app as administrator and try again.</value></data>
+  <data name="Startup_SameAccountRequired" xml:space="preserve"><value>Confirm using the same Windows account that runs the app.</value></data>
+  <data name="Startup_ConfigurationFailed" xml:space="preserve"><value>Could not configure Windows startup. Try again from an administrator session.</value></data>
 </root>

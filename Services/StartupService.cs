@@ -2,7 +2,11 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using XrayUI.Helpers;
 using System.Security.Principal;
 
 namespace XrayUI.Services
@@ -12,12 +16,12 @@ namespace XrayUI.Services
     /// vtable dispatch (no RCW / ComWrappers) so it works cleanly under
     /// NativeAOT without needing BuiltInComInteropSupport.
     /// </summary>
-    public unsafe class StartupService
+    public class StartupService
     {
         // Shared with App.xaml.cs so the flag string lives in exactly one place.
         // The boot task always passes this; auto-connect-on-boot is a separate
         // setting (AppSettings.IsAutoConnect) evaluated by MainViewModel.
-        public const string StartupMinimizedArgument = "--startup-minimized";
+        public const string StartupMinimizedArgument = StartupTaskDefinition.StartupMinimizedArgument;
 
         private const string TaskName = "XrayUI_Autostart";
         private const int TASK_CREATE_OR_UPDATE        = 6;
@@ -57,21 +61,120 @@ namespace XrayUI.Services
             }
         }
 
-        public void SetStartupEnabled(bool enabled)
+        public void SetStartupEnabled(bool enabled, bool runElevated = false)
         {
-            if (enabled)
+            // Direct COM calls do not initialize an apartment automatically under
+            // NativeAOT. This method also runs on pool threads and in the helper.
+            int initializationResult = CoInitializeEx(IntPtr.Zero, 0);
+            const int changedApartmentMode = unchecked((int)0x80010106);
+            if (initializationResult != changedApartmentMode)
+                Marshal.ThrowExceptionForHR(initializationResult);
+            try
             {
-                if (string.IsNullOrEmpty(_exePath))
-                    throw new InvalidOperationException("Cannot resolve exe path.");
-                RegisterTaskXml();
+                if (enabled)
+                {
+                    if (string.IsNullOrEmpty(_exePath))
+                        throw new InvalidOperationException("Cannot resolve exe path.");
+                    RegisterTaskXml(runElevated);
+                }
+                else
+                {
+                    DeleteTaskIfExists();
+                }
             }
-            else
+            finally
             {
-                DeleteTaskIfExists();
+                if (initializationResult >= 0)
+                    CoUninitialize();
             }
         }
 
-        private static void RegisterTaskXml()
+        public const string ConfigureArgument = "--configure-startup=";
+        private const string OwnerArgument = "--startup-owner=";
+
+        private readonly SemaphoreSlim _configurationLock = new(1, 1);
+
+        public async Task<bool> ConfigureAsync(bool enabled, bool runElevated)
+        {
+            await _configurationLock.WaitAsync();
+            try
+            {
+                return await ConfigureCoreAsync(enabled, runElevated);
+            }
+            finally
+            {
+                _configurationLock.Release();
+            }
+        }
+
+        private async Task<bool> ConfigureCoreAsync(bool enabled, bool runElevated)
+        {
+            if (!runElevated || AdminHelper.IsAdministrator())
+            {
+                try
+                {
+                    await Task.Run(() => SetStartupEnabled(enabled, runElevated));
+                    return true;
+                }
+                catch (Exception ex) when (ex.HResult == unchecked((int)0x80070005) && !AdminHelper.IsAdministrator())
+                {
+                    // Editing/deleting a previously elevated task may also need UAC.
+                }
+            }
+
+            var operation = !enabled ? "off" : runElevated ? "elevated" : "standard";
+            var sid = WindowsIdentity.GetCurrent().User?.Value;
+            if (string.IsNullOrEmpty(sid)) throw new InvalidOperationException("Cannot resolve the current Windows account.");
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = _exePath,
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+            startInfo.ArgumentList.Add(ConfigureArgument + operation);
+            startInfo.ArgumentList.Add(OwnerArgument + sid);
+            try
+            {
+                using var process = Process.Start(startInfo)
+                    ?? throw new InvalidOperationException("Cannot start the startup configuration helper.");
+                await process.WaitForExitAsync();
+                if (process.ExitCode == 2)
+                    throw new InvalidOperationException(Loc.GetString("Startup_SameAccountRequired"));
+                if (process.ExitCode != 0)
+                    throw new InvalidOperationException(Loc.GetString("Startup_ConfigurationFailed"));
+                return true;
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                return false; // UAC cancelled: caller must leave its settings unchanged.
+            }
+        }
+
+        public static bool IsConfigurationLaunch(string[] arguments) =>
+            arguments.Any(argument => argument.StartsWith(ConfigureArgument, StringComparison.Ordinal));
+
+        public static int RunConfiguration(string[] arguments)
+        {
+            try
+            {
+                var operation = arguments.Single(a => a.StartsWith(ConfigureArgument, StringComparison.Ordinal))[ConfigureArgument.Length..];
+                var requestedOwner = arguments.Single(a => a.StartsWith(OwnerArgument, StringComparison.Ordinal))[OwnerArgument.Length..];
+                // Credential elevation to a different account must not create a task
+                // for that account or read/write its application settings.
+                if (requestedOwner != WindowsIdentity.GetCurrent().User?.Value) return 2;
+                if (!AdminHelper.IsAdministrator() || operation is not ("off" or "standard" or "elevated")) return 1;
+                new StartupService().SetStartupEnabled(operation != "off", operation == "elevated");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Startup] Configuration failed: {ex}");
+                return 1;
+            }
+        }
+
+        private static void RegisterTaskXml(bool runElevated)
         {
             IntPtr service = CreateAndConnectService();
             try
@@ -80,7 +183,7 @@ namespace XrayUI.Services
                 try
                 {
                     IntPtr registered = TaskFolderRegisterTask(
-                        folder, TaskName, BuildTaskXml(),
+                        folder, TaskName, StartupTaskDefinition.Build(_exePath, WindowsIdentity.GetCurrent().User?.Value ?? "", runElevated),
                         TASK_CREATE_OR_UPDATE, TASK_LOGON_INTERACTIVE_TOKEN);
                     Release(registered);
                 }
@@ -118,7 +221,7 @@ namespace XrayUI.Services
         //                CreateFolder=11, DeleteFolder=12, GetTask=13, GetTasks=14,
         //                DeleteTask=15, RegisterTask=16, ...
 
-        private static IntPtr CreateAndConnectService()
+        private static unsafe IntPtr CreateAndConnectService()
         {
             Guid clsid = CLSID_TaskScheduler;
             Guid iid   = IID_ITaskService;
@@ -141,7 +244,7 @@ namespace XrayUI.Services
             }
         }
 
-        private static IntPtr TaskServiceGetFolder(IntPtr pService, string path)
+        private static unsafe IntPtr TaskServiceGetFolder(IntPtr pService, string path)
         {
             IntPtr bstr = Marshal.StringToBSTR(path);
             try
@@ -156,7 +259,7 @@ namespace XrayUI.Services
             finally { Marshal.FreeBSTR(bstr); }
         }
 
-        private static int TaskFolderGetTask(IntPtr pFolder, string name, out IntPtr pTask)
+        private static unsafe int TaskFolderGetTask(IntPtr pFolder, string name, out IntPtr pTask)
         {
             IntPtr bstr = Marshal.StringToBSTR(name);
             try
@@ -171,7 +274,7 @@ namespace XrayUI.Services
             finally { Marshal.FreeBSTR(bstr); }
         }
 
-        private static int TaskFolderDeleteTask(IntPtr pFolder, string name)
+        private static unsafe int TaskFolderDeleteTask(IntPtr pFolder, string name)
         {
             IntPtr bstr = Marshal.StringToBSTR(name);
             try
@@ -183,7 +286,7 @@ namespace XrayUI.Services
             finally { Marshal.FreeBSTR(bstr); }
         }
 
-        private static IntPtr TaskFolderRegisterTask(
+        private static unsafe IntPtr TaskFolderRegisterTask(
             IntPtr pFolder, string name, string xml, int createFlags, int logonType)
         {
             IntPtr bstrName = Marshal.StringToBSTR(name);
@@ -209,13 +312,19 @@ namespace XrayUI.Services
             }
         }
 
-        private static void Release(IntPtr pUnk)
+        private static unsafe void Release(IntPtr pUnk)
         {
             if (pUnk == IntPtr.Zero) return;
             void** vtbl = *(void***)pUnk;
             var fn = (delegate* unmanaged[Stdcall]<IntPtr, uint>)vtbl[2];
             fn(pUnk);
         }
+
+        [DllImport("ole32.dll", ExactSpelling = true)]
+        private static extern int CoInitializeEx(IntPtr reserved, uint coInit);
+
+        [DllImport("ole32.dll", ExactSpelling = true)]
+        private static extern void CoUninitialize();
 
         [DllImport("ole32.dll", ExactSpelling = true)]
         private static extern int CoCreateInstance(
@@ -234,46 +343,5 @@ namespace XrayUI.Services
             public IntPtr data2;
         }
 
-        // ── Task XML ──────────────────────────────────────────────────────────
-
-        private static string BuildTaskXml()
-        {
-            var sid        = WindowsIdentity.GetCurrent().User?.Value ?? "";
-            var exe        = SecurityElement.Escape(_exePath);
-            var workingDir = SecurityElement.Escape(Path.GetDirectoryName(_exePath) ?? "");
-
-            // ExecutionTimeLimit=PT0S avoids Windows' 72h default killing the app
-            // on long-running sessions. The other two Settings defaults (battery
-            // behavior) would otherwise refuse to start / kill us on unplug.
-            return $@"<?xml version=""1.0"" encoding=""UTF-16""?>
-<Task version=""1.2"" xmlns=""http://schemas.microsoft.com/windows/2004/02/mit/task"">
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-      <UserId>{sid}</UserId>
-      <Delay>PT5S</Delay>
-    </LogonTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id=""Author"">
-      <UserId>{sid}</UserId>
-      <LogonType>InteractiveToken</LogonType>
-      <RunLevel>LeastPrivilege</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-  </Settings>
-  <Actions Context=""Author"">
-    <Exec>
-      <Command>{exe}</Command>
-      <Arguments>{StartupMinimizedArgument}</Arguments>
-      <WorkingDirectory>{workingDir}</WorkingDirectory>
-    </Exec>
-  </Actions>
-</Task>";
-        }
     }
 }

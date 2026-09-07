@@ -243,13 +243,25 @@ namespace XrayUI.ViewModels
             appSettings.AllowLanConnections = AllowLanConnections;
             appSettings.RoutingMode         = RoutingMode;
             appSettings.IsTunMode           = tunMode;
-            if (IsAutoConnect)
-                appSettings.LastAutoConnectServerId = server.Id;
 
             if (tunMode)
             {
                 if (!await RunTunPreflightAsync()) return false;
                 await CleanupPersistedTunRoutesAsync(appSettings);
+            }
+
+            if (IsStartupEnabled && IsAutoConnect && (tunMode || appSettings.LastConnectionWasTun == true))
+            {
+                try
+                {
+                    if (!await _startupService.ConfigureAsync(enabled: true, runElevated: tunMode))
+                        return false;
+                }
+                catch (Exception ex)
+                {
+                    await _dialogs.ShowErrorAsync(LocalizedText.Key("Startup_SetFailed"), ex.Message);
+                    return false;
+                }
             }
 
             var configJson = XrayConfigBuilder.Build(server, appSettings, GetAllServers());
@@ -263,6 +275,12 @@ namespace XrayUI.ViewModels
                 await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Error_StartFailed"), detail);
                 return false;
             }
+
+            // Persist the mode only after a successful connection. Shutdown/route
+            // cleanup may reset IsTunMode, but must not reset this preference.
+            appSettings.LastConnectionWasTun = tunMode;
+            if (IsAutoConnect)
+                appSettings.LastAutoConnectServerId = server.Id;
 
             if (tunMode)
             {
@@ -408,6 +426,12 @@ namespace XrayUI.ViewModels
         /// </summary>
         private async Task<bool> RunTunPreflightAsync()
         {
+            if (!AdminHelper.IsAdministrator())
+            {
+                await _dialogs.ShowErrorAsync(LocalizedText.Key("Tun_PreflightErrorTitle"),
+                    LocalizedText.Key("Startup_TunNeedsAdmin"));
+                return false;
+            }
             if (!_tunService.IsWintunAvailable())
             {
                 await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Tun_PreflightErrorTitle"),
@@ -643,6 +667,20 @@ namespace XrayUI.ViewModels
             _isTunInternalUpdate = false;
         }
 
+        public bool RestoreAutoConnectMode(AppSettings settings)
+        {
+            var useTun = IsTunMode || (settings.LastConnectionWasTun ?? settings.IsTunMode);
+            if (useTun && !AdminHelper.IsAdministrator())
+            {
+                // Repairs legacy or externally changed low-privilege startup tasks.
+                // If UAC is cancelled, do not fall back to a different proxy mode.
+                RestartAsAdmin("--tun " + StartupService.StartupMinimizedArgument);
+                return false;
+            }
+            SetTunEnabledSilently(useTun);
+            return true;
+        }
+
         // ── Local port ────────────────────────────────────────────────────────
 
         [ObservableProperty]
@@ -809,11 +847,14 @@ namespace XrayUI.ViewModels
             if (result is null) return;   // user cancelled — leave state unchanged
 
             var (newEnabled, newAutoConnect) = result.Value;
+            newAutoConnect = newEnabled && newAutoConnect;
 
             var s = await _settings.LoadSettingsAsync();
             try
             {
-                _startupService.SetStartupEnabled(newEnabled);
+                var useTun = IsRunning ? IsTunMode : IsTunMode || (s.LastConnectionWasTun ?? s.IsTunMode);
+                if (!await _startupService.ConfigureAsync(newEnabled, newAutoConnect && useTun))
+                    return;
             }
             catch (Exception ex)
             {
@@ -826,7 +867,10 @@ namespace XrayUI.ViewModels
             if (!newAutoConnect)
                 s.LastAutoConnectServerId = null;
             else if (IsRunning && _activeServer is not null)
+            {
                 s.LastAutoConnectServerId = _activeServer.Id;
+                s.LastConnectionWasTun = IsTunMode;
+            }
             await TrySaveSettingsAsync(s, "persist startup settings");
 
             IsStartupEnabled = newEnabled;

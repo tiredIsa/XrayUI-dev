@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -20,12 +20,20 @@ namespace XrayUI
         private Window? _window;
         private AppInstance? _mainInstance;
         private bool _cleanupStarted;
+        private readonly bool _startupConfigurationOnly = StartupService.IsConfigurationLaunch(Environment.GetCommandLineArgs());
         private volatile bool _pendingExternalActivation;
 
         public Window? Window => _window;
 
         public App()
         {
+            if (_startupConfigurationOnly)
+            {
+                // A short-lived elevated helper must never initialize user settings,
+                // claim the app instance, or clear the running app's system proxy.
+                Environment.Exit(StartupService.RunConfiguration(Environment.GetCommandLineArgs()));
+                return;
+            }
             // Must run before InitializeComponent — the XAML resource loader caches the
             // current locale at first touch, and that happens during component init.
 #if LOCALIZATION_SMOKE_TEST || SERVER_BROWSER_PROBE
@@ -106,6 +114,9 @@ namespace XrayUI
                 _window.AppWindow.Move(new Windows.Graphics.PointInt32(-32000, -32000));
             }
 
+            if (isTunTakeover && parentPid.HasValue)
+                await TakeOverPreviousInstanceAsync(parentPid.Value, registerSingleInstanceAfterTakeover: true);
+
             _window.Activate();
 
             if (startMinimized)
@@ -114,7 +125,7 @@ namespace XrayUI
                 _window.AppWindow.Hide();
             }
 
-            if (parentPid.HasValue)
+            if (parentPid.HasValue && !isTunTakeover)
             {
                 _ = TakeOverPreviousInstanceAsync(parentPid.Value, isTunTakeover);
             }
@@ -179,17 +190,19 @@ namespace XrayUI
 
         private void CleanupOnExit(bool fastShutdown = false)
         {
-            if (_cleanupStarted)
+            if (_startupConfigurationOnly || _cleanupStarted)
             {
                 return;
             }
 
             _cleanupStarted = true;
 
-            SystemProxyService.ClearProxy();
-
+            // Only the process owning a window/session may clear proxy state.
+            // Configuration helpers and redirected secondary instances must not
+            // change the already-running application's network configuration.
             if (_window is MainWindow mainWindow)
             {
+                SystemProxyService.ClearProxy();
                 mainWindow.StopBackgroundServicesOnExit(fastShutdown);
             }
         }
@@ -374,7 +387,9 @@ namespace XrayUI
                     {
                         try
                         {
-                            previousInstance.Kill(entireProcessTree: true);
+                            // The elevated replacement can itself be a descendant.
+                            // Terminate only the outgoing UI; its shutdown owns core cleanup.
+                            previousInstance.Kill();
                         }
                         catch (InvalidOperationException)
                         {

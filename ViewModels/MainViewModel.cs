@@ -369,6 +369,7 @@ namespace XrayUI.ViewModels
                 ?? ServerList.Servers.FirstOrDefault();
 
             if (target is null) return;
+            if (!ControlPanel.RestoreAutoConnectMode(s)) return;
             ServerList.SelectedServer = target;
             if (!ControlPanel.StartStopCommand.CanExecute(null)) return;
             await ControlPanel.StartStopCommand.ExecuteAsync(null);

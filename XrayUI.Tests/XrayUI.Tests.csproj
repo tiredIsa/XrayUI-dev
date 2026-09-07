@@ -31,6 +31,7 @@
     <Compile Include="..\ViewModels\ServerRowViewModel.cs" Link="Prod\ViewModels\ServerRowViewModel.cs" />
     <None Include="..\Assets\rules\geoip.dat" Link="Assets\rules\geoip.dat" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Helpers\LocalizationBindings.cs" Link="Prod\Helpers\LocalizationBindings.cs" />
+    <Compile Include="..\Services\StartupTaskDefinition.cs" Link="Prod\Services\StartupTaskDefinition.cs" />
     <Compile Include="..\Services\SettingsSnapshotMerge.cs" Link="Prod\Services\SettingsSnapshotMerge.cs" />
     <None Include="..\Strings\**\Resources.resw" Link="Locales\%(RecursiveDir)Resources.resw" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Services\Traffic\*.cs" Link="Prod\Services\Traffic\%(Filename)%(Extension)" />

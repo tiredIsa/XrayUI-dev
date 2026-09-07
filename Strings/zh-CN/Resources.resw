@@ -1412,4 +1412,8 @@
   <data name="Groups_TestServer" xml:space="preserve"><value>测试服务器延迟</value></data>
   <data name="Groups_Actions" xml:space="preserve"><value>分组操作</value></data>
   <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>订阅自动更新已关闭</value></data>
+  <data name="Startup_TunInfo" xml:space="preserve"><value>自动连接会恢复上次成功连接的模式。TUN 启动设置需要一次管理员授权。</value></data>
+  <data name="Startup_TunNeedsAdmin" xml:space="preserve"><value>TUN 需要管理员权限。请以管理员身份重新启动应用后重试。</value></data>
+  <data name="Startup_SameAccountRequired" xml:space="preserve"><value>请使用运行应用的同一 Windows 帐户确认权限。</value></data>
+  <data name="Startup_ConfigurationFailed" xml:space="preserve"><value>无法配置 Windows 启动项。请以管理员身份运行应用后重试。</value></data>
 </root>

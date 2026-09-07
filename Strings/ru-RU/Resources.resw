@@ -1505,4 +1505,8 @@
   <data name="Groups_TestServer" xml:space="preserve"><value>Проверить задержку сервера</value></data>
   <data name="Groups_Actions" xml:space="preserve"><value>Действия с группой</value></data>
   <data name="Groups_AutoRefreshDisabled" xml:space="preserve"><value>Автообновление подписки отключено</value></data>
+  <data name="Startup_TunInfo" xml:space="preserve"><value>Автоподключение восстанавливает режим последнего успешного подключения. Для автозапуска TUN нужно один раз подтвердить права администратора.</value></data>
+  <data name="Startup_TunNeedsAdmin" xml:space="preserve"><value>Для TUN нужны права администратора. Перезапустите приложение от имени администратора и повторите попытку.</value></data>
+  <data name="Startup_SameAccountRequired" xml:space="preserve"><value>Подтвердите права для той же учётной записи Windows, в которой запущено приложение.</value></data>
+  <data name="Startup_ConfigurationFailed" xml:space="preserve"><value>Не удалось настроить автозапуск Windows. Повторите настройку в приложении, запущенном от имени администратора.</value></data>
 </root>
