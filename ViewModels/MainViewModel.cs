@@ -9,6 +9,7 @@ using Microsoft.UI.Dispatching;
 using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
+using XrayUI.Services.Traffic;
 
 namespace XrayUI.ViewModels
 {
@@ -20,11 +21,13 @@ namespace XrayUI.ViewModels
         private readonly DispatcherQueue? _uiDispatcher;
         private DispatcherQueueTimer? _subscriptionRefreshTimer;
         private bool _updateCheckQueued;
+        private readonly TrafficMonitorStore _trafficStore;
+        private readonly XrayTrafficCollector _trafficCollector;
         private ServerEntry? _activeServer;
         private LocalizedText _activeLatencyText = string.Empty;
         private enum MainPage { Main, Personalize, Traffic }
         private MainPage _page;
-        public TrafficMonitorViewModel Traffic { get; } = new();
+        public TrafficMonitorViewModel Traffic { get; }
 
         public ServerListViewModel   ServerList   { get; }
         public ServerDetailViewModel ServerDetail { get; }
@@ -79,6 +82,12 @@ namespace XrayUI.ViewModels
             _settings       = settings;
             _startupService = startupService;
             _updateService  = updateService;
+            _trafficStore = new TrafficMonitorStore(new TrafficMonitorOptions(
+                [XrayConfigConstants.MixedInboundTag, XrayConfigConstants.TunInboundTag],
+                ["proxy", "direct"]));
+            _trafficCollector = new XrayTrafficCollector(_trafficStore, XrayService.ExePath);
+            Traffic = new TrafficMonitorViewModel(_trafficStore);
+            xray.LogReceived += (_, line) => _trafficCollector.RecordLogLine(line);
             // MainViewModel is constructed on the UI thread (in MainWindow ctor before
             // InitializeComponent), so capturing the dispatcher here is safe and avoids
             // depending on Application.Current later from a background thread.
@@ -540,6 +549,10 @@ namespace XrayUI.ViewModels
             if (e.PropertyName != nameof(ControlPanelViewModel.IsRunning)) return;
 
             var isRunning = ControlPanel.IsRunning;
+            if (isRunning)
+                _trafficCollector.StartSession();
+            else
+                _trafficCollector.StopSession();
             UpdateActiveServer(isRunning ? ServerList.SelectedServer : null);
             ServerList.IsProxyRunning = isRunning;
             OnPropertyChanged(nameof(ActiveServerName));
@@ -556,6 +569,12 @@ namespace XrayUI.ViewModels
 
             if (isRunning)
                 _ = RunSubscriptionRefreshCheckAsync(proxyConnected: true);
+        }
+
+        public void StopTrafficCollection()
+        {
+            _trafficCollector.StopSession();
+            _ = _trafficCollector.DisposeAsync();
         }
 
         private void UpdateActiveServer(ServerEntry? server)

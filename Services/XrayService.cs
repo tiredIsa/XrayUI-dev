@@ -234,6 +234,11 @@ namespace XrayUI.Services
 
                 if (outcome == XrayReadySignal.Outcome.Exited || _process.HasExited)
                 {
+                    // Process output is delivered through asynchronous DataReceived
+                    // callbacks. WaitForExit() (unlike only checking HasExited) also
+                    // drains the redirected stdout/stderr pipes before we snapshot the
+                    // startup log; otherwise users only see the generic exit code.
+                    try { _process.WaitForExit(); } catch { }
                     var startupLog = StopStartupLogCaptureAndRead();
                     LastError = startupLog.Length > 0
                         ? startupLog

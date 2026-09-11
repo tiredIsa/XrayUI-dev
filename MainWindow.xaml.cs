@@ -706,6 +706,7 @@ namespace XrayUI
         public void StopBackgroundServicesOnExit(bool fastShutdown = false)
         {
             ViewModel.StopSubscriptionRefreshScheduler();
+            ViewModel.StopTrafficCollection();
             ViewModel.ControlPanel.XrayService.StopForShutdown();
             ViewModel.ControlPanel.CleanupTunOnExit(fastShutdown);
         }

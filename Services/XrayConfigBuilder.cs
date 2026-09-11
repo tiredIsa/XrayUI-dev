@@ -32,6 +32,15 @@ namespace XrayUI.Services
             var config = new JsonObject
             {
                 ["log"] = BuildLog(settings),
+                // Local StatsService endpoint used by the Traffic monitor. The API is
+                // loopback-only and does not expose a user-facing proxy port.
+                ["api"] = new JsonObject
+                {
+                    ["tag"] = "api",
+                    ["listen"] = "127.0.0.1:10085",
+                    ["services"] = CreateStringArray("StatsService")
+                },
+                ["stats"] = new JsonObject(),
                 ["dns"] = BuildDns(settings),
                 ["inbounds"] = BuildInbounds(settings),
                 ["outbounds"] = BuildOutbounds(server, settings, availableServers),

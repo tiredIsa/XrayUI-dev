@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.19.3",
+      "en": [
+        "Connect the Traffic monitor to Xray StatsService and report detailed core startup failures."
+      ],
+      "ru": [
+        "Подключена статистика Traffic к Xray StatsService и добавлен подробный вывод причин ошибок запуска ядра."
+      ]
+    },
+    {
       "version": "1.19.2",
       "en": [
         "Fix tray icon registration during startup and recover UI state when Xray core exits unexpectedly."
