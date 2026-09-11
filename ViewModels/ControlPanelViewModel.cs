@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
@@ -17,6 +18,8 @@ namespace XrayUI.ViewModels
         private readonly TunService _tunService;
         private readonly StartupService _startupService;
         private readonly IUpdateService _update;
+        private readonly DispatcherQueue? _uiDispatcher;
+        private int _handlingUnexpectedExit;
         private UpdateInfo? _availableUpdate;
         private IReadOnlyList<string> _availableUpdateNotes = Array.Empty<string>();
         // Guards OnIsTunModeChanged from firing the dialog when we update internally
@@ -94,6 +97,8 @@ namespace XrayUI.ViewModels
             _tunService     = tunService;
             _startupService = startupService;
             _update         = update;
+            _uiDispatcher   = DispatcherQueue.GetForCurrentThread();
+            _xray.RunningChanged += OnXrayRunningChanged;
 
             StartStopButtonContent = L.ControlPanel_Start;
             LocalPort              = 16890;
@@ -215,13 +220,16 @@ namespace XrayUI.ViewModels
 
         private async Task StopCurrentSessionAsync()
         {
+            // Mark the session stopped before terminating the child. This prevents the
+            // XrayService.RunningChanged(false) notification from being mistaken for a
+            // crash by the unexpected-exit handler.
+            IsRunning = false;
             await CleanupTunStateAsync();
             await _xray.StopAsync();
             if (IsSystemProxyEnabled && !IsTunMode)
                 SystemProxyService.ClearProxy();
             _activeServer     = null;
             _activeServerName = string.Empty;
-            IsRunning = false;
         }
 
         private async Task<bool> StartSelectedServerAsync()
@@ -345,6 +353,7 @@ namespace XrayUI.ViewModels
                 IsReapplying = true;
                 try
                 {
+                    IsRunning = false;
                     var settings = await _settings.LoadSettingsAsync();
                     settings.LocalMixedPort        = LocalPort;
                     settings.AllowLanConnections   = AllowLanConnections;
@@ -368,9 +377,7 @@ namespace XrayUI.ViewModels
                     {
                         SystemProxyService.SetProxy("127.0.0.1", settings.LocalMixedPort);
                     }
-                    // IsRunning is managed manually by this VM (no subscription to
-                    // _xray.RunningChanged), and the guard at the top of this method
-                    // already proves it's true here — so no reassignment is needed.
+                    IsRunning = true;
                 }
                 catch (Exception ex)
                 {
@@ -679,6 +686,45 @@ namespace XrayUI.ViewModels
             }
             SetTunEnabledSilently(useTun);
             return true;
+        }
+
+        private void OnXrayRunningChanged(object? sender, bool running)
+        {
+            if (running || _uiDispatcher is null)
+                return;
+
+            // Process.Exited is raised on a worker thread. Marshal to the UI thread and
+            // only repair state when the core died behind the user's back; normal StopAsync
+            // paths set IsRunning to false themselves before stopping the process.
+            _uiDispatcher.TryEnqueue(() =>
+            {
+                if (!IsRunning || _xray.IsRunning || Interlocked.Exchange(ref _handlingUnexpectedExit, 1) != 0)
+                    return;
+                _ = HandleUnexpectedCoreExitAsync();
+            });
+        }
+
+        private async Task HandleUnexpectedCoreExitAsync()
+        {
+            try
+            {
+                try { await CleanupTunStateAsync(); }
+                catch (Exception ex) { Debug.WriteLine($"[TUN] Cleanup after core exit failed: {ex.Message}"); }
+
+                SystemProxyService.ClearProxy();
+                _activeServer = null;
+                _activeServerName = string.Empty;
+                IsRunning = false;
+
+                var detail = string.IsNullOrWhiteSpace(_xray.LastError)
+                    ? Loc.Format("Xray_ExitedImmediately", -1)
+                    : _xray.LastError;
+                await _dialogs.ShowErrorAsync(LocalizedText.Key("Error_StartFailed"), detail);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _handlingUnexpectedExit, 0);
+            }
         }
 
         public bool RestoreUpdateMode(UpdateResume resume)

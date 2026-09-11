@@ -39,6 +39,7 @@ namespace XrayUI
         // returns to maximized instead of the plain windowed size.
         private bool _restoreMaximizedOnExpand;
         private bool _personalizeRealized;
+        private bool _trayConfigured;
         private readonly bool _startMinimized;
         // Set when we parked the window off-screen at startup; cleared after
         // we re-center it on the first user-initiated show (tray click).
@@ -124,8 +125,6 @@ namespace XrayUI
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            ConfigureTray();
-
             ApplyWindowMode(isMini: false);
             UpdateCaptionButtonColors();
 
@@ -142,6 +141,11 @@ namespace XrayUI
         {
             Activated -= OnFirstActivated;
             _initialized = true;
+
+            // The tray icon needs a live HWND. Creating TrayIcon in the constructor
+            // happens before Activate() and Shell_NotifyIcon can reject the request,
+            // leaving the app without a tray icon until restart.
+            EnsureTrayConfigured();
 #if LOCALIZATION_SMOKE_TEST
             // The diagnostic executable must not start user network services.
             if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe")) return;
@@ -208,6 +212,15 @@ namespace XrayUI
                     args.Cancel = true;
                 }
             };
+        }
+
+        internal void EnsureTrayConfigured()
+        {
+            if (_trayConfigured)
+                return;
+
+            _trayConfigured = true;
+            ConfigureTray();
         }
 
         // Own the tray icon directly instead of WindowManager.IsVisibleInTray: WinUIEx ties that

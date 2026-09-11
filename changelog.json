@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.19.2",
+      "en": [
+        "Fix tray icon registration during startup and recover UI state when Xray core exits unexpectedly."
+      ],
+      "ru": [
+        "Исправлена регистрация значка в трее при запуске и восстановление состояния интерфейса при аварийном завершении Xray core."
+      ]
+    },
+    {
       "version": "1.19.1",
       "en": [
         "Fix the application failing to reopen after accepting the administrator prompt when enabling TUN mode."

@@ -357,6 +357,12 @@ namespace XrayUI.Services
         private void OnProcessExited(object? sender, EventArgs e)
         {
             AppendLog(L.XrayLog_ProcessExited);
+            try
+            {
+                if (sender is Process process)
+                    LastError = Loc.Format("Xray_ExitedImmediately", process.ExitCode);
+            }
+            catch { }
             RunningChanged?.Invoke(this, false);
         }
 
