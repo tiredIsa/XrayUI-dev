@@ -5,7 +5,7 @@
 ## Проверенные факты
 
 - Windows / C# / .NET 10 / WinUI 3 / CommunityToolkit.Mvvm. Публикация использует Native AOT и trimming.
-- Ядро: Assets/engine/xray.exe, Xray 26.6.1 Custom, Go 1.26.0.
+- Ядро: Assets/engine/xray.exe, Xray 26.6.27 (официальная сборка), Go 1.26.4.
 - XrayConfigBuilder.Build сейчас генерирует log, dns, inbounds, outbounds, routing и опционально fakedns. API и сбор статистики не включены.
 - XrayService запускает отдельный процесс, получает stdout/stderr, публикует LogReceived и RunningChanged. Буфер журнала ограничен 500 строками.
 - LogLineParser умеет только выделять timestamp. Парсера обращений пока нет.
@@ -33,7 +33,7 @@
 
 ## Ограничения источников
 
-- В protobuf есть SubscribeRoutingStats, но upstream v26.6.1 регистрирует RoutingService с nil-каналом; реализация возвращает Routing statistics not enabled. На нестандартном бинарнике streaming RPC отдельно не проверен. Не закладывать его как рабочую основу.
+- В protobuf есть SubscribeRoutingStats, но upstream v26.6.27 регистрирует RoutingService с nil-каналом; реализация возвращает Routing statistics not enabled. На нестандартном бинарнике streaming RPC отдельно не проверен. Не закладывать его как рабочую основу.
 - StatsService даёт счётчики по inbound/outbound и пользователям ядра. Пользователь Xray не равен приложению Windows.
 - Access-событие содержит время, источник, назначение, статус, теги маршрута. Оно не подтверждает успешную доставку или открытое сейчас соединение.
 - В обычном access-событии нет PID/имени приложения, байтов конкретного соединения и времени закрытия. Показывать неизвестное значение, не выдумывать.
@@ -93,7 +93,7 @@
 
 - https://xtls.github.io/en/config/api.html
 - https://xtls.github.io/en/config/policy.html
-- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.1/app/stats/command/command.proto
-- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.1/app/router/command/command.go
-- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.1/common/log/access.go
-- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.1/app/router/webhook.go
+- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.27/app/stats/command/command.proto
+- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.27/app/router/command/command.go
+- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.27/common/log/access.go
+- https://raw.githubusercontent.com/XTLS/Xray-core/v26.6.27/app/router/webhook.go

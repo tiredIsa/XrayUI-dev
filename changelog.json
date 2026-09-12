@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "1.19.4",
+      "en": [
+        "Bundle Xray 26.6.27 with the upstream fix for TUN crashes on quickly closed connections."
+      ],
+      "ru": [
+        "Обновлено ядро Xray до 26.6.27 с исправлением падения TUN при быстро закрытом соединении."
+      ]
+    },
+    {
       "version": "1.19.3",
       "en": [
         "Connect the Traffic monitor to Xray StatsService and report detailed core startup failures."

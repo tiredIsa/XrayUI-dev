@@ -12,7 +12,7 @@ namespace XrayUI.Services
     /// the speed-test core's N test ports) has come up. The line goes through xray's logger
     /// at Warning level, so the config loglevel must be debug/info/warning for it to appear —
     /// XrayConfigBuilder guarantees that (see DefaultLogLevel). Verified against the bundled
-    /// Xray 26.6.1; if a future core rewords the line, WaitAsync's cap degrades gracefully
+    /// Xray 26.6.27; if a future core rewords the line, WaitAsync's cap degrades gracefully
     /// to the previous fixed-delay behavior instead of breaking.
     /// </summary>
     internal sealed class XrayReadySignal
@@ -43,7 +43,7 @@ namespace XrayUI.Services
 
         private void OnOutputLine(string? line)
         {
-            // Matches "2026/06/10 09:00:54 [Warning] core: Xray 26.6.1 started". Only the
+            // Matches "2026/06/10 09:00:54 [Warning] core: Xray 26.6.27 started". Only the
             // startup window awaits this signal, so user traffic in the access log can
             // never race a false positive.
             if (line is not null
