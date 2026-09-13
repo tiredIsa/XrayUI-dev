@@ -122,10 +122,6 @@ namespace XrayUI
 
             _window.Activate();
 
-            // TrayIcon must be registered after Activate() has created the HWND.
-            if (_window is MainWindow activatedMainWindow)
-                activatedMainWindow.EnsureTrayConfigured();
-
             if (startMinimized)
             {
                 _window.AppWindow.IsShownInSwitchers = false;

@@ -219,8 +219,8 @@ namespace XrayUI
             if (_trayConfigured)
                 return;
 
-            _trayConfigured = true;
             ConfigureTray();
+            _trayConfigured = true;
         }
 
         // Own the tray icon directly instead of WindowManager.IsVisibleInTray: WinUIEx ties that
@@ -316,6 +316,10 @@ namespace XrayUI
                 CenterOnPrimaryDisplay();
             }
 
+            // Activate() does not reliably unhide an AppWindow that was parked with
+            // AppWindow.Hide() during a minimized startup. Show first so a missing
+            // tray icon cannot leave the boot-launched process stranded off-screen.
+            AppWindow.Show();
             Activate();
         }
 
