@@ -21,15 +21,15 @@ namespace XrayUI
         private readonly Border _miniDragRegion;
         private readonly Button _miniExpandButton;
         private readonly WindowMessageMonitor _windowMessageMonitor;
-        // We own the tray icon directly (rather than WindowManager.IsVisibleInTray) so the
-        // tooltip can track connection state; see ConfigureTray.
-        private TrayIcon? _trayIcon;
+        private TrayIconService? _trayIcon;
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer? _trayRetryTimer;
+        private Views.TrayMenuHost? _trayMenuHost;
+        private uint _taskbarCreatedMessage;
         // Connection-state icon variants (idle = blue, running = green). Both the tray icon
         // and the taskbar/window icon swap between them; see ApplyConnectionIcon.
         private string? _idleIconPath;
         private string? _runningIconPath;
-        // Last running-state we pushed to the icon, so we only issue a Shell_NotifyIcon icon
-        // modify on an actual transition (see OnViewModelPropertyChanged for why that matters).
+        // Load a new HICON only when the connection state changes.
         private bool _trayShowsRunning;
         private bool _isSessionEnding;
         private bool _allowClose;
@@ -58,11 +58,7 @@ namespace XrayUI
         private const int FullModeMinHeight = 260;
         private const int MiniWindowWidth = 330;
         private const int MiniWindowHeight = 136;
-        // Unique id for our own tray icon, independent of WinUIEx's WindowManager tray.
-        // Must be a positive 16-bit value: the Shell_NotifyIcon v4 callback reports the icon id
-        // in HIWORD(lParam) (a signed short), so a wider id is truncated on the way back and
-        // every click would fail the id match in TrayIcon.ProcessTrayIconEvents (icon still
-        // shows, but left/right clicks do nothing).
+        // Shell version 4 reports the icon id in HIWORD(lParam), so keep it 16-bit.
         private const uint TrayIconId = 0x5852;
 
         public MainViewModel ViewModel { get; }
@@ -142,13 +138,11 @@ namespace XrayUI
             Activated -= OnFirstActivated;
             _initialized = true;
 
-            // The tray icon needs a live HWND. Creating TrayIcon in the constructor
-            // happens before Activate() and Shell_NotifyIcon can reject the request,
-            // leaving the app without a tray icon until restart.
             EnsureTrayConfigured();
 #if LOCALIZATION_SMOKE_TEST
             // The diagnostic executable must not start user network services.
-            if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe")) return;
+            if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe") ||
+                Environment.GetCommandLineArgs().Contains("--tray-probe")) return;
 #endif
 
             // For --startup-minimized we only hide the window here so the XamlRoot
@@ -197,8 +191,18 @@ namespace XrayUI
             if (File.Exists(iconPath))
             {
                 AppWindow.SetIcon(iconPath);
-                _trayIcon = TryCreateTrayIcon(iconPath);
             }
+
+            _taskbarCreatedMessage = TrayIconInterop.RegisterWindowMessage("TaskbarCreated");
+            if (_taskbarCreatedMessage != 0)
+            {
+                // TUN launches can be elevated; allow Explorer's lower-integrity broadcast.
+                TrayIconInterop.ChangeWindowMessageFilterEx(this.GetWindowHandle(), _taskbarCreatedMessage, 1, IntPtr.Zero);
+            }
+            _trayRetryTimer = DispatcherQueue.CreateTimer();
+            _trayRetryTimer.Interval = TimeSpan.FromSeconds(5);
+            _trayRetryTimer.Tick += (_, _) => EnsureTrayConfigured();
+            _trayRetryTimer.Start();
 
             AppWindow.Closing += (_, args) =>
             {
@@ -216,34 +220,25 @@ namespace XrayUI
 
         internal void EnsureTrayConfigured()
         {
-            if (_trayConfigured)
-                return;
-
-            ConfigureTray();
-            _trayConfigured = true;
-        }
-
-        // Own the tray icon directly instead of WindowManager.IsVisibleInTray: WinUIEx ties that
-        // built-in tooltip to the static window Title and never exposes it, so we create our own
-        // TrayIcon and push the tooltip via Tooltip (NIM_MODIFY) — that updates szTip only,
-        // leaving the taskbar/window icon untouched. Returns null if creation fails so the window
-        // is never stranded in a tray that isn't there (HideToTray checks for it).
-        private TrayIcon? TryCreateTrayIcon(string iconPath)
-        {
-            TrayIcon? trayIcon = null;
+            if (_allowClose || _isSessionEnding) return;
             try
             {
-                trayIcon = new TrayIcon(TrayIconId, iconPath, ViewModel.TrayTooltip);
-                trayIcon.Selected += (_, _) => RestoreFromTray();
-                trayIcon.ContextMenu += (_, e) => e.Flyout = BuildTrayContextMenu();
-                trayIcon.IsVisible = true;
-                return trayIcon;
+                if (!_trayConfigured)
+                {
+                    ConfigureTray();
+                    _trayConfigured = true;
+                }
+                if (_trayIcon is null)
+                {
+                    var path = ViewModel.TrayShowsRunning ? _runningIconPath : _idleIconPath;
+                    if (path is null || !File.Exists(path)) return;
+                    _trayIcon = new TrayIconService(this.GetWindowHandle(), TrayIconId, path, ViewModel.TrayTooltip);
+                }
+                _trayIcon.EnsureRegistered();
             }
             catch (Exception ex)
             {
-                trayIcon?.Dispose();
-                Debug.WriteLine($"[Tray] Failed to create tray icon: {ex.Message}");
-                return null;
+                Debug.WriteLine($"[Tray] Registration failed; will retry: {ex.Message}");
             }
         }
 
@@ -254,8 +249,15 @@ namespace XrayUI
         {
             var path = running ? _runningIconPath : _idleIconPath;
             if (path is null || !File.Exists(path)) return;
-            AppWindow.SetIcon(path);
-            _trayIcon?.SetIcon(path);
+            try
+            {
+                AppWindow.SetIcon(path);
+                _trayIcon?.SetIcon(path);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Tray] Icon update failed: {ex.Message}");
+            }
         }
 
         private MenuFlyout BuildTrayContextMenu()
@@ -277,16 +279,14 @@ namespace XrayUI
 
         private bool HideToTray()
         {
-            if (_isHiddenToTray)
-            {
-                return true;
-            }
-
-            if (_trayIcon is null)
+            EnsureTrayConfigured();
+            if (_trayIcon is null || !_trayIcon.EnsureRegistered())
             {
                 Debug.WriteLine("[Tray] Hide requested but tray icon is unavailable.");
                 return false;
             }
+
+            if (_isHiddenToTray) return true;
 
             _isHiddenToTray = true;
             ControlPanel?.CloseLogWindow();
@@ -306,6 +306,7 @@ namespace XrayUI
 
         internal void RestoreFromTray()
         {
+            EnsureTrayConfigured();
             _isHiddenToTray = false;
             AppWindow.IsShownInSwitchers = true;
             _rootElement.Visibility = Visibility.Visible;
@@ -406,8 +407,7 @@ namespace XrayUI
             _isHiddenToTray = false;
             try
             {
-                _trayIcon?.Dispose();
-                _trayIcon = null;
+                DisposeTray();
             }
             catch (Exception ex)
             {
@@ -549,6 +549,8 @@ namespace XrayUI
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
+            _allowClose = true;
+            DisposeTray();
             ViewModel.StopSubscriptionRefreshScheduler();
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _rootElement.ActualThemeChanged -= OnRootElementActualThemeChanged;
@@ -565,13 +567,7 @@ namespace XrayUI
         {
             if (e.PropertyName == nameof(MainViewModel.TrayTooltip))
             {
-                // Runs on the UI thread (VM raises PropertyChanged there); no dispatch needed.
-                // Order matters: swap the icon FIRST, write the tooltip LAST. WinUIEx's SetIcon
-                // issues a NIM_MODIFY carrying only the icon (no NIF_SHOWTIP); under
-                // NOTIFYICON_VERSION_4 that suppresses the standard tooltip. The Tooltip setter
-                // re-sends NIF_TIP|NIF_SHOWTIP, so it has to be the last modify we issue. We also
-                // only swap on an actual running-state transition, so a tooltip-text change while
-                // already running (e.g. a node switch) never drops the tooltip.
+                // All Shell updates include NIF_SHOWTIP to retain the standard tooltip.
                 var running = ViewModel.TrayShowsRunning;
                 if (running != _trayShowsRunning)
                 {
@@ -579,7 +575,7 @@ namespace XrayUI
                     ApplyConnectionIcon(running);
                 }
                 if (_trayIcon is not null)
-                    _trayIcon.Tooltip = ViewModel.TrayTooltip;
+                    _trayIcon.SetTooltip(ViewModel.TrayTooltip);
                 return;
             }
 
@@ -613,6 +609,36 @@ namespace XrayUI
 
         private void OnWindowMessageReceived(object? sender, WindowMessageEventArgs e)
         {
+            if (_taskbarCreatedMessage != 0 && e.Message.MessageId == _taskbarCreatedMessage)
+            {
+                if (!_allowClose && !_isSessionEnding)
+                {
+                    _trayIcon?.OnTaskbarCreated();
+                    EnsureTrayConfigured();
+                }
+                return;
+            }
+            if (e.Message.MessageId == TrayIconInterop.CallbackMessage)
+            {
+                if (!_allowClose && _trayIcon is not null &&
+                    _trayIcon.TryGetAction(e.Message.WParam, e.Message.LParam, out var contextMenu))
+                {
+                    // Run outside the native callback: activation and flyouts send window messages.
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (_allowClose) return;
+                        if (contextMenu)
+                        {
+                            if (_trayIcon is null || !_trayIcon.TryGetRect(out var rect)) return;
+                            _trayMenuHost ??= new Views.TrayMenuHost();
+                            _trayMenuHost.Show(BuildTrayContextMenu(), rect, _rootElement.ActualTheme);
+                        }
+                        else RestoreFromTray();
+                    });
+                }
+                e.Handled = true;
+                return;
+            }
             if (e.Message.MessageId == WmNclButtonDblClk && ViewModel.IsMiniMode)
             {
                 e.Handled = true;
@@ -678,13 +704,96 @@ namespace XrayUI
             _isSessionEnding = true;
             _allowClose = true;
             _isHiddenToTray = false;
+            _trayRetryTimer?.Stop();
         }
 
         private void RestoreAfterSessionEndingCancelled()
         {
             _isSessionEnding = false;
             _allowClose = false;
+            _trayRetryTimer?.Start();
+            EnsureTrayConfigured();
         }
+
+        private void DisposeTray()
+        {
+            _trayRetryTimer?.Stop();
+            _trayRetryTimer = null;
+            _trayIcon?.Dispose();
+            _trayIcon = null;
+            _trayMenuHost?.Dispose();
+            _trayMenuHost = null;
+        }
+
+#if LOCALIZATION_SMOKE_TEST
+        internal async Task VerifyTrayAsync()
+        {
+            void Report(string step) => File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "localization-smoke.txt"), "\n" + step);
+            async Task WaitForIcon()
+            {
+                var deadline = DateTime.UtcNow.AddSeconds(8);
+                while (_trayIcon is null || !_trayIcon.TryGetRect(out _))
+                {
+                    if (DateTime.UtcNow >= deadline) throw new InvalidOperationException("Tray icon is missing from the Shell.");
+                    await Task.Delay(100);
+                }
+            }
+
+            void RemoveShellIcon()
+            {
+                var data = new TrayIconInterop.IconData
+                {
+                    Size = (uint)Marshal.SizeOf<TrayIconInterop.IconData>(), Window = this.GetWindowHandle(), Id = TrayIconId
+                };
+                if (!TrayIconInterop.NotifyIcon(TrayIconInterop.Delete, ref data))
+                    throw new InvalidOperationException("Could not remove the diagnostic tray icon.");
+            }
+
+            EnsureTrayConfigured();
+            await WaitForIcon();
+            Report("Registered; hiding window");
+            if (!HideToTray()) throw new InvalidOperationException("Cannot hide to a registered tray icon.");
+            await WaitForIcon();
+
+            Report("Hidden; recreating taskbar icon");
+            RemoveShellIcon();
+            TrayIconInterop.SendMessage(this.GetWindowHandle(), _taskbarCreatedMessage, 0, 0);
+            await WaitForIcon();
+
+            Report("TaskbarCreated recovered; checking timer");
+            // Recovery must also work if Explorer's broadcast was missed.
+            RemoveShellIcon();
+            await WaitForIcon();
+
+            Report("Timer recovered; changing icon and selecting");
+            ApplyConnectionIcon(true);
+            await WaitForIcon();
+            ApplyConnectionIcon(false);
+            _trayIcon!.SetTooltip(ViewModel.TrayTooltip);
+            TrayIconInterop.SendMessage(this.GetWindowHandle(), TrayIconInterop.CallbackMessage, 0,
+                (nint)((TrayIconId << 16) | 0x0400));
+            await Task.Delay(200);
+            if (_isHiddenToTray || _rootElement.Visibility != Visibility.Visible)
+                throw new InvalidOperationException("Tray selection did not restore the window.");
+            if (!HideToTray()) throw new InvalidOperationException("Cannot hide after restoring from tray.");
+
+            Report("Selection restored window; opening context menu");
+            TrayIconInterop.SendMessage(this.GetWindowHandle(), TrayIconInterop.CallbackMessage, 0,
+                (nint)((TrayIconId << 16) | 0x007b));
+            await Task.Delay(200);
+            if (_trayMenuHost?.IsOpen != true || !_isHiddenToTray)
+                throw new InvalidOperationException("Tray context menu did not open independently of the main window.");
+            _trayMenuHost.Hide();
+            Report("Context menu opened; disposing");
+            DisposeTray();
+            var identifier = new TrayIconInterop.IconIdentifier
+            {
+                Size = (uint)Marshal.SizeOf<TrayIconInterop.IconIdentifier>(), Window = this.GetWindowHandle(), Id = TrayIconId
+            };
+            if (TrayIconInterop.GetIconRect(ref identifier, out _) == 0)
+                throw new InvalidOperationException("Tray icon survived disposal.");
+        }
+#endif
 
         private static void ReleaseUiResources()
         {

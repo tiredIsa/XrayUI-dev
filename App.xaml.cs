@@ -121,6 +121,8 @@ namespace XrayUI
             }
 
             _window.Activate();
+            // Also register explicitly: an Activated event may be delayed during logon.
+            if (_window is MainWindow trayWindow) trayWindow.EnsureTrayConfigured();
 
             if (startMinimized)
             {

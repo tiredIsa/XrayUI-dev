@@ -21,6 +21,7 @@ internal static class LocalizationSmokeTest
     public static async Task RunAsync()
     {
         var report = Path.Combine(AppContext.BaseDirectory, "localization-smoke.txt");
+        File.WriteAllText(report, "START: diagnostics");
         var temp = Path.Combine(Path.GetTempPath(), "XrayUI-Locale-" + Guid.NewGuid().ToString("N"));
         Application.Current.UnhandledException += (_, args) =>
         {
@@ -29,6 +30,20 @@ internal static class LocalizationSmokeTest
         };
         try
         {
+            if (Environment.GetCommandLineArgs().Contains("--tray-probe"))
+            {
+                File.AppendAllText(report, "\nConstructing main window");
+                var trayWindow = new MainWindow();
+                File.AppendAllText(report, "\nActivating main window");
+                trayWindow.AppWindow.Move(new Windows.Graphics.PointInt32(-30000, -30000));
+                trayWindow.Activate();
+                await Task.Delay(500);
+                File.AppendAllText(report, "\nChecking tray");
+                await trayWindow.VerifyTrayAsync();
+                await File.WriteAllTextAsync(report, "PASS: tray registration, hidden window, TaskbarCreated, missed broadcast, icon changes, selection, context menu and disposal.");
+                Environment.Exit(0);
+                return;
+            }
             if (Environment.GetCommandLineArgs().Contains("--tun-takeover-probe"))
             {
                 await Task.Delay(200);

@@ -66,6 +66,8 @@
     <Compile Include="..\Helpers\JobObjectGuard.cs" Link="Prod\Helpers\JobObjectGuard.cs" />
     <Compile Include="..\Services\XrayReadySignal.cs" Link="Prod\Services\XrayReadySignal.cs" />
     <Compile Include="..\Services\XrayService.cs" Link="Prod\Services\XrayService.cs" />
+    <Compile Include="..\Helpers\TrayIconInterop.cs" Link="Prod\Helpers\TrayIconInterop.cs" />
+    <Compile Include="..\Services\TrayIconService.cs" Link="Prod\Services\TrayIconService.cs" />
     <None Include="..\Assets\engine\xray.exe" Link="Assets\engine\xray.exe" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

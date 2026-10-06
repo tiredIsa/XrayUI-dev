@@ -1,6 +1,19 @@
 {
   "versions": [
     {
+      "version": "1.19.7",
+      "en": [
+        "Verify tray icon registration and retry when Explorer is not ready at Windows logon or the icon disappears.",
+        "Restore the tray icon after Explorer restarts, including elevated TUN sessions, and verify registration before hiding the window.",
+        "Keep connection icons and tooltips up to date, and safely open and close the tray context menu."
+      ],
+      "ru": [
+        "Регистрация значка в трее проверяется и повторяется, если Explorer ещё не готов при входе в Windows или значок пропал.",
+        "Значок восстанавливается после перезапуска Explorer, в том числе в повышенном TUN-экземпляре; перед сворачиванием окна проверяется регистрация в трее.",
+        "Значок и подсказка сохраняют актуальное состояние подключения; исправлено открытие и закрытие контекстного меню трея."
+      ]
+    },
+    {
       "version": "1.19.6",
       "en": [
         "Refresh subscriptions only while disconnected and prevent refreshes from switching the active server.",
