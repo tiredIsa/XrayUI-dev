@@ -139,43 +139,25 @@ namespace XrayUI.ViewModels
         {
             if (!CanStartStop) return;
 
+            await _reapplyLock.WaitAsync();
             try
             {
-                if (IsRunning)
+                if (!CanStartStop) return;
+                IsReapplying = true;
+                try
                 {
-                    // Serialize with SwitchToSelectedServerAsync and hold IsReapplying:
-                    // the netsh cleanup inside the stop path now runs off the UI thread,
-                    // so without these gates a switch (double-click / subscription
-                    // auto-switch) could interleave with the multi-second stop and
-                    // stomp the session state.
-                    await _reapplyLock.WaitAsync();
-                    try
-                    {
-                        if (!IsRunning) return;
-
-                        IsReapplying = true;
-                        try
-                        {
-                            await StopCurrentSessionAsync();
-                        }
-                        finally
-                        {
-                            IsReapplying = false;
-                        }
-                    }
-                    finally
-                    {
-                        _reapplyLock.Release();
-                    }
-                    return;
+                    if (IsRunning)
+                        await StopCurrentSessionAsync();
+                    else
+                        await StartSelectedServerAsync();
                 }
-
-                await StartSelectedServerAsync();
+                catch (Exception ex)
+                {
+                    await HandleStartStopFailureAsync(ex);
+                }
+                finally { IsReapplying = false; }
             }
-            catch (Exception ex)
-            {
-                await HandleStartStopFailureAsync(ex);
-            }
+            finally { _reapplyLock.Release(); }
         }
 
         public async Task SwitchToSelectedServerAsync()
@@ -307,6 +289,12 @@ namespace XrayUI.ViewModels
                     SystemProxyService.SetProxy("127.0.0.1", appSettings.LocalMixedPort);
                 await TrySaveSettingsAsync(appSettings, "persist system proxy settings");
             }
+
+            // Settings persistence can yield after readiness. An exit during that await
+            // must not leave the UI claiming a successful connection to a dead process.
+            if (!_xray.IsRunning)
+                throw new InvalidOperationException(string.IsNullOrWhiteSpace(_xray.LastError)
+                    ? L.Error_XrayStartFailed : _xray.LastError);
 
             _activeServer     = server;
             _activeServerName = server.Name;
@@ -708,19 +696,32 @@ namespace XrayUI.ViewModels
         {
             try
             {
-                try { await CleanupTunStateAsync(); }
-                catch (Exception ex) { Debug.WriteLine($"[TUN] Cleanup after core exit failed: {ex.Message}"); }
+                string detail;
+                await _reapplyLock.WaitAsync();
+                try
+                {
+                    // A queued notification can belong to the previous session. Do not
+                    // clear routes or proxy settings after a new core has already started.
+                    if (!IsRunning || _xray.IsRunning) return;
+                    detail = string.IsNullOrWhiteSpace(_xray.LastError)
+                        ? Loc.Format("Xray_ExitedImmediately", -1) : _xray.LastError;
+                    IsReapplying = true;
+                    IsRunning = false;
+                    _activeServer = null;
+                    _activeServerName = string.Empty;
 
-                SystemProxyService.ClearProxy();
-                _activeServer = null;
-                _activeServerName = string.Empty;
-                IsRunning = false;
-
-                var detail = string.IsNullOrWhiteSpace(_xray.LastError)
-                    ? Loc.Format("Xray_ExitedImmediately", -1)
-                    : _xray.LastError;
+                    try { await CleanupTunStateAsync(); }
+                    catch (Exception ex) { Debug.WriteLine($"[TUN] Cleanup after core exit failed: {ex.Message}"); }
+                    SystemProxyService.ClearProxy();
+                }
+                finally
+                {
+                    IsReapplying = false;
+                    _reapplyLock.Release();
+                }
                 await _dialogs.ShowErrorAsync(LocalizedText.Key("Error_StartFailed"), detail);
             }
+            catch (Exception ex) { Debug.WriteLine($"[ControlPanel] Core exit cleanup failed: {ex}"); }
             finally
             {
                 Interlocked.Exchange(ref _handlingUnexpectedExit, 0);

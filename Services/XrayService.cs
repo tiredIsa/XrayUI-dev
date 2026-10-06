@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -20,9 +21,9 @@ namespace XrayUI.Services
         public static readonly string RulesDir = Path.Combine(
             AppContext.BaseDirectory, "Assets", "rules");
 
-        private static readonly string ConfigPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "XrayUI", "xray_config.json");
+        private readonly string _configPath;
+        private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
+        private int _shutdownRequested;
 
         private const int LogBufferMax = 500;
 
@@ -48,7 +49,22 @@ namespace XrayUI.Services
         private int _logCount;   // number of valid entries (<= LogBufferMax)
         private readonly Lock _bufferLock = new();
 
-        public bool IsRunning => _process is { HasExited: false };
+        public XrayService() : this(Path.Combine(AppPaths.LocalAppDataDir, "xray_config.json")) { }
+
+        internal XrayService(string configPath)
+        {
+            _configPath = configPath;
+        }
+
+        public bool IsRunning
+        {
+            get
+            {
+                var process = Volatile.Read(ref _process);
+                try { return process is { HasExited: false }; }
+                catch (InvalidOperationException) { return false; }
+            }
+        }
 
         public string LastError { get; private set; } = string.Empty;
 
@@ -104,7 +120,22 @@ namespace XrayUI.Services
                 }
             }
 
-            LogReceived?.Invoke(this, line);
+            NotifySubscribers(LogReceived, line);
+        }
+
+        private void NotifySubscribers<T>(EventHandler<T>? handlers, T value)
+        {
+            if (handlers is null) return;
+            foreach (EventHandler<T> handler in handlers.GetInvocationList())
+            {
+                try { handler(this, value); }
+                catch (Exception ex)
+                {
+                    // Process callbacks run on worker threads. A UI/log consumer must not
+                    // crash the host and consequently kill its job-owned core.
+                    Debug.WriteLine($"[XrayService] Event subscriber failed: {ex}");
+                }
+            }
         }
 
         private void BeginStartupLogCapture()
@@ -153,7 +184,18 @@ namespace XrayUI.Services
 
         public async Task<bool> StartAsync(string configJson)
         {
-            if (IsRunning)
+            await _lifecycleLock.WaitAsync();
+            try
+            {
+                if (Volatile.Read(ref _shutdownRequested) != 0) return false;
+                return await StartCoreAsync(configJson);
+            }
+            finally { _lifecycleLock.Release(); }
+        }
+
+        private async Task<bool> StartCoreAsync(string configJson)
+        {
+            if (_process is not null)
             {
                 // Restart path (e.g. ReapplyRoutingAsync): skip the DNS flush — the new xray
                 // session is about to repopulate the resolver cache anyway, and flushing
@@ -172,13 +214,14 @@ namespace XrayUI.Services
 
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
-                await File.WriteAllTextAsync(ConfigPath, configJson);
+                Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
+                await File.WriteAllTextAsync(_configPath, configJson);
+                if (Volatile.Read(ref _shutdownRequested) != 0) return false;
 
                 var psi = new ProcessStartInfo
                 {
                     FileName = ExePath,
-                    Arguments = $"run -config \"{ConfigPath}\"",
+                    Arguments = $"run -config \"{_configPath}\"",
                     WorkingDirectory = Path.GetDirectoryName(ExePath)!,
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -187,33 +230,40 @@ namespace XrayUI.Services
                 };
                 psi.EnvironmentVariables["XRAY_LOCATION_ASSET"] = RulesDir;
 
-                _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-                var readySignal = XrayReadySignal.Attach(_process);
+                var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                Volatile.Write(ref _process, process);
+                var readySignal = XrayReadySignal.Attach(process);
 
-                _process.OutputDataReceived += (_, e) =>
+                process.OutputDataReceived += (_, e) =>
                 {
                     if (e.Data is null) return;
                     AppendStartupLog(e.Data);
                     AppendLog(e.Data);
                 };
 
-                _process.ErrorDataReceived += (_, e) =>
+                process.ErrorDataReceived += (_, e) =>
                 {
                     if (e.Data is null) return;
                     AppendStartupLog(e.Data);
                     AppendLog(e.Data);
                 };
 
-                _process.Exited += OnProcessExited;
+                process.Exited += OnProcessExited;
 
                 BeginStartupLogCapture();
-                _process.Start();
-                AttachToJobObject(_process);
-                _process.BeginOutputReadLine();
-                _process.BeginErrorReadLine();
+                if (Volatile.Read(ref _shutdownRequested) != 0)
+                {
+                    await StopCoreAsync();
+                    return false;
+                }
+                process.Start();
+                AttachToJobObject(process);
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
                 AppendLog(Loc.Format("XrayLog_Started", ExePath));
-                AppendLog(Loc.Format("XrayLog_Config", ConfigPath));
+                AppendLog(Loc.Format("XrayLog_Config", _configPath));
+                AppendLog($"[XrayUI] core PID: {process.Id}");
 
                 // Ready typically lands well under 100ms; Exited surfaces bad configs / port
                 // clashes / TUN elevation failures immediately instead of after a fixed wait.
@@ -232,23 +282,26 @@ namespace XrayUI.Services
                 };
                 AppendLog($"[XrayUI] core readiness: {readyLabel} in {readyStopwatch.ElapsedMilliseconds} ms");
 
-                if (outcome == XrayReadySignal.Outcome.Exited || _process.HasExited)
+                if (outcome == XrayReadySignal.Outcome.Exited || process.HasExited)
                 {
                     // Process output is delivered through asynchronous DataReceived
-                    // callbacks. WaitForExit() (unlike only checking HasExited) also
+                    // callbacks. WaitForExitAsync (unlike only checking HasExited) also
                     // drains the redirected stdout/stderr pipes before we snapshot the
                     // startup log; otherwise users only see the generic exit code.
-                    try { _process.WaitForExit(); } catch { }
+                    try { await process.WaitForExitAsync(); } catch { }
                     var startupLog = StopStartupLogCaptureAndRead();
                     LastError = startupLog.Length > 0
                         ? startupLog
-                        : Loc.Format("Xray_ExitedImmediately", _process.ExitCode);
+                        : Loc.Format("Xray_ExitedImmediately", process.ExitCode);
                     AppendLog(Loc.Format("XrayLog_StartFailed", LastError));
+                    await StopCoreAsync();
                     return false;
                 }
 
                 StopStartupLogCapture();
-                RunningChanged?.Invoke(this, true);
+                if (Volatile.Read(ref _shutdownRequested) != 0 || !ReferenceEquals(_process, process))
+                    return false;
+                NotifySubscribers(RunningChanged, true);
                 return true;
             }
             catch (Exception ex)
@@ -256,14 +309,20 @@ namespace XrayUI.Services
                 StopStartupLogCapture();
                 LastError = ex.Message;
                 AppendLog(Loc.Format("XrayLog_Exception", ex.Message));
+                await StopCoreAsync();
                 return false;
             }
         }
 
         public async Task StopAsync()
         {
-            await StopCoreAsync();
-            FlushSystemDnsCache();
+            await _lifecycleLock.WaitAsync();
+            try
+            {
+                await StopCoreAsync();
+                FlushSystemDnsCache();
+            }
+            finally { _lifecycleLock.Release(); }
         }
 
         /// <summary>
@@ -273,33 +332,33 @@ namespace XrayUI.Services
         /// </summary>
         private async Task StopCoreAsync()
         {
-            if (_process is null)
+            var process = Interlocked.Exchange(ref _process, null);
+            if (process is null)
             {
                 return;
             }
 
-            _process.Exited -= OnProcessExited;
+            process.Exited -= OnProcessExited;
 
             try
             {
-                if (!_process.HasExited)
+                if (!process.HasExited)
                 {
-                    _process.Kill(entireProcessTree: true);
+                    process.Kill(entireProcessTree: true);
                 }
 
-                await _process.WaitForExitAsync();
+                await process.WaitForExitAsync();
             }
             catch
             {
             }
             finally
             {
-                _process.Dispose();
-                _process = null;
+                process.Dispose();
             }
 
             AppendLog(L.XrayLog_Stopped);
-            RunningChanged?.Invoke(this, false);
+            NotifySubscribers(RunningChanged, false);
         }
 
         /// <summary>
@@ -330,14 +389,16 @@ namespace XrayUI.Services
 
         public void StopForShutdown()
         {
-            var process = _process;
+            // Shutdown cannot wait for an async operation that needs the UI dispatcher.
+            // Detach ownership atomically and prevent queued starts from launching later.
+            Interlocked.Exchange(ref _shutdownRequested, 1);
+            var process = Interlocked.Exchange(ref _process, null);
             if (process is null)
             {
                 return;
             }
 
             process.Exited -= OnProcessExited;
-            _process = null;
 
             try
             {
@@ -356,19 +417,35 @@ namespace XrayUI.Services
             }
 
             AppendLog(L.XrayLog_Shutdown);
-            RunningChanged?.Invoke(this, false);
+            NotifySubscribers(RunningChanged, false);
         }
 
         private void OnProcessExited(object? sender, EventArgs e)
         {
-            AppendLog(L.XrayLog_ProcessExited);
+            if (sender is Process process && ReferenceEquals(Volatile.Read(ref _process), process))
+                _ = ReportProcessExitAsync(process);
+        }
+
+        private async Task ReportProcessExitAsync(Process process)
+        {
             try
             {
-                if (sender is Process process)
-                    LastError = Loc.Format("Xray_ExitedImmediately", process.ExitCode);
+                // Exited can arrive before stderr's panic/fatal output. Drain it before
+                // notifying the UI, and ignore an old process after a stop or restart.
+                await process.WaitForExitAsync().ConfigureAwait(false);
+                await _lifecycleLock.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    if (!ReferenceEquals(Volatile.Read(ref _process), process)) return;
+                    var exit = Loc.Format("Xray_ExitedImmediately", process.ExitCode);
+                    var recentOutput = string.Join(Environment.NewLine, GetLogBuffer().TakeLast(40));
+                    LastError = string.IsNullOrWhiteSpace(recentOutput) ? exit : exit + Environment.NewLine + recentOutput;
+                    AppendLog($"[XrayUI] core PID {process.Id} exited with code {process.ExitCode}");
+                    NotifySubscribers(RunningChanged, false);
+                }
+                finally { _lifecycleLock.Release(); }
             }
-            catch { }
-            RunningChanged?.Invoke(this, false);
+            catch (Exception ex) { Debug.WriteLine($"[XrayService] Exit reporting failed: {ex}"); }
         }
 
         // ─────────── Job Object: orphan-xray safety net ───────────

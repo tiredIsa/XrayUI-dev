@@ -11,6 +11,8 @@ namespace XrayUI.Helpers
         public static string Subscription_NoParsed => "No servers parsed";
         public static string Subscription_CheckUrl => "Check subscription URL";
         public static string Subscription_JustNow => "Just now";
+        public static string XrayLog_Stopped => "Core stopped";
+        public static string XrayLog_Shutdown => "Core stopped for shutdown";
     }
 
     public static class Loc

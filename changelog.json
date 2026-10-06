@@ -1,6 +1,19 @@
 {
   "versions": [
     {
+      "version": "1.19.6",
+      "en": [
+        "Refresh subscriptions only while disconnected and prevent refreshes from switching the active server.",
+        "Serialize core startup, stop and restart operations, and prevent crash cleanup from resetting a newer connection.",
+        "Detect core exits during startup, preserve exit codes and recent core output, and isolate failures in log and state event handlers."
+      ],
+      "ru": [
+        "Синхронизация подписок выполняется только без активного подключения и больше не переключает соединение на другой сервер.",
+        "Устранены гонки запуска, остановки и перезапуска ядра; очистка после падения больше не сбрасывает новое подключение.",
+        "Исправлена обработка завершения ядра во время подключения; сохраняются код выхода и последние сообщения Xray, ошибки обработчиков логов и состояния изолированы."
+      ]
+    },
+    {
       "version": "1.19.5",
       "en": [
         "Fix the tray icon and window visibility when the app starts minimized at Windows logon."

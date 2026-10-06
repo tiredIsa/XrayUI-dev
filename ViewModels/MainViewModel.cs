@@ -115,16 +115,12 @@ namespace XrayUI.ViewModels
             // A subscription rename/delete changes the detail pane's group label without touching
             // the selected node, so property notifications on ServerEntry can't cover it.
             ServerList.GroupNamesChanged += ServerDetail.RefreshGroupName;
-            ServerList.RequestSwitchToSelectedServer = ControlPanel.SwitchToSelectedServerAsync;
+            ServerList.IsConnectionBusy = () => ControlPanel.IsRunning || ControlPanel.IsReapplying
+                || ControlPanel.StartStopCommand.IsRunning;
             Personalize.IsProxyRunning = () => ControlPanel.IsRunning;
             // Live TUN state for the speed test's egress pin — settings.IsTunMode alone lags
             // the UI toggle and can survive a crash as a stale true (see IDialogService remarks).
             realLatencyProbe.IsTunActive = () => ControlPanel.IsRunning && ControlPanel.IsTunMode;
-            // Subscription fetches ride the core's own SOCKS inbound whenever it is running:
-            // IsProxyRunning can't tell manual mode (system proxy untouched) from system-proxy
-            // mode, and a direct fetch on a proxy-only link burns the schedule's whole interval.
-            ServerListViewModel.GetLocalProxyPort =
-                () => ControlPanel.IsRunning ? ControlPanel.LocalPort : (int?)null;
 
             ServerList.PropertyChanged   += OnServerListPropertyChanged;
             ControlPanel.PropertyChanged += OnControlPanelPropertyChanged;
@@ -297,17 +293,17 @@ namespace XrayUI.ViewModels
         }
 
         /// <summary>
-        /// Fired on startup, timer ticks, network restoration and proxy connection, so calls can overlap;
+        /// Fired on startup, timer ticks and network restoration, so calls can overlap;
         /// re-entrancy is excluded by RefreshDueSubscriptionsAsync, which owns the sweep state. All
         /// this layer adds is the catch — scheduled refreshes are silent background work, per-entry
         /// failures are already handled inside the shared batch runner, and anything unexpected must
         /// stay out of startup and off the UI.
         /// </summary>
-        private async Task RunSubscriptionRefreshCheckAsync(bool networkRestored = false, bool proxyConnected = false)
+        private async Task RunSubscriptionRefreshCheckAsync(bool networkRestored = false)
         {
             try
             {
-                await ServerList.RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, networkRestored, proxyConnected);
+                await ServerList.RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, networkRestored);
             }
             catch (Exception ex)
             {
@@ -566,9 +562,6 @@ namespace XrayUI.ViewModels
 
             if (isRunning && !ControlPanel.IsUpdateAvailable)
                 QueueUpdateCheck(CurrentProxyUrl());
-
-            if (isRunning)
-                _ = RunSubscriptionRefreshCheckAsync(proxyConnected: true);
         }
 
         public void StopTrafficCollection()

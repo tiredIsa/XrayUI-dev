@@ -38,8 +38,6 @@ namespace XrayUI.ViewModels
         private static string SubscriptionLabel(SubscriptionEntry sub)
             => string.IsNullOrWhiteSpace(sub.Name) ? UnnamedSubLabel : sub.Name;
 
-        internal static Func<int?>? GetLocalProxyPort { get; set; }
-
         private readonly IDialogService     _dialogs;
         private readonly SettingsService    _settings;
         private readonly LatencyProbeService _latencyProbe;
@@ -281,10 +279,10 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial bool IsProxyRunning { get; set; }
 
-        /// <summary>Set by MainViewModel: hands the running session over to the currently
-        /// selected server (ControlPanel.SwitchToSelectedServerAsync). Used when a
-        /// subscription refresh replaces the node that carries the live connection.</summary>
-        public Func<Task>? RequestSwitchToSelectedServer { get; set; }
+        // Includes start/stop and the stopped-core gap during a server or routing switch.
+        public Func<bool> IsConnectionBusy { get; set; } = () => false;
+
+        public bool CanRefreshSubscriptions => !IsProxyRunning && !IsConnectionBusy();
 
         partial void OnIsProxyRunningChanged(bool value)
         {
@@ -909,8 +907,10 @@ namespace XrayUI.ViewModels
 
         private async Task RefreshSubscriptionsCoreAsync(IReadOnlyList<SubscriptionEntry> subscriptions,
             Action<int, int>? progress = null, bool scheduled = false,
-            bool networkRestored = false, bool proxyConnected = false)
+            bool networkRestored = false)
         {
+            if (_disposed || !CanRefreshSubscriptions) return;
+
             var reserved = new List<SubscriptionEntry>(subscriptions.Count);
             foreach (var sub in subscriptions)
             {
@@ -930,15 +930,15 @@ namespace XrayUI.ViewModels
                     string? fetchedUrl = null;
                     try
                     {
-                        if (_disposed || !IsKnownSubscription(sub) ||
+                        if (_disposed || !CanRefreshSubscriptions || !IsKnownSubscription(sub) ||
                             (scheduled && !SubscriptionRefreshSchedule.IsDue(sub, DateTimeOffset.UtcNow,
-                                networkRestored, proxyConnected))) return;
+                                networkRestored))) return;
                         fetchedUrl = await RefreshSubscriptionAsync(sub);
                     }
                     catch (Exception ex)
                     {
                         // Network outcomes have already updated their schedule. Persistence and
-                        // handover errors must not reclassify HTTP failures or count a second attempt.
+                        // apply errors must not reclassify HTTP failures or count a second attempt.
                         sub.SetLocalizedError("Subscription_UpdateFailed", ex.Message);
                         Debug.WriteLine($"[Subscriptions] Refresh failed for {sub.Id}: {ex}");
                         if (!IsKnownSubscription(sub)) return;
@@ -1005,34 +1005,31 @@ namespace XrayUI.ViewModels
             _knownSubscriptions.Any(s => ReferenceEquals(s, sub));
 
         private bool _pendingSubscriptionNetworkRestored;
-        private bool _pendingSubscriptionProxyConnected;
 
         public async Task RefreshDueSubscriptionsAsync(DateTimeOffset now,
-            bool networkRestored = false, bool proxyConnected = false)
+            bool networkRestored = false)
         {
-            if (_disposed) return;
+            if (_disposed || !CanRefreshSubscriptions) return;
             if (_scheduledRefreshRunning)
             {
                 _pendingSubscriptionNetworkRestored |= networkRestored;
-                _pendingSubscriptionProxyConnected |= proxyConnected;
                 return;
             }
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable()) return;
 
             var due = _knownSubscriptions
-                .Where(sub => SubscriptionRefreshSchedule.IsDue(sub, now, networkRestored, proxyConnected))
+                .Where(sub => SubscriptionRefreshSchedule.IsDue(sub, now, networkRestored))
                 .ToList();
             if (due.Count == 0) return;
             _scheduledRefreshRunning = true;
             try { await RefreshSubscriptionsCoreAsync(due, scheduled: true,
-                networkRestored: networkRestored, proxyConnected: proxyConnected); }
+                networkRestored: networkRestored); }
             finally { _scheduledRefreshRunning = false; }
-            if (_pendingSubscriptionNetworkRestored || _pendingSubscriptionProxyConnected)
+            if (_pendingSubscriptionNetworkRestored)
             {
                 var restored = _pendingSubscriptionNetworkRestored;
-                var connected = _pendingSubscriptionProxyConnected;
-                _pendingSubscriptionNetworkRestored = _pendingSubscriptionProxyConnected = false;
-                await RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, restored, connected);
+                _pendingSubscriptionNetworkRestored = false;
+                await RefreshDueSubscriptionsAsync(DateTimeOffset.UtcNow, restored);
             }
         }
 
@@ -1061,34 +1058,16 @@ namespace XrayUI.ViewModels
 
             sub.Id = Guid.NewGuid().ToString("N");
 
-            var (entries, error) = await FetchSubscriptionNodesAsync(sub);
-
-            if (entries != null)
-            {
-                MutateServersInBatch(() =>
-                {
-                    foreach (var e in entries) Servers.Add(e);
-                }, rebuild: false);
-                SubscriptionRefreshSchedule.RecordSuccess(sub, DateTimeOffset.UtcNow);
-            }
-            else
-            {
-                sub.LastError = error;
-            }
-
             await UpsertSubscriptionAsync(sub);
             TrackKnownSubscription(sub);
             GroupNamesChanged?.Invoke();
             RebuildAll();
 
-            if (entries != null && SelectedServer == null && Servers.Count > 0)
-                SelectedServer = Servers[^1];
+            await RefreshSubscriptionsAsync([sub]);
 
-            await SaveAsync();
-
-            if (entries == null)
+            if (sub.HasError)
             {
-                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Subscription_FetchFailed"), error ?? XrayUI.Helpers.LocalizedText.Key("Subscription_UnknownError"));
+                await _dialogs.ShowErrorAsync(XrayUI.Helpers.LocalizedText.Key("Subscription_FetchFailed"), sub.LastErrorText);
             }
         }
 
@@ -1099,31 +1078,33 @@ namespace XrayUI.ViewModels
             if (sub.RetryAfterUtc > DateTimeOffset.UtcNow)
                 return (null, sub.LastError);
             var url = sub.Url;
-            var port = GetLocalProxyPort?.Invoke();
             sub.LastRefreshAttempt = DateTimeOffset.UtcNow;
             try
             {
-                using var client = SubscriptionFetcher.CreateClient(port);
-                return await SubscriptionFetcher.FetchNodesAsync(sub, client, direct: !port.HasValue);
+                using var client = SubscriptionFetcher.CreateClient(null);
+                return await SubscriptionFetcher.FetchNodesAsync(sub, client, direct: true);
             }
             catch (Exception ex)
             {
                 if (sub.Url == url)
-                    SubscriptionRefreshSchedule.RecordFailure(sub, DateTimeOffset.UtcNow, direct: !port.HasValue);
+                    SubscriptionRefreshSchedule.RecordFailure(sub, DateTimeOffset.UtcNow, direct: true);
                 return (null, ex.Message);
             }
         }
 
         /// <summary>Returns the URL whose fetch result this refresh recorded, so the caller can
         /// detect an edit that landed after the refetch loop's last look — during the apply /
-        /// save / handover / upsert awaits — and schedule the fetch that edit was denied.</summary>
-        private async Task<string> RefreshSubscriptionAsync(SubscriptionEntry sub)
+        /// save / upsert awaits — and schedule the fetch that edit was denied.</summary>
+        private async Task<string?> RefreshSubscriptionAsync(SubscriptionEntry sub)
         {
             sub.IsBusy = true;
             try
             {
                 var urlAtFetch = sub.Url;
                 var (newEntries, error) = await FetchSubscriptionNodesAsync(sub);
+                // Starting a connection takes priority over a fetch already in flight.
+                // Leave its server list and success timestamp intact so it remains due.
+                if (_disposed || !CanRefreshSubscriptions) return null;
 
                 // An edit can change the URL while the fetch is in flight — the edit's own
                 // refetch is skipped by the id reservation, so this refresh carries it:
@@ -1137,6 +1118,7 @@ namespace XrayUI.ViewModels
                     // edit cleared it, and a provider that omits the header must not inherit it.
                     sub.Usage = default;
                     (newEntries, error) = await FetchSubscriptionNodesAsync(sub);
+                    if (_disposed || !CanRefreshSubscriptions) return null;
                 }
 
                 // Deleted — or replaced wholesale by a mid-session preset import — while the
@@ -1153,7 +1135,6 @@ namespace XrayUI.ViewModels
 
                 var removed = Servers.Where(s => s.SubscriptionId == sub.Id).ToList();
                 var wasSelectedId = SelectedServer?.Id;
-                var hadActiveNode = removed.Any(s => s.IsActive);
 
                 // Preserve Ids for nodes that survived the refresh so LastAutoConnectServerId
                 // (and any other Id-based reference) keeps pointing at the same logical node.
@@ -1178,23 +1159,6 @@ namespace XrayUI.ViewModels
                         continue;
 
                     var match = matches.Dequeue();
-                    if (match.IsActive)
-                    {
-                        // The node carrying the live connection survived the refresh: keep
-                        // the existing instance (it is removed and re-added in the batch
-                        // below) so _activeServer, the detail panel and the IsActive marker
-                        // stay valid — the tunnel is never touched. Identity-key fields are
-                        // equal by construction, but config outside the key (fingerprint,
-                        // ECH, finalmask, WireGuard keys, ...) may have changed, so carry
-                        // the full fresh config onto the live instance; the running session
-                        // keeps its old parameters until the next (re)connect.
-                        match.CopyConfigFrom(e);
-                        newEntries[i] = match;
-                        if (!string.IsNullOrWhiteSpace(match.Id))
-                            reusedIds.Add(match.Id);
-                        continue;
-                    }
-
                     if (!string.IsNullOrWhiteSpace(match.Id) && reusedIds.Add(match.Id))
                         e.Id = match.Id;
                     e.IsFavorite = match.IsFavorite;
@@ -1214,28 +1178,14 @@ namespace XrayUI.ViewModels
                                      ?? newEntries.FirstOrDefault()
                                      ?? Servers.FirstOrDefault();
                 }
+                else if (SelectedServer == null)
+                {
+                    SelectedServer = newEntries.LastOrDefault();
+                }
 
                 SubscriptionRefreshSchedule.RecordSuccess(sub, DateTimeOffset.UtcNow);
 
                 await SaveAsync();
-
-                // Connected to a node of THIS subscription that did not survive the refresh:
-                // hand the session over to the first fresh node instead of leaving a ghost
-                // tunnel whose node no longer exists in the list. Gated on hadActiveNode
-                // (captured before the mutation) rather than "no server is active anywhere"
-                // — the latter is also true after a preset import leaves the proxy running
-                // with no active marker, which would otherwise hijack the session on the
-                // next unrelated subscription refresh.
-                if (hadActiveNode && IsProxyRunning && !Servers.Any(s => s.IsActive) &&
-                    RequestSwitchToSelectedServer != null)
-                {
-                    var fallback = newEntries.FirstOrDefault();
-                    if (fallback != null)
-                    {
-                        SelectedServer = fallback;
-                        await RequestSwitchToSelectedServer();
-                    }
-                }
 
                 return urlAtFetch;
             }
